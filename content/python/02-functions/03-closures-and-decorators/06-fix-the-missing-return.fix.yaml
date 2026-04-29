@@ -1,0 +1,39 @@
+xp: 4
+estSeconds: 80
+concept: decorator-must-return-wrapper
+prompt: |
+  Claude wrote a decorator and forgot to return the inner `wrapper` from
+  the outer function. As a result, the decorated function is `None` and
+  the script crashes with a `TypeError`. Add the missing `return wrapper`
+  inside `loud`. Output should be:
+
+  ```
+  calling: add
+  5
+  ```
+brokenCode: |
+  def loud(fn):
+      def wrapper(*args, **kwargs):
+          print("calling:", fn.__name__)
+          return fn(*args, **kwargs)
+      # the line that turns this into a real decorator is missing
+
+  @loud
+  def add(a, b):
+      return a + b
+
+  print(add(2, 3))
+bugLines:
+  - 5
+grader:
+  kind: stdout-equality
+  expected: |
+    calling: add
+    5
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "A decorator's outer function must return the wrapper. Without that, the decorator binds the function name to `None`."
+  - level: 2
+    body: "Add `return wrapper` as the last line of `loud` (indented inside `loud`, after the inner `def`)."
+revealAfter: 4

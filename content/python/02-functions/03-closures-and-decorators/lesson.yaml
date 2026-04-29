@@ -1,0 +1,14 @@
+slug: closures-and-decorators
+title: "Closures and the @ symbol — what AI is doing when it stacks decorators"
+estMinutes: 7
+prerequisites: []
+order:
+  - 01-intro.read.md
+  - 02-which-line-is-the-closure.mc.yaml
+  - 03-the-at-sign.read.md
+  - 04-predict-the-counter.predict.yaml
+  - 05-fill-the-decorator.fill.yaml
+  - 06-fix-the-missing-return.fix.yaml
+  - 07-fix-the-decorator-call.fix.yaml
+  - 08-write-tiny-decorator.write.yaml
+  - 09-checkpoint.checkpoint.yaml

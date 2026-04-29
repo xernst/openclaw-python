@@ -1,0 +1,32 @@
+xp: 4
+estSeconds: 80
+concept: wrapper-must-return-result
+prompt: |
+  AI wrote a decorator that runs the wrapped function but forgets to
+  return its value. So the decorated function returns `None` and the
+  script prints `None` instead of `5`. Add a `return` to the wrapper so
+  the script prints `5`.
+brokenCode: |
+  def trace(fn):
+      def wrapper(*args, **kwargs):
+          # fn runs but its result is dropped
+          fn(*args, **kwargs)
+      return wrapper
+
+  @trace
+  def add(a, b):
+      return a + b
+
+  print(add(2, 3))
+bugLines:
+  - 4
+grader:
+  kind: stdout-equality
+  expected: "5"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "The wrapper calls `fn(...)` but throws the result away. You need to send it back to the caller."
+  - level: 2
+    body: "Change line 4 from `fn(*args, **kwargs)` to `return fn(*args, **kwargs)`."
+revealAfter: 4

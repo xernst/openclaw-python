@@ -1,0 +1,31 @@
+xp: 3
+estSeconds: 55
+concept: at-sign-syntax
+prompt: |
+  Cursor wrote a decorator and a function. The `@` line is missing.
+  Fill in the symbol that applies the `timed` decorator to `slow_add`
+  on line 8.
+
+  Symbol: ___
+code: |
+  def timed(fn):
+      def wrapper(*args, **kwargs):
+          result = fn(*args, **kwargs)
+          return f"timed: {result}"
+      return wrapper
+
+  ___timed
+  def slow_add(a, b):
+      return a + b
+
+  print(slow_add(2, 3))
+blanks:
+  - id: keyword
+    accept:
+      - "@"
+    caseSensitive: true
+hint:
+  - level: 1
+    body: "It's one character. The same symbol you've seen above any decorated function."
+  - level: 2
+    body: "The `@` symbol. `@timed` on its own line above the function definition."

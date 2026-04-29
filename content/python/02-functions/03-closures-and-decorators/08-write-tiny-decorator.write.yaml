@@ -1,0 +1,40 @@
+xp: 5
+estSeconds: 120
+concept: write-decorator
+prompt: |
+  Write a decorator called `shout` that takes a function returning a
+  string, calls it, and returns the result with `!` removed and converted
+  to uppercase. (We don't use exclamation marks, but other people's code
+  does — your decorator strips them.)
+
+  Then decorate a function `say_hi` that returns `"hi!"` and print
+  the result.
+
+  Expected output:
+  ```
+  HI
+  ```
+starter: |
+  # define `shout`, then use @shout on say_hi
+  # say_hi should return "hi!"
+grader:
+  kind: stdout-equality
+  expected: "HI"
+  normalize: collapse-trailing-newline
+solution: |
+  def shout(fn):
+      def wrapper(*args, **kwargs):
+          result = fn(*args, **kwargs)
+          return result.replace("!", "").upper()
+      return wrapper
+
+  @shout
+  def say_hi():
+      return "hi!"
+
+  print(say_hi())
+hint:
+  - level: 1
+    body: "Three pieces: outer `shout(fn)`, inner `wrapper(*args, **kwargs)` that processes the result, and `return wrapper` at the bottom."
+  - level: 2
+    body: "Inside the wrapper: `result = fn(*args, **kwargs); return result.replace(\"!\", \"\").upper()`. Then `@shout` on `say_hi`."

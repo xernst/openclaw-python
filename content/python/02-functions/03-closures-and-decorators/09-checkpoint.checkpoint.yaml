@@ -1,0 +1,43 @@
+xp: 8
+estSeconds: 150
+concept: closure-decorator-checkpoint
+prompt: |
+  Final drill. Build a decorator factory called `prefixed` that takes
+  a string and returns a decorator. The decorator wraps a function so
+  its return value gets the prefix prepended.
+
+  Use it like this:
+
+  ```python
+  @prefixed("[INFO] ")
+  def msg():
+      return "started"
+
+  print(msg())     # [INFO] started
+  ```
+
+  Expected output:
+  ```
+  [INFO] started
+  ```
+starter: |
+  # define prefixed(prefix) — it returns a decorator
+  # then decorate msg with @prefixed("[INFO] ")
+grader:
+  kind: stdout-equality
+  expected: "[INFO] started"
+  normalize: collapse-trailing-newline
+solution: |
+  def prefixed(prefix):
+      def decorator(fn):
+          def wrapper(*args, **kwargs):
+              return prefix + fn(*args, **kwargs)
+          return wrapper
+      return decorator
+
+  @prefixed("[INFO] ")
+  def msg():
+      return "started"
+
+  print(msg())
+passThreshold: 0.66

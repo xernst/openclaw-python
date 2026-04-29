@@ -1,0 +1,31 @@
+xp: 2
+estSeconds: 50
+concept: spotting-the-closure
+code: |
+  def make_multiplier(factor):
+      def multiply(x):
+          return x * factor
+      return multiply
+
+  double = make_multiplier(2)
+  triple = make_multiplier(3)
+  print(double(5))
+  print(triple(5))
+prompt: |
+  Read the editor. The whole point is that `multiply` remembers `factor`
+  even after `make_multiplier` returns. Which line is the closure being
+  *captured*?
+options:
+  - id: a
+    label: "Line 1: `def make_multiplier(factor):`"
+    explain: "That defines the outer function, but the closure isn't formed until the inner `def` references `factor`."
+  - id: b
+    label: "Line 3: `return x * factor`"
+    explain: "This *uses* `factor` from the enclosing scope, but the capture happens when `multiply` is defined, not each time it runs."
+  - id: c
+    label: "Line 2: `def multiply(x):`"
+  - id: d
+    label: "Line 6: `double = make_multiplier(2)`"
+    explain: "This is when the closure is *built and returned*, but the capture mechanism is the inner `def` itself."
+answerIds:
+  - c

@@ -5,3 +5,4 @@ blurb: "AI writes functions constantly, and silently forgets the `return` line a
 lessons:
   - 01-return-values
   - 02-arguments-and-defaults
+  - 03-closures-and-decorators

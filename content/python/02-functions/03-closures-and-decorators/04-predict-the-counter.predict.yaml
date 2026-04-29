@@ -1,0 +1,31 @@
+xp: 3
+estSeconds: 70
+concept: closure-shared-state
+code: |
+  def make_counter():
+      count = 0
+      def bump():
+          nonlocal count
+          count += 1
+          return count
+      return bump
+
+  c = make_counter()
+  print(c())
+  print(c())
+  print(c())
+prompt: |
+  Read the editor. `c` is a function that bumps and returns its own
+  internal counter. What does the script print? (Three lines, in order.)
+grader:
+  kind: stdout-equality
+  expected: |
+    1
+    2
+    3
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "`nonlocal` lets the inner function modify the outer scope's `count`. Each call increments it before returning."
+  - level: 2
+    body: "First call → 1, second → 2, third → 3. The closure carries the counter between calls."
