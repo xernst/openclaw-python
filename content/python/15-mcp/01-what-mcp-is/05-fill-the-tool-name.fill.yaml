@@ -1,0 +1,31 @@
+xp: 3
+estSeconds: 60
+concept: mcp-tools-call-method
+prompt: |
+  Cursor wrote a stub of an MCP client request. The method name on
+  line 3 is missing — it's the JSON-RPC method that asks the server to
+  run a specific tool.
+
+  Method: ___
+code: |
+  # JSON-RPC request the client would send to invoke a tool
+  request = {
+      "method": "tools/___",
+      "params": {
+          "name": "create_task",
+          "arguments": {"title": "review PR"},
+      },
+  }
+
+  print(request["method"])
+  print(request["params"]["name"])
+blanks:
+  - id: keyword
+    accept:
+      - call
+    caseSensitive: true
+hint:
+  - level: 1
+    body: 'Two MCP methods you use constantly. One discovers tools (`tools/list`), the other invokes one. What''s the verb for "run this tool"?'
+  - level: 2
+    body: '`tools/call` — that''s the JSON-RPC method that runs a tool with arguments.'

@@ -1,6 +1,6 @@
 {
   "version": "0.1.0",
-  "generatedAt": "2026-04-29T18:24:14.239Z",
+  "generatedAt": "2026-04-29T18:26:57.349Z",
   "chapters": [
     {
       "number": 1,
@@ -124,6 +124,15 @@
       "slug": "structured-output",
       "title": "Structured output — making the model return JSON",
       "blurb": "Free-form text breaks every pipeline. Learn the schema-first pattern AI uses to get reliable JSON back, validate it with Pydantic, and catch the model's lies before they hit prod.",
+      "lessonCount": 1,
+      "stepCount": 9,
+      "xpTotal": 32
+    },
+    {
+      "number": 15,
+      "slug": "mcp",
+      "title": "MCP — the Model Context Protocol",
+      "blurb": "MCP is the new standard for plugging tools and data sources into AI agents. Learn what an MCP server actually is, how Claude Code lists tools, and why this is replacing one-off integrations everywhere.",
       "lessonCount": 1,
       "stepCount": 9,
       "xpTotal": 32

@@ -1,0 +1,34 @@
+xp: 4
+estSeconds: 90
+concept: mcp-result-content-path
+prompt: |
+  Cursor assumed the MCP response had a top-level `text` field, but
+  MCP responses (like Claude responses) put text inside `content[0]`.
+  The script crashes with a `KeyError`. Fix line 8 so the script prints
+  the result text.
+
+  Expected output:
+  ```
+  3 open tasks
+  ```
+brokenCode: |
+  result = {
+      "content": [
+          {"type": "text", "text": "3 open tasks"}
+      ],
+      "isError": False,
+  }
+
+  print(result["text"])
+bugLines:
+  - 8
+grader:
+  kind: stdout-equality
+  expected: "3 open tasks"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: 'There''s no top-level `text` key. The text lives inside `content`, which is a list of blocks.'
+  - level: 2
+    body: 'Replace `result["text"]` with `result["content"][0]["text"]`.'
+revealAfter: 4

@@ -1,0 +1,6 @@
+number: 15
+slug: mcp
+title: "MCP — the Model Context Protocol"
+blurb: "MCP is the new standard for plugging tools and data sources into AI agents. Learn what an MCP server actually is, how Claude Code lists tools, and why this is replacing one-off integrations everywhere."
+lessons:
+  - 01-what-mcp-is

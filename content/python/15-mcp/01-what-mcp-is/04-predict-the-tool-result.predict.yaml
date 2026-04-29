@@ -1,0 +1,28 @@
+xp: 3
+estSeconds: 75
+concept: mcp-call-response-shape
+code: |
+  # this is what an MCP server returned for tools/call on `list_tasks`
+  result = {
+      "content": [
+          {"type": "text", "text": "3 open tasks"}
+      ],
+      "isError": False,
+  }
+
+  if result["isError"]:
+      print(f"error: {result['content'][0]['text']}")
+  else:
+      print(f"ok: {result['content'][0]['text']}")
+prompt: |
+  Read the editor. The `result` is a successful `tools/call` response.
+  What does the print line output?
+grader:
+  kind: stdout-equality
+  expected: "ok: 3 open tasks"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: '`isError` is `False`, so the `else` branch runs. Read the text from `result["content"][0]["text"]`.'
+  - level: 2
+    body: 'It prints `ok: 3 open tasks`.'

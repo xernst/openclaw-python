@@ -1,0 +1,14 @@
+slug: what-mcp-is
+title: "Servers, tools, and the protocol — how AI agents plug into your stack"
+estMinutes: 8
+prerequisites: []
+order:
+  - 01-intro.read.md
+  - 02-which-side-is-the-server.mc.yaml
+  - 03-the-tool-list.read.md
+  - 04-predict-the-tool-result.predict.yaml
+  - 05-fill-the-tool-name.fill.yaml
+  - 06-fix-the-missing-argument.fix.yaml
+  - 07-fix-the-result-shape.fix.yaml
+  - 08-write-call-tool.write.yaml
+  - 09-checkpoint.checkpoint.yaml

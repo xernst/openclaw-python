@@ -1,0 +1,258 @@
+{
+  "number": 15,
+  "slug": "mcp",
+  "title": "MCP — the Model Context Protocol",
+  "blurb": "MCP is the new standard for plugging tools and data sources into AI agents. Learn what an MCP server actually is, how Claude Code lists tools, and why this is replacing one-off integrations everywhere.",
+  "lessons": [
+    {
+      "slug": "what-mcp-is",
+      "title": "Servers, tools, and the protocol — how AI agents plug into your stack",
+      "estMinutes": 8,
+      "prerequisites": [],
+      "steps": [
+        {
+          "type": "read",
+          "id": "mcp/what-mcp-is/s01-01-intro",
+          "xp": 1,
+          "hint": [],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 90,
+          "concept": "mcp-overview",
+          "body": "# MCP is the USB-C port of AI agents\n\nBefore MCP, every \"give Claude access to my database\" or \"let Cursor\nread my Linear tickets\" was a custom integration written from scratch.\nDifferent auth, different schemas, different glue code per tool. It\ndidn't scale. The same agent had ten different ways to ask \"what tools\ncan I use?\"\n\n**MCP — Model Context Protocol** — fixes that. It's a single open\nprotocol (announced by Anthropic, now adopted across the industry) that\nlets *any* AI client talk to *any* tool provider, with one consistent\nshape.\n\n## The mental model\n\nThree pieces, only:\n\n1. **MCP server** — a process that exposes tools and data. Examples:\n   the GitHub MCP server (PRs, issues), the Postgres MCP server\n   (queries), the filesystem MCP server (read files).\n2. **MCP client** — usually the AI app: Claude Desktop, Claude Code,\n   Cursor, Continue. The client connects to one or more servers.\n3. **The protocol** — a small JSON-RPC spec. The client asks the server\n   `tools/list` to discover what's available, then `tools/call` to run\n   one with arguments.\n\nThat's it. Same shape every time. Any new MCP server you write or\ninstall gets picked up by every MCP-aware client automatically.\n\n## What it looks like in practice\n\nWhen you run `claude mcp add github`, Claude Code spawns the GitHub MCP\nserver as a subprocess and asks it `tools/list`. The server returns\nsomething like:\n\n```json\n{\n  \"tools\": [\n    {\"name\": \"list_prs\", \"description\": \"List open PRs in a repo\", ...},\n    {\"name\": \"get_issue\", \"description\": \"Fetch one issue by number\", ...}\n  ]\n}\n```\n\nNow when you ask Claude *\"summarize the open PRs on my repo,\"* Claude\nsees `list_prs` in its toolbox and calls it. The server runs the actual\nGitHub API call, returns the result, and Claude reads the result like\nany other piece of context.\n\n## Where AI specifically gets this wrong\n\n- **Confusing client and server.** Cursor *is* an MCP client. Your\n  Postgres connector *is* an MCP server. Reversing them in\n  configuration breaks everything.\n- **Missing the input schema.** Every tool advertises a JSON schema\n  for its arguments. If your server doesn't, the model can't reliably\n  call it — it's guessing. The schema is the contract.\n- **Forgetting that tools return content blocks.** A `tools/call`\n  response has the same `content` array shape as a regular Claude\n  message. The result text lives at `result[\"content\"][0][\"text\"]`.\n\n> **Browser note:** we can't actually start an MCP server here, so\n> we'll use a hardcoded version of `tools/list` and a Python function\n> that mimics `tools/call`. The shapes are exactly what a real server\n> would return.\n\nRun the editor. We list the tools the (fake) weather server exposes.",
+          "cta": "Got it",
+          "code": "# an MCP server advertises a list of tools. here's what\n# `tools/list` would return from a \"weather\" server, hardcoded.\nweather_server_tools = {\n    \"tools\": [\n        {\n            \"name\": \"get_current_temp\",\n            \"description\": \"Get the current temperature in a city.\",\n            \"inputSchema\": {\n                \"type\": \"object\",\n                \"properties\": {\n                    \"city\": {\"type\": \"string\"},\n                    \"units\": {\"type\": \"string\", \"enum\": [\"c\", \"f\"]},\n                },\n                \"required\": [\"city\"],\n            },\n        }\n    ]\n}\n\nfor tool in weather_server_tools[\"tools\"]:\n    print(f\"{tool['name']}: {tool['description']}\")\n",
+          "runnable": true
+        },
+        {
+          "type": "mc",
+          "id": "mcp/what-mcp-is/s02-02-which-side-is-the-server",
+          "xp": 2,
+          "hint": [],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 50,
+          "concept": "mcp-client-vs-server",
+          "prompt": "You install Claude Code, configure it to talk to a Postgres MCP\nserver, and ask Claude *\"how many users signed up last week?\"*.\nWhich side is the SERVER in this exchange?\n",
+          "options": [
+            {
+              "id": "a",
+              "label": "Claude Code (the CLI)",
+              "explain": "Claude Code is the MCP CLIENT. It connects out to one or more servers."
+            },
+            {
+              "id": "b",
+              "label": "Claude (the model)",
+              "explain": "The model itself is not an MCP participant. It sees tools the client passes in, and emits `tool_use` blocks. The client routes those to the server."
+            },
+            {
+              "id": "c",
+              "label": "The Postgres MCP server (the process exposing the database tools)"
+            },
+            {
+              "id": "d",
+              "label": "Your terminal",
+              "explain": "The terminal hosts Claude Code but isn't part of the MCP protocol itself."
+            }
+          ],
+          "answerIds": [
+            "c"
+          ],
+          "shuffle": false,
+          "code": "# this is what `claude mcp list` would print if you had two servers\n# configured: one for GitHub, one for your local filesystem.\nconfigured_servers = [\n    {\"name\": \"github\", \"command\": \"github-mcp-server\"},\n    {\"name\": \"fs\", \"command\": \"mcp-filesystem ~/Developer\"},\n]\n\nfor s in configured_servers:\n    print(f\"{s['name']} -> {s['command']}\")\n",
+          "runnable": true
+        },
+        {
+          "type": "read",
+          "id": "mcp/what-mcp-is/s03-03-the-tool-list",
+          "xp": 2,
+          "hint": [],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 75,
+          "concept": "mcp-tools-list-call",
+          "body": "# The two methods you actually use: `tools/list` and `tools/call`\n\nThe MCP protocol has more verbs than these, but in 95% of real agent\nwork, only two matter:\n\n### `tools/list`\n\nThe client calls this once on connect to discover what the server can\ndo. The response is `{\"tools\": [...]}`, where each tool has:\n\n- `name` — what you call when you want to invoke it\n- `description` — natural-language description Claude reads to pick\n  the right tool\n- `inputSchema` — JSON Schema for the arguments\n\nThe model never sees the server itself. It only sees the list of tools\nthe client forwards from `tools/list`. The description and schema *are*\nthe model's user manual for that tool.\n\n### `tools/call`\n\nWhen Claude decides to use `create_task`, the client makes a\n`tools/call` request with:\n\n```json\n{\"name\": \"create_task\", \"arguments\": {\"title\": \"ship docs\"}}\n```\n\nThe server runs whatever it runs — hits an API, queries a DB, writes a\nfile — and returns:\n\n```json\n{\n  \"content\": [{\"type\": \"text\", \"text\": \"Created task #42: ship docs\"}],\n  \"isError\": false\n}\n```\n\nThat `content` array is the **same shape** as a Claude assistant\nmessage. That's not coincidence — it lets the model treat tool output\nas just another piece of context, no parsing dance required.\n\n## Why `isError` matters\n\nWhen something goes wrong, the server still returns a normal response,\njust with `\"isError\": true` and an error message in the text content.\nThis lets the model *recover* — it can read \"permission denied\" and try\na different approach. Crashing the connection would force the whole\nagent loop to start over.\n\nRun the editor. We render a fake `tools/call` response — the same shape\na real one would have.",
+          "cta": "Got it",
+          "code": "# what `tools/list` returns from a hypothetical \"tasks\" MCP server.\ntools_list_response = {\n    \"tools\": [\n        {\n            \"name\": \"create_task\",\n            \"description\": \"Create a new task with a title.\",\n            \"inputSchema\": {\n                \"type\": \"object\",\n                \"properties\": {\"title\": {\"type\": \"string\"}},\n                \"required\": [\"title\"],\n            },\n        },\n        {\n            \"name\": \"list_tasks\",\n            \"description\": \"List all open tasks.\",\n            \"inputSchema\": {\"type\": \"object\", \"properties\": {}},\n        },\n    ]\n}\n\n# what `tools/call` for create_task with {\"title\": \"ship docs\"} returns\ncall_response = {\n    \"content\": [\n        {\"type\": \"text\", \"text\": \"Created task #42: ship docs\"}\n    ],\n    \"isError\": False,\n}\n\n# the model would now read call_response[\"content\"][0][\"text\"]\nresult_text = call_response[\"content\"][0][\"text\"]\nprint(result_text)\n",
+          "runnable": true
+        },
+        {
+          "type": "predict",
+          "id": "mcp/what-mcp-is/s04-04-predict-the-tool-result",
+          "xp": 3,
+          "hint": [
+            {
+              "level": 1,
+              "body": "`isError` is `False`, so the `else` branch runs. Read the text from `result[\"content\"][0][\"text\"]`.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "It prints `ok: 3 open tasks`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 75,
+          "concept": "mcp-call-response-shape",
+          "code": "# this is what an MCP server returned for tools/call on `list_tasks`\nresult = {\n    \"content\": [\n        {\"type\": \"text\", \"text\": \"3 open tasks\"}\n    ],\n    \"isError\": False,\n}\n\nif result[\"isError\"]:\n    print(f\"error: {result['content'][0]['text']}\")\nelse:\n    print(f\"ok: {result['content'][0]['text']}\")\n",
+          "prompt": "Read the editor. The `result` is a successful `tools/call` response.\nWhat does the print line output?\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "ok: 3 open tasks",
+            "normalize": "collapse-trailing-newline"
+          }
+        },
+        {
+          "type": "fill",
+          "id": "mcp/what-mcp-is/s05-05-fill-the-tool-name",
+          "xp": 3,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Two MCP methods you use constantly. One discovers tools (`tools/list`), the other invokes one. What's the verb for \"run this tool\"?",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "`tools/call` — that's the JSON-RPC method that runs a tool with arguments.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 60,
+          "concept": "mcp-tools-call-method",
+          "prompt": "Cursor wrote a stub of an MCP client request. The method name on\nline 3 is missing — it's the JSON-RPC method that asks the server to\nrun a specific tool.\n\nMethod: ___\n",
+          "code": "# JSON-RPC request the client would send to invoke a tool\nrequest = {\n    \"method\": \"tools/___\",\n    \"params\": {\n        \"name\": \"create_task\",\n        \"arguments\": {\"title\": \"review PR\"},\n    },\n}\n\nprint(request[\"method\"])\nprint(request[\"params\"][\"name\"])\n",
+          "blanks": [
+            {
+              "id": "keyword",
+              "accept": [
+                "call"
+              ],
+              "caseSensitive": true,
+              "normalize": "trim"
+            }
+          ]
+        },
+        {
+          "type": "fix",
+          "id": "mcp/what-mcp-is/s06-06-fix-the-missing-argument",
+          "xp": 4,
+          "hint": [
+            {
+              "level": 1,
+              "body": "`arguments` is currently empty. The schema requires `title`.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Change line 3 to `\"arguments\": {\"title\": \"ship docs\"},`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 90,
+          "concept": "mcp-required-arguments",
+          "brokenCode": "request = {\n    \"name\": \"create_task\",\n    \"arguments\": {},\n}\n\n# fake server: requires `title`\ndef call_tool(req):\n    args = req[\"arguments\"]\n    if \"title\" not in args:\n        return {\"isError\": True, \"content\": [{\"type\": \"text\", \"text\": \"missing title\"}]}\n    return {\"isError\": False, \"content\": [{\"type\": \"text\", \"text\": f\"Created task: {args['title']}\"}]}\n\nresult = call_tool(request)\nprint(result[\"content\"][0][\"text\"])\n",
+          "prompt": "AI built a `tools/call` request for `create_task`, but the tool's\nschema requires a `title` argument and the request is missing it.\nThe fake server returns an error response. Fix line 3 by adding\n`\"title\": \"ship docs\"` to the arguments dict.\n\nExpected output:\n```\nCreated task: ship docs\n```\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "Created task: ship docs",
+            "normalize": "collapse-trailing-newline"
+          },
+          "bugLines": [
+            3
+          ],
+          "revealAfter": 4
+        },
+        {
+          "type": "fix",
+          "id": "mcp/what-mcp-is/s07-07-fix-the-result-shape",
+          "xp": 4,
+          "hint": [
+            {
+              "level": 1,
+              "body": "There's no top-level `text` key. The text lives inside `content`, which is a list of blocks.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Replace `result[\"text\"]` with `result[\"content\"][0][\"text\"]`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 90,
+          "concept": "mcp-result-content-path",
+          "brokenCode": "result = {\n    \"content\": [\n        {\"type\": \"text\", \"text\": \"3 open tasks\"}\n    ],\n    \"isError\": False,\n}\n\nprint(result[\"text\"])\n",
+          "prompt": "Cursor assumed the MCP response had a top-level `text` field, but\nMCP responses (like Claude responses) put text inside `content[0]`.\nThe script crashes with a `KeyError`. Fix line 8 so the script prints\nthe result text.\n\nExpected output:\n```\n3 open tasks\n```\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "3 open tasks",
+            "normalize": "collapse-trailing-newline"
+          },
+          "bugLines": [
+            8
+          ],
+          "revealAfter": 4
+        },
+        {
+          "type": "write",
+          "id": "mcp/what-mcp-is/s08-08-write-call-tool",
+          "xp": 5,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Three steps: build the request dict, call `fake_server(request)`, then branch on `isError`.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "On success: `return response[\"content\"][0][\"text\"]`. On error: `return \"error\"`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 130,
+          "concept": "mcp-tool-invocation",
+          "prompt": "Build the client side of a `tools/call`. Write `call_tool(name, arguments)`\nthat:\n\n- Builds a request dict `{\"name\": name, \"arguments\": arguments}`.\n- Passes it to the provided `fake_server(request)` (a stand-in for an\n  MCP server).\n- Reads the response. If `isError` is True, return the string\n  `\"error\"`. Otherwise return the text at\n  `response[\"content\"][0][\"text\"]`.\n\nThen call `call_tool(\"greet\", {\"name\": \"alex\"})` and print the result.\n\nExpected output:\n```\nhello alex\n```\n",
+          "starter": "def fake_server(request):\n    if request[\"name\"] == \"greet\":\n        name = request[\"arguments\"][\"name\"]\n        return {\n            \"content\": [{\"type\": \"text\", \"text\": f\"hello {name}\"}],\n            \"isError\": False,\n        }\n    return {\n        \"content\": [{\"type\": \"text\", \"text\": \"unknown tool\"}],\n        \"isError\": True,\n    }\n\n# define call_tool(name, arguments) below\n\nprint(call_tool(\"greet\", {\"name\": \"alex\"}))\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "hello alex",
+            "normalize": "collapse-trailing-newline"
+          },
+          "solution": "def fake_server(request):\n    if request[\"name\"] == \"greet\":\n        name = request[\"arguments\"][\"name\"]\n        return {\n            \"content\": [{\"type\": \"text\", \"text\": f\"hello {name}\"}],\n            \"isError\": False,\n        }\n    return {\n        \"content\": [{\"type\": \"text\", \"text\": \"unknown tool\"}],\n        \"isError\": True,\n    }\n\ndef call_tool(name, arguments):\n    request = {\"name\": name, \"arguments\": arguments}\n    response = fake_server(request)\n    if response[\"isError\"]:\n        return \"error\"\n    return response[\"content\"][0][\"text\"]\n\nprint(call_tool(\"greet\", {\"name\": \"alex\"}))\n",
+          "hiddenTests": []
+        },
+        {
+          "type": "checkpoint",
+          "id": "mcp/what-mcp-is/s09-09-checkpoint",
+          "xp": 8,
+          "hint": [],
+          "personalize": false,
+          "phase": "check",
+          "estSeconds": 170,
+          "concept": "mcp-checkpoint",
+          "prompt": "Final drill. Build a tiny MCP client that lists tools, then calls one\nby name. Write two functions:\n\n- `list_tool_names(server)` — calls `server({\"method\": \"tools/list\"})`\n  and returns a list of every tool name it advertises.\n- `run_tool(server, name, arguments)` — calls\n  `server({\"method\": \"tools/call\", \"params\": {\"name\": name, \"arguments\": arguments}})`\n  and returns the text at `result[\"content\"][0][\"text\"]`, OR returns\n  `\"error\"` if `isError` is True.\n\nThe script will exercise both. Expected output:\n\n```\n['add', 'echo']\n5\nhi\nerror\n```\n",
+          "starter": "def fake_server(request):\n    if request[\"method\"] == \"tools/list\":\n        return {\n            \"tools\": [\n                {\"name\": \"add\", \"description\": \"Add two numbers\"},\n                {\"name\": \"echo\", \"description\": \"Echo a string\"},\n            ]\n        }\n    if request[\"method\"] == \"tools/call\":\n        params = request[\"params\"]\n        name = params[\"name\"]\n        args = params[\"arguments\"]\n        if name == \"add\":\n            total = args[\"a\"] + args[\"b\"]\n            return {\"content\": [{\"type\": \"text\", \"text\": str(total)}], \"isError\": False}\n        if name == \"echo\":\n            return {\"content\": [{\"type\": \"text\", \"text\": args[\"text\"]}], \"isError\": False}\n        return {\"content\": [{\"type\": \"text\", \"text\": \"unknown tool\"}], \"isError\": True}\n\n# define list_tool_names(server) and run_tool(server, name, arguments) below\n\nprint(list_tool_names(fake_server))\nprint(run_tool(fake_server, \"add\", {\"a\": 2, \"b\": 3}))\nprint(run_tool(fake_server, \"echo\", {\"text\": \"hi\"}))\nprint(run_tool(fake_server, \"missing\", {}))\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "['add', 'echo']\n5\nhi\nerror\n",
+            "normalize": "collapse-trailing-newline"
+          },
+          "solution": "def fake_server(request):\n    if request[\"method\"] == \"tools/list\":\n        return {\n            \"tools\": [\n                {\"name\": \"add\", \"description\": \"Add two numbers\"},\n                {\"name\": \"echo\", \"description\": \"Echo a string\"},\n            ]\n        }\n    if request[\"method\"] == \"tools/call\":\n        params = request[\"params\"]\n        name = params[\"name\"]\n        args = params[\"arguments\"]\n        if name == \"add\":\n            total = args[\"a\"] + args[\"b\"]\n            return {\"content\": [{\"type\": \"text\", \"text\": str(total)}], \"isError\": False}\n        if name == \"echo\":\n            return {\"content\": [{\"type\": \"text\", \"text\": args[\"text\"]}], \"isError\": False}\n        return {\"content\": [{\"type\": \"text\", \"text\": \"unknown tool\"}], \"isError\": True}\n\ndef list_tool_names(server):\n    response = server({\"method\": \"tools/list\"})\n    return [t[\"name\"] for t in response[\"tools\"]]\n\ndef run_tool(server, name, arguments):\n    request = {\"method\": \"tools/call\", \"params\": {\"name\": name, \"arguments\": arguments}}\n    result = server(request)\n    if result[\"isError\"]:\n        return \"error\"\n    return result[\"content\"][0][\"text\"]\n\nprint(list_tool_names(fake_server))\nprint(run_tool(fake_server, \"add\", {\"a\": 2, \"b\": 3}))\nprint(run_tool(fake_server, \"echo\", {\"text\": \"hi\"}))\nprint(run_tool(fake_server, \"missing\", {}))\n",
+          "passThreshold": 0.66
+        }
+      ],
+      "xpTotal": 32
+    }
+  ],
+  "xpTotal": 32
+}

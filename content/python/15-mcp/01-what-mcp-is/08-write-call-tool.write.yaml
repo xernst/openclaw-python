@@ -1,0 +1,66 @@
+xp: 5
+estSeconds: 130
+concept: mcp-tool-invocation
+prompt: |
+  Build the client side of a `tools/call`. Write `call_tool(name, arguments)`
+  that:
+
+  - Builds a request dict `{"name": name, "arguments": arguments}`.
+  - Passes it to the provided `fake_server(request)` (a stand-in for an
+    MCP server).
+  - Reads the response. If `isError` is True, return the string
+    `"error"`. Otherwise return the text at
+    `response["content"][0]["text"]`.
+
+  Then call `call_tool("greet", {"name": "alex"})` and print the result.
+
+  Expected output:
+  ```
+  hello alex
+  ```
+starter: |
+  def fake_server(request):
+      if request["name"] == "greet":
+          name = request["arguments"]["name"]
+          return {
+              "content": [{"type": "text", "text": f"hello {name}"}],
+              "isError": False,
+          }
+      return {
+          "content": [{"type": "text", "text": "unknown tool"}],
+          "isError": True,
+      }
+
+  # define call_tool(name, arguments) below
+
+  print(call_tool("greet", {"name": "alex"}))
+grader:
+  kind: stdout-equality
+  expected: "hello alex"
+  normalize: collapse-trailing-newline
+solution: |
+  def fake_server(request):
+      if request["name"] == "greet":
+          name = request["arguments"]["name"]
+          return {
+              "content": [{"type": "text", "text": f"hello {name}"}],
+              "isError": False,
+          }
+      return {
+          "content": [{"type": "text", "text": "unknown tool"}],
+          "isError": True,
+      }
+
+  def call_tool(name, arguments):
+      request = {"name": name, "arguments": arguments}
+      response = fake_server(request)
+      if response["isError"]:
+          return "error"
+      return response["content"][0]["text"]
+
+  print(call_tool("greet", {"name": "alex"}))
+hint:
+  - level: 1
+    body: 'Three steps: build the request dict, call `fake_server(request)`, then branch on `isError`.'
+  - level: 2
+    body: 'On success: `return response["content"][0]["text"]`. On error: `return "error"`.'

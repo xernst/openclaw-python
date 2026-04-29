@@ -1,0 +1,40 @@
+xp: 4
+estSeconds: 90
+concept: mcp-required-arguments
+prompt: |
+  AI built a `tools/call` request for `create_task`, but the tool's
+  schema requires a `title` argument and the request is missing it.
+  The fake server returns an error response. Fix line 3 by adding
+  `"title": "ship docs"` to the arguments dict.
+
+  Expected output:
+  ```
+  Created task: ship docs
+  ```
+brokenCode: |
+  request = {
+      "name": "create_task",
+      "arguments": {},
+  }
+
+  # fake server: requires `title`
+  def call_tool(req):
+      args = req["arguments"]
+      if "title" not in args:
+          return {"isError": True, "content": [{"type": "text", "text": "missing title"}]}
+      return {"isError": False, "content": [{"type": "text", "text": f"Created task: {args['title']}"}]}
+
+  result = call_tool(request)
+  print(result["content"][0]["text"])
+bugLines:
+  - 3
+grader:
+  kind: stdout-equality
+  expected: "Created task: ship docs"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: '`arguments` is currently empty. The schema requires `title`.'
+  - level: 2
+    body: 'Change line 3 to `"arguments": {"title": "ship docs"},`.'
+revealAfter: 4

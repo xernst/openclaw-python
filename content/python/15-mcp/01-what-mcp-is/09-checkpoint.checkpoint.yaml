@@ -1,0 +1,92 @@
+xp: 8
+estSeconds: 170
+concept: mcp-checkpoint
+prompt: |
+  Final drill. Build a tiny MCP client that lists tools, then calls one
+  by name. Write two functions:
+
+  - `list_tool_names(server)` — calls `server({"method": "tools/list"})`
+    and returns a list of every tool name it advertises.
+  - `run_tool(server, name, arguments)` — calls
+    `server({"method": "tools/call", "params": {"name": name, "arguments": arguments}})`
+    and returns the text at `result["content"][0]["text"]`, OR returns
+    `"error"` if `isError` is True.
+
+  The script will exercise both. Expected output:
+
+  ```
+  ['add', 'echo']
+  5
+  hi
+  error
+  ```
+starter: |
+  def fake_server(request):
+      if request["method"] == "tools/list":
+          return {
+              "tools": [
+                  {"name": "add", "description": "Add two numbers"},
+                  {"name": "echo", "description": "Echo a string"},
+              ]
+          }
+      if request["method"] == "tools/call":
+          params = request["params"]
+          name = params["name"]
+          args = params["arguments"]
+          if name == "add":
+              total = args["a"] + args["b"]
+              return {"content": [{"type": "text", "text": str(total)}], "isError": False}
+          if name == "echo":
+              return {"content": [{"type": "text", "text": args["text"]}], "isError": False}
+          return {"content": [{"type": "text", "text": "unknown tool"}], "isError": True}
+
+  # define list_tool_names(server) and run_tool(server, name, arguments) below
+
+  print(list_tool_names(fake_server))
+  print(run_tool(fake_server, "add", {"a": 2, "b": 3}))
+  print(run_tool(fake_server, "echo", {"text": "hi"}))
+  print(run_tool(fake_server, "missing", {}))
+grader:
+  kind: stdout-equality
+  expected: |
+    ['add', 'echo']
+    5
+    hi
+    error
+  normalize: collapse-trailing-newline
+solution: |
+  def fake_server(request):
+      if request["method"] == "tools/list":
+          return {
+              "tools": [
+                  {"name": "add", "description": "Add two numbers"},
+                  {"name": "echo", "description": "Echo a string"},
+              ]
+          }
+      if request["method"] == "tools/call":
+          params = request["params"]
+          name = params["name"]
+          args = params["arguments"]
+          if name == "add":
+              total = args["a"] + args["b"]
+              return {"content": [{"type": "text", "text": str(total)}], "isError": False}
+          if name == "echo":
+              return {"content": [{"type": "text", "text": args["text"]}], "isError": False}
+          return {"content": [{"type": "text", "text": "unknown tool"}], "isError": True}
+
+  def list_tool_names(server):
+      response = server({"method": "tools/list"})
+      return [t["name"] for t in response["tools"]]
+
+  def run_tool(server, name, arguments):
+      request = {"method": "tools/call", "params": {"name": name, "arguments": arguments}}
+      result = server(request)
+      if result["isError"]:
+          return "error"
+      return result["content"][0]["text"]
+
+  print(list_tool_names(fake_server))
+  print(run_tool(fake_server, "add", {"a": 2, "b": 3}))
+  print(run_tool(fake_server, "echo", {"text": "hi"}))
+  print(run_tool(fake_server, "missing", {}))
+passThreshold: 0.66

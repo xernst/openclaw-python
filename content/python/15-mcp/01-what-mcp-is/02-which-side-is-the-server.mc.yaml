@@ -1,0 +1,31 @@
+xp: 2
+estSeconds: 50
+concept: mcp-client-vs-server
+code: |
+  # this is what `claude mcp list` would print if you had two servers
+  # configured: one for GitHub, one for your local filesystem.
+  configured_servers = [
+      {"name": "github", "command": "github-mcp-server"},
+      {"name": "fs", "command": "mcp-filesystem ~/Developer"},
+  ]
+
+  for s in configured_servers:
+      print(f"{s['name']} -> {s['command']}")
+prompt: |
+  You install Claude Code, configure it to talk to a Postgres MCP
+  server, and ask Claude *"how many users signed up last week?"*.
+  Which side is the SERVER in this exchange?
+options:
+  - id: a
+    label: "Claude Code (the CLI)"
+    explain: "Claude Code is the MCP CLIENT. It connects out to one or more servers."
+  - id: b
+    label: "Claude (the model)"
+    explain: "The model itself is not an MCP participant. It sees tools the client passes in, and emits `tool_use` blocks. The client routes those to the server."
+  - id: c
+    label: "The Postgres MCP server (the process exposing the database tools)"
+  - id: d
+    label: "Your terminal"
+    explain: "The terminal hosts Claude Code but isn't part of the MCP protocol itself."
+answerIds:
+  - c
