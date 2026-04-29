@@ -1,0 +1,82 @@
+xp: 5
+estSeconds: 150
+concept: agent-loop-implementation
+prompt: |
+  Build the actual agent loop. Write `run_agent(question)` that:
+
+  - Starts with a `messages` list containing one user turn with `question`.
+  - Loops up to 5 times. Each iteration calls `fake_model(messages)`.
+  - If `response["stop_reason"]` is `"end_turn"`, return the text from
+    `response["content"][0]["text"]`.
+  - If it's `"tool_use"`, append the assistant turn AND a user turn
+    containing a `tool_result` with `content="42"` (we'll pretend every
+    tool returns 42). Then loop again.
+  - If the cap is hit without `end_turn`, return the string `"capped"`.
+
+  Then call it once and print the result.
+
+  Expected output:
+  ```
+  the answer is 42
+  ```
+starter: |
+  call_count = {"n": 0}
+
+  def fake_model(messages):
+      call_count["n"] += 1
+      if call_count["n"] == 1:
+          return {
+              "stop_reason": "tool_use",
+              "content": [{"type": "tool_use", "id": "toolu_a", "name": "calc", "input": {}}],
+          }
+      return {
+          "stop_reason": "end_turn",
+          "content": [{"type": "text", "text": "the answer is 42"}],
+      }
+
+  # define run_agent(question) below
+
+  print(run_agent("what's the meaning of life?"))
+grader:
+  kind: stdout-equality
+  expected: "the answer is 42"
+  normalize: collapse-trailing-newline
+solution: |
+  call_count = {"n": 0}
+
+  def fake_model(messages):
+      call_count["n"] += 1
+      if call_count["n"] == 1:
+          return {
+              "stop_reason": "tool_use",
+              "content": [{"type": "tool_use", "id": "toolu_a", "name": "calc", "input": {}}],
+          }
+      return {
+          "stop_reason": "end_turn",
+          "content": [{"type": "text", "text": "the answer is 42"}],
+      }
+
+  def run_agent(question):
+      messages = [{"role": "user", "content": question}]
+      for _ in range(5):
+          response = fake_model(messages)
+          if response["stop_reason"] == "end_turn":
+              return response["content"][0]["text"]
+          messages.append({"role": "assistant", "content": response["content"]})
+          tool_use = response["content"][0]
+          messages.append({
+              "role": "user",
+              "content": [{
+                  "type": "tool_result",
+                  "tool_use_id": tool_use["id"],
+                  "content": "42",
+              }],
+          })
+      return "capped"
+
+  print(run_agent("what's the meaning of life?"))
+hint:
+  - level: 1
+    body: 'Loop with `for _ in range(5)`. Inside: call the model, branch on `stop_reason`. On `end_turn` return the text. On `tool_use` append both turns.'
+  - level: 2
+    body: 'When appending the tool_result, read `tool_use_id` from `response["content"][0]["id"]` — never hardcode it.'

@@ -1,6 +1,6 @@
 {
   "version": "0.1.0",
-  "generatedAt": "2026-04-29T18:26:57.349Z",
+  "generatedAt": "2026-04-29T18:29:45.192Z",
   "chapters": [
     {
       "number": 1,
@@ -133,6 +133,15 @@
       "slug": "mcp",
       "title": "MCP — the Model Context Protocol",
       "blurb": "MCP is the new standard for plugging tools and data sources into AI agents. Learn what an MCP server actually is, how Claude Code lists tools, and why this is replacing one-off integrations everywhere.",
+      "lessonCount": 1,
+      "stepCount": 9,
+      "xpTotal": 32
+    },
+    {
+      "number": 16,
+      "slug": "agent-loops",
+      "title": "Agent loops — tool_use and the request/tool/respond cycle",
+      "blurb": "An agent isn't a magic. It's a while loop. Learn the actual cycle Claude Code, Cursor, and every other agent uses: model returns tool_use, you run the tool, you send the result back, repeat until end_turn.",
       "lessonCount": 1,
       "stepCount": 9,
       "xpTotal": 32

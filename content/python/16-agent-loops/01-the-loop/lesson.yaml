@@ -1,0 +1,14 @@
+slug: the-loop
+title: "stop_reason, tool_use, tool_result — the loop every agent runs"
+estMinutes: 9
+prerequisites: []
+order:
+  - 01-intro.read.md
+  - 02-which-stop-reason.mc.yaml
+  - 03-tool-result-shape.read.md
+  - 04-predict-the-next-call.predict.yaml
+  - 05-fill-the-stop-condition.fill.yaml
+  - 06-fix-the-tool-id.fix.yaml
+  - 07-fix-the-loop-exit.fix.yaml
+  - 08-write-the-loop.write.yaml
+  - 09-checkpoint.checkpoint.yaml

@@ -1,0 +1,6 @@
+number: 16
+slug: agent-loops
+title: "Agent loops — tool_use and the request/tool/respond cycle"
+blurb: "An agent isn't a magic. It's a while loop. Learn the actual cycle Claude Code, Cursor, and every other agent uses: model returns tool_use, you run the tool, you send the result back, repeat until end_turn."
+lessons:
+  - 01-the-loop

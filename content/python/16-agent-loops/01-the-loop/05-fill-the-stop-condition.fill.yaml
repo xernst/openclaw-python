@@ -1,0 +1,30 @@
+xp: 3
+estSeconds: 65
+concept: end-turn-stop-reason
+prompt: |
+  Cursor wrote an agent loop and left the exit condition unfilled.
+  The loop should break when the model is finished — that is, when
+  the response's `stop_reason` equals which string?
+
+  Stop reason: ___
+code: |
+  def fake_model(messages):
+      return {"stop_reason": "end_turn", "content": [{"type": "text", "text": "done"}]}
+
+  messages = [{"role": "user", "content": "hi"}]
+  while True:
+      response = fake_model(messages)
+      if response["stop_reason"] == "___":
+          print(response["content"][0]["text"])
+          break
+      # ... handle tool_use ...
+blanks:
+  - id: keyword
+    accept:
+      - end_turn
+    caseSensitive: true
+hint:
+  - level: 1
+    body: 'Two-word string with an underscore. It signals the model is done speaking.'
+  - level: 2
+    body: '`end_turn` — the standard "done" signal in the messages API.'

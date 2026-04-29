@@ -1,0 +1,145 @@
+xp: 8
+estSeconds: 180
+concept: agent-loop-checkpoint
+prompt: |
+  Final drill. Build a slightly bigger agent loop. Write
+  `run_agent(question, max_iterations)` that:
+
+  - Maintains a `messages` list, starting with one user turn.
+  - Calls `fake_model(messages)` up to `max_iterations` times.
+  - On `stop_reason == "end_turn"`: return the dict
+    `{"ok": True, "answer": <text>, "rounds": <iterations used>}`.
+  - On `stop_reason == "tool_use"`: run the tool by calling
+    `fake_tool(name, input)`, append the assistant turn + a user turn
+    with a `tool_result` carrying the tool's output, increment count,
+    and continue.
+  - If `max_iterations` is exhausted: return
+    `{"ok": False, "answer": "capped", "rounds": max_iterations}`.
+
+  Then the script will run two cases and print each result.
+
+  Expected output:
+  ```
+  ok=True rounds=2 answer=area is 50
+  ok=False rounds=2 answer=capped
+  ```
+starter: |
+  def fake_tool(name, input):
+      if name == "area":
+          return str(input["w"] * input["h"])
+      return "unknown"
+
+  good_responses = iter([
+      {
+          "stop_reason": "tool_use",
+          "content": [{"type": "tool_use", "id": "t1", "name": "area", "input": {"w": 5, "h": 10}}],
+      },
+      {
+          "stop_reason": "end_turn",
+          "content": [{"type": "text", "text": "area is 50"}],
+      },
+  ])
+
+  loop_responses = iter([
+      {
+          "stop_reason": "tool_use",
+          "content": [{"type": "tool_use", "id": "t1", "name": "noop", "input": {}}],
+      },
+      {
+          "stop_reason": "tool_use",
+          "content": [{"type": "tool_use", "id": "t2", "name": "noop", "input": {}}],
+      },
+      {
+          "stop_reason": "tool_use",
+          "content": [{"type": "tool_use", "id": "t3", "name": "noop", "input": {}}],
+      },
+  ])
+
+  current = {"iter": good_responses}
+
+  def fake_model(messages):
+      return next(current["iter"])
+
+  # define run_agent(question, max_iterations) below
+
+  current["iter"] = good_responses
+  r = run_agent("compute area", 5)
+  print(f"ok={r['ok']} rounds={r['rounds']} answer={r['answer']}")
+
+  current["iter"] = loop_responses
+  r = run_agent("loop forever", 2)
+  print(f"ok={r['ok']} rounds={r['rounds']} answer={r['answer']}")
+grader:
+  kind: stdout-equality
+  expected: |
+    ok=True rounds=2 answer=area is 50
+    ok=False rounds=2 answer=capped
+  normalize: collapse-trailing-newline
+solution: |
+  def fake_tool(name, input):
+      if name == "area":
+          return str(input["w"] * input["h"])
+      return "unknown"
+
+  good_responses = iter([
+      {
+          "stop_reason": "tool_use",
+          "content": [{"type": "tool_use", "id": "t1", "name": "area", "input": {"w": 5, "h": 10}}],
+      },
+      {
+          "stop_reason": "end_turn",
+          "content": [{"type": "text", "text": "area is 50"}],
+      },
+  ])
+
+  loop_responses = iter([
+      {
+          "stop_reason": "tool_use",
+          "content": [{"type": "tool_use", "id": "t1", "name": "noop", "input": {}}],
+      },
+      {
+          "stop_reason": "tool_use",
+          "content": [{"type": "tool_use", "id": "t2", "name": "noop", "input": {}}],
+      },
+      {
+          "stop_reason": "tool_use",
+          "content": [{"type": "tool_use", "id": "t3", "name": "noop", "input": {}}],
+      },
+  ])
+
+  current = {"iter": good_responses}
+
+  def fake_model(messages):
+      return next(current["iter"])
+
+  def run_agent(question, max_iterations):
+      messages = [{"role": "user", "content": question}]
+      for rounds in range(1, max_iterations + 1):
+          response = fake_model(messages)
+          if response["stop_reason"] == "end_turn":
+              return {
+                  "ok": True,
+                  "answer": response["content"][0]["text"],
+                  "rounds": rounds,
+              }
+          tool_use = response["content"][0]
+          tool_output = fake_tool(tool_use["name"], tool_use["input"])
+          messages.append({"role": "assistant", "content": response["content"]})
+          messages.append({
+              "role": "user",
+              "content": [{
+                  "type": "tool_result",
+                  "tool_use_id": tool_use["id"],
+                  "content": tool_output,
+              }],
+          })
+      return {"ok": False, "answer": "capped", "rounds": max_iterations}
+
+  current["iter"] = good_responses
+  r = run_agent("compute area", 5)
+  print(f"ok={r['ok']} rounds={r['rounds']} answer={r['answer']}")
+
+  current["iter"] = loop_responses
+  r = run_agent("loop forever", 2)
+  print(f"ok={r['ok']} rounds={r['rounds']} answer={r['answer']}")
+passThreshold: 0.66

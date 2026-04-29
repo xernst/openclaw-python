@@ -1,0 +1,258 @@
+{
+  "number": 16,
+  "slug": "agent-loops",
+  "title": "Agent loops — tool_use and the request/tool/respond cycle",
+  "blurb": "An agent isn't a magic. It's a while loop. Learn the actual cycle Claude Code, Cursor, and every other agent uses: model returns tool_use, you run the tool, you send the result back, repeat until end_turn.",
+  "lessons": [
+    {
+      "slug": "the-loop",
+      "title": "stop_reason, tool_use, tool_result — the loop every agent runs",
+      "estMinutes": 9,
+      "prerequisites": [],
+      "steps": [
+        {
+          "type": "read",
+          "id": "agent-loops/the-loop/s01-01-intro",
+          "xp": 1,
+          "hint": [],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 95,
+          "concept": "agent-loop-overview",
+          "body": "# An agent is a `while` loop with three rules\n\nThe word \"agent\" sounds magical. The implementation is anything but.\nClaude Code, Cursor, every coding agent you've used — they all run the\nsame five-step loop. Once you see it, you'll never be intimidated by\nthe term again.\n\n```\n1. Send messages + tool definitions to the model.\n2. Read the response.\n3. If stop_reason == \"end_turn\": print the text and STOP.\n4. If stop_reason == \"tool_use\": run the requested tool, append the\n   tool_result to messages, GOTO 1.\n5. (Bound the loop with a max iteration count to prevent runaways.)\n```\n\nThat's the agent loop. The model decides what to do; your code wires\nit to the world.\n\n## The three blocks you'll see in `content`\n\nAfter the model runs, `response.content` is a list of blocks. The two\nthat matter for agents:\n\n- `{\"type\": \"text\", \"text\": \"...\"}` — natural language for the user\n- `{\"type\": \"tool_use\", \"id\": \"...\", \"name\": \"...\", \"input\": {...}}` —\n  the model is asking you to run a tool\n\nWhen you respond back to the model, you send a `user` turn with a\nmatching `tool_result` block:\n\n```python\n{\n    \"role\": \"user\",\n    \"content\": [\n        {\n            \"type\": \"tool_result\",\n            \"tool_use_id\": \"toolu_01\",      # MUST match the tool_use id\n            \"content\": \"72°F, sunny\",\n        }\n    ],\n}\n```\n\nThe `tool_use_id` link is mandatory. The model needs to know *which*\ntool call this result belongs to, because it may have made several in\nparallel.\n\n## The four stop reasons you actually care about\n\n| `stop_reason` | What it means |\n|---------------|---------------|\n| `end_turn`    | Done. The model is finished. Exit the loop. |\n| `tool_use`    | Run the requested tools and call again. |\n| `max_tokens`  | The response was cut off. Increase budget or summarize. |\n| `stop_sequence` | A custom stop string was hit (rarely used). |\n\nIf your loop doesn't check `stop_reason`, you have two bugs waiting:\nignoring `tool_use` (the agent stalls) and never exiting on `end_turn`\n(infinite loop, dead API key).\n\n## Where AI specifically gets this wrong\n\n- **Treating any response as final.** Cursor's first agent attempt\n  almost always misses the `tool_use` branch and returns whatever\n  text was alongside the tool call as the \"answer.\" Wrong answer.\n- **Mismatched `tool_use_id`.** Hardcoding `\"id\": \"1\"` in the\n  tool_result instead of echoing the model's actual id. The model\n  rejects the next call.\n- **No iteration cap.** A misbehaving agent that loops on the same\n  tool call can drain a budget in minutes. Always cap at 8-16\n  iterations.\n\n> **Browser note:** real agent loops need network calls. We'll mimic\n> the model with a hardcoded function that returns either `tool_use`\n> or `end_turn` based on the conversation so far. Same loop, no wire.\n\nRun the editor. We inspect a single `tool_use` response — what your\nloop sees right before it has to run the requested tool.",
+          "cta": "Got it",
+          "code": "# one round-trip in an agent loop, hardcoded.\n# the model returned a tool_use block instead of stopping.\nresponse = {\n    \"role\": \"assistant\",\n    \"stop_reason\": \"tool_use\",\n    \"content\": [\n        {\"type\": \"text\", \"text\": \"Let me check the weather.\"},\n        {\n            \"type\": \"tool_use\",\n            \"id\": \"toolu_01\",\n            \"name\": \"get_weather\",\n            \"input\": {\"city\": \"Tokyo\"},\n        },\n    ],\n}\n\n# is the model done, or do we owe it a tool result?\nif response[\"stop_reason\"] == \"tool_use\":\n    # find the tool_use block in content\n    for block in response[\"content\"]:\n        if block[\"type\"] == \"tool_use\":\n            print(f\"call {block['name']} with {block['input']}\")\n            print(f\"tool_use_id = {block['id']}\")\n",
+          "runnable": true
+        },
+        {
+          "type": "mc",
+          "id": "agent-loops/the-loop/s02-02-which-stop-reason",
+          "xp": 2,
+          "hint": [],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 50,
+          "concept": "stop-reason-tool-use",
+          "prompt": "The agent loop just got back a response with `stop_reason ==\n\"tool_use\"`. What does your code do next?\n",
+          "options": [
+            {
+              "id": "a",
+              "label": "Print the text and exit",
+              "explain": "That's what `end_turn` means. `tool_use` means the model is asking you to run a tool — exiting now skips the actual work."
+            },
+            {
+              "id": "b",
+              "label": "Run the requested tool, append a tool_result block, and call the model again"
+            },
+            {
+              "id": "c",
+              "label": "Retry the same call",
+              "explain": "Re-sending the identical messages will produce the same tool_use response. You'd loop forever without ever running the tool."
+            },
+            {
+              "id": "d",
+              "label": "Raise an error",
+              "explain": "`tool_use` isn't an error condition — it's the normal mid-conversation signal. Errors come back as exceptions or `isError: true` from MCP."
+            }
+          ],
+          "answerIds": [
+            "b"
+          ],
+          "shuffle": false,
+          "code": "# the model's response includes both a text block and a tool_use block\nresponse = {\n    \"stop_reason\": \"tool_use\",\n    \"content\": [\n        {\"type\": \"text\", \"text\": \"I'll look that up.\"},\n        {\"type\": \"tool_use\", \"id\": \"toolu_a\", \"name\": \"search\", \"input\": {\"q\": \"best ramen tokyo\"}},\n    ],\n}\nprint(response[\"stop_reason\"])\n",
+          "runnable": true
+        },
+        {
+          "type": "read",
+          "id": "agent-loops/the-loop/s03-03-tool-result-shape",
+          "xp": 2,
+          "hint": [],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 80,
+          "concept": "tool-result-message-shape",
+          "body": "# The `tool_result` reply has to match the `tool_use` it answers\n\nOnce the model returns a `tool_use` block, your loop runs the actual\ntool, then sends the answer back as a *new user turn* — with a\n`tool_result` block inside.\n\n```python\n{\n    \"role\": \"user\",\n    \"content\": [\n        {\n            \"type\": \"tool_result\",\n            \"tool_use_id\": \"toolu_01\",      # must equal the tool_use id\n            \"content\": \"72F, partly cloudy\",\n        }\n    ],\n}\n```\n\nThree things to lock in:\n\n1. **The role flips back to `user`.** Even though *you* are responding\n   to the model, the protocol says your turn is the user turn. The\n   model never directly emits its own tool results.\n2. **`tool_use_id` is a hard link.** It must exactly equal the `id`\n   from the tool_use block. If you call the model again with a missing\n   or wrong id, the API returns 400.\n3. **Multiple tool calls in parallel are common.** The model can emit\n   *several* tool_use blocks in one assistant turn (e.g. \"read these\n   three files\"). Your reply must include one tool_result per\n   tool_use_id, in any order.\n\n## What the model sees on the next round\n\nThe model now has the full transcript: the user question, its own\ntool_use, and your tool_result. With that context, it usually returns a\nplain text response with `stop_reason == \"end_turn\"` — *\"It's 72°F and\npartly cloudy in Tokyo.\"*\n\nThat's the round trip. One iteration of the agent loop.\n\nRun the editor. We print the role of each turn so you can see the\n`user → assistant → user` (with tool_result) shape.",
+          "cta": "Got it",
+          "code": "# the conversation so far — what the agent loop has accumulated.\n# note how the assistant's tool_use becomes the user's tool_result\n# in the very next turn.\n\nmessages = [\n    {\"role\": \"user\", \"content\": \"What's the weather in Tokyo?\"},\n    {\n        \"role\": \"assistant\",\n        \"content\": [\n            {\"type\": \"text\", \"text\": \"Let me check.\"},\n            {\n                \"type\": \"tool_use\",\n                \"id\": \"toolu_01\",\n                \"name\": \"get_weather\",\n                \"input\": {\"city\": \"Tokyo\"},\n            },\n        ],\n    },\n    {\n        \"role\": \"user\",\n        \"content\": [\n            {\n                \"type\": \"tool_result\",\n                \"tool_use_id\": \"toolu_01\",\n                \"content\": \"72F, partly cloudy\",\n            }\n        ],\n    },\n]\n\nfor turn in messages:\n    print(turn[\"role\"])\n",
+          "runnable": true
+        },
+        {
+          "type": "predict",
+          "id": "agent-loops/the-loop/s04-04-predict-the-next-call",
+          "xp": 3,
+          "hint": [
+            {
+              "level": 1,
+              "body": "The loop calls the model, increments `iterations`, then checks `stop_reason`. It exits on `end_turn`, which is the third call.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Three iterations: tool_use, tool_use, end_turn.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 80,
+          "concept": "agent-loop-iteration-count",
+          "code": "# mock a tiny agent loop. fake_model returns tool_use twice, then end_turn.\ncall_count = {\"n\": 0}\n\ndef fake_model(messages):\n    call_count[\"n\"] += 1\n    if call_count[\"n\"] < 3:\n        return {\"stop_reason\": \"tool_use\"}\n    return {\"stop_reason\": \"end_turn\"}\n\nmessages = [{\"role\": \"user\", \"content\": \"do the thing\"}]\niterations = 0\nwhile True:\n    response = fake_model(messages)\n    iterations += 1\n    if response[\"stop_reason\"] == \"end_turn\":\n        break\n    messages.append({\"role\": \"assistant\", \"content\": []})\n    messages.append({\"role\": \"user\", \"content\": [{\"type\": \"tool_result\"}]})\n\nprint(f\"iterations: {iterations}\")\n",
+          "prompt": "Read the editor. The fake model returns `tool_use` on calls 1 and 2,\nthen `end_turn` on call 3. How many times does the loop iterate\nbefore exiting?\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "iterations: 3",
+            "normalize": "collapse-trailing-newline"
+          }
+        },
+        {
+          "type": "fill",
+          "id": "agent-loops/the-loop/s05-05-fill-the-stop-condition",
+          "xp": 3,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Two-word string with an underscore. It signals the model is done speaking.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "`end_turn` — the standard \"done\" signal in the messages API.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 65,
+          "concept": "end-turn-stop-reason",
+          "prompt": "Cursor wrote an agent loop and left the exit condition unfilled.\nThe loop should break when the model is finished — that is, when\nthe response's `stop_reason` equals which string?\n\nStop reason: ___\n",
+          "code": "def fake_model(messages):\n    return {\"stop_reason\": \"end_turn\", \"content\": [{\"type\": \"text\", \"text\": \"done\"}]}\n\nmessages = [{\"role\": \"user\", \"content\": \"hi\"}]\nwhile True:\n    response = fake_model(messages)\n    if response[\"stop_reason\"] == \"___\":\n        print(response[\"content\"][0][\"text\"])\n        break\n    # ... handle tool_use ...\n",
+          "blanks": [
+            {
+              "id": "keyword",
+              "accept": [
+                "end_turn"
+              ],
+              "caseSensitive": true,
+              "normalize": "trim"
+            }
+          ]
+        },
+        {
+          "type": "fix",
+          "id": "agent-loops/the-loop/s06-06-fix-the-tool-id",
+          "xp": 4,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Read the id from the model's `tool_use` block instead of hardcoding `\"1\"`.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Change line 9 to `\"tool_use_id\": tool_use_block[\"id\"],`. The id flows from the model, not your code.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 95,
+          "concept": "tool-use-id-must-match",
+          "brokenCode": "tool_use_block = {\n    \"type\": \"tool_use\",\n    \"id\": \"toolu_42\",\n    \"name\": \"search\",\n    \"input\": {\"q\": \"tokyo\"},\n}\n\nreply = {\n    \"tool_use_id\": \"1\",\n    \"content\": \"ok\",\n}\n\nif reply[\"tool_use_id\"] != tool_use_block[\"id\"]:\n    raise ValueError(\"tool_use_id mismatch\")\nprint(\"matched\")\n",
+          "prompt": "The agent loop built a `tool_result` with a hardcoded `tool_use_id`\nof `\"1\"`, but the model emitted `\"toolu_42\"`. The fake server raises\na `ValueError` on mismatch. Fix line 9 so the id is read from the\n`tool_use` block dynamically.\n\nExpected output:\n```\nmatched\n```\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "matched",
+            "normalize": "collapse-trailing-newline"
+          },
+          "bugLines": [
+            9
+          ],
+          "revealAfter": 4
+        },
+        {
+          "type": "fix",
+          "id": "agent-loops/the-loop/s07-07-fix-the-loop-exit",
+          "xp": 4,
+          "hint": [
+            {
+              "level": 1,
+              "body": "The loop should break on `end_turn`, not `tool_use`. `tool_use` is the signal to KEEP going.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Change line 13 to `if response[\"stop_reason\"] == \"end_turn\":`. That's the exit condition.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 100,
+          "concept": "agent-loop-must-check-stop-reason",
+          "brokenCode": "responses = [\n    {\"stop_reason\": \"tool_use\", \"content\": []},\n    {\"stop_reason\": \"end_turn\", \"content\": [{\"type\": \"text\", \"text\": \"done\"}]},\n]\ni = 0\n\ndef fake_model(messages):\n    nonlocal_i = i\n    return responses[nonlocal_i]\n\nwhile i < 5:\n    response = responses[i]\n    if response[\"stop_reason\"] == \"tool_use\":\n        break\n    i += 1\nprint(response[\"content\"][0][\"text\"] if response[\"content\"] else \"no text\")\n",
+          "prompt": "AI wrote an agent loop that checks `stop_reason == \"tool_use\"` to\nCONTINUE, but never checks for `end_turn` to STOP. Without an iteration\ncap, this would run forever in real life — here, the fake model returns\n`end_turn` after one round, and the loop spins past it because the\nbreak condition is wrong. Fix line 13 so the loop exits on `end_turn`.\n\nExpected output:\n```\ndone\n```\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "done",
+            "normalize": "collapse-trailing-newline"
+          },
+          "bugLines": [
+            13
+          ],
+          "revealAfter": 5
+        },
+        {
+          "type": "write",
+          "id": "agent-loops/the-loop/s08-08-write-the-loop",
+          "xp": 5,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Loop with `for _ in range(5)`. Inside: call the model, branch on `stop_reason`. On `end_turn` return the text. On `tool_use` append both turns.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "When appending the tool_result, read `tool_use_id` from `response[\"content\"][0][\"id\"]` — never hardcode it.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 150,
+          "concept": "agent-loop-implementation",
+          "prompt": "Build the actual agent loop. Write `run_agent(question)` that:\n\n- Starts with a `messages` list containing one user turn with `question`.\n- Loops up to 5 times. Each iteration calls `fake_model(messages)`.\n- If `response[\"stop_reason\"]` is `\"end_turn\"`, return the text from\n  `response[\"content\"][0][\"text\"]`.\n- If it's `\"tool_use\"`, append the assistant turn AND a user turn\n  containing a `tool_result` with `content=\"42\"` (we'll pretend every\n  tool returns 42). Then loop again.\n- If the cap is hit without `end_turn`, return the string `\"capped\"`.\n\nThen call it once and print the result.\n\nExpected output:\n```\nthe answer is 42\n```\n",
+          "starter": "call_count = {\"n\": 0}\n\ndef fake_model(messages):\n    call_count[\"n\"] += 1\n    if call_count[\"n\"] == 1:\n        return {\n            \"stop_reason\": \"tool_use\",\n            \"content\": [{\"type\": \"tool_use\", \"id\": \"toolu_a\", \"name\": \"calc\", \"input\": {}}],\n        }\n    return {\n        \"stop_reason\": \"end_turn\",\n        \"content\": [{\"type\": \"text\", \"text\": \"the answer is 42\"}],\n    }\n\n# define run_agent(question) below\n\nprint(run_agent(\"what's the meaning of life?\"))\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "the answer is 42",
+            "normalize": "collapse-trailing-newline"
+          },
+          "solution": "call_count = {\"n\": 0}\n\ndef fake_model(messages):\n    call_count[\"n\"] += 1\n    if call_count[\"n\"] == 1:\n        return {\n            \"stop_reason\": \"tool_use\",\n            \"content\": [{\"type\": \"tool_use\", \"id\": \"toolu_a\", \"name\": \"calc\", \"input\": {}}],\n        }\n    return {\n        \"stop_reason\": \"end_turn\",\n        \"content\": [{\"type\": \"text\", \"text\": \"the answer is 42\"}],\n    }\n\ndef run_agent(question):\n    messages = [{\"role\": \"user\", \"content\": question}]\n    for _ in range(5):\n        response = fake_model(messages)\n        if response[\"stop_reason\"] == \"end_turn\":\n            return response[\"content\"][0][\"text\"]\n        messages.append({\"role\": \"assistant\", \"content\": response[\"content\"]})\n        tool_use = response[\"content\"][0]\n        messages.append({\n            \"role\": \"user\",\n            \"content\": [{\n                \"type\": \"tool_result\",\n                \"tool_use_id\": tool_use[\"id\"],\n                \"content\": \"42\",\n            }],\n        })\n    return \"capped\"\n\nprint(run_agent(\"what's the meaning of life?\"))\n",
+          "hiddenTests": []
+        },
+        {
+          "type": "checkpoint",
+          "id": "agent-loops/the-loop/s09-09-checkpoint",
+          "xp": 8,
+          "hint": [],
+          "personalize": false,
+          "phase": "check",
+          "estSeconds": 180,
+          "concept": "agent-loop-checkpoint",
+          "prompt": "Final drill. Build a slightly bigger agent loop. Write\n`run_agent(question, max_iterations)` that:\n\n- Maintains a `messages` list, starting with one user turn.\n- Calls `fake_model(messages)` up to `max_iterations` times.\n- On `stop_reason == \"end_turn\"`: return the dict\n  `{\"ok\": True, \"answer\": <text>, \"rounds\": <iterations used>}`.\n- On `stop_reason == \"tool_use\"`: run the tool by calling\n  `fake_tool(name, input)`, append the assistant turn + a user turn\n  with a `tool_result` carrying the tool's output, increment count,\n  and continue.\n- If `max_iterations` is exhausted: return\n  `{\"ok\": False, \"answer\": \"capped\", \"rounds\": max_iterations}`.\n\nThen the script will run two cases and print each result.\n\nExpected output:\n```\nok=True rounds=2 answer=area is 50\nok=False rounds=2 answer=capped\n```\n",
+          "starter": "def fake_tool(name, input):\n    if name == \"area\":\n        return str(input[\"w\"] * input[\"h\"])\n    return \"unknown\"\n\ngood_responses = iter([\n    {\n        \"stop_reason\": \"tool_use\",\n        \"content\": [{\"type\": \"tool_use\", \"id\": \"t1\", \"name\": \"area\", \"input\": {\"w\": 5, \"h\": 10}}],\n    },\n    {\n        \"stop_reason\": \"end_turn\",\n        \"content\": [{\"type\": \"text\", \"text\": \"area is 50\"}],\n    },\n])\n\nloop_responses = iter([\n    {\n        \"stop_reason\": \"tool_use\",\n        \"content\": [{\"type\": \"tool_use\", \"id\": \"t1\", \"name\": \"noop\", \"input\": {}}],\n    },\n    {\n        \"stop_reason\": \"tool_use\",\n        \"content\": [{\"type\": \"tool_use\", \"id\": \"t2\", \"name\": \"noop\", \"input\": {}}],\n    },\n    {\n        \"stop_reason\": \"tool_use\",\n        \"content\": [{\"type\": \"tool_use\", \"id\": \"t3\", \"name\": \"noop\", \"input\": {}}],\n    },\n])\n\ncurrent = {\"iter\": good_responses}\n\ndef fake_model(messages):\n    return next(current[\"iter\"])\n\n# define run_agent(question, max_iterations) below\n\ncurrent[\"iter\"] = good_responses\nr = run_agent(\"compute area\", 5)\nprint(f\"ok={r['ok']} rounds={r['rounds']} answer={r['answer']}\")\n\ncurrent[\"iter\"] = loop_responses\nr = run_agent(\"loop forever\", 2)\nprint(f\"ok={r['ok']} rounds={r['rounds']} answer={r['answer']}\")\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "ok=True rounds=2 answer=area is 50\nok=False rounds=2 answer=capped\n",
+            "normalize": "collapse-trailing-newline"
+          },
+          "solution": "def fake_tool(name, input):\n    if name == \"area\":\n        return str(input[\"w\"] * input[\"h\"])\n    return \"unknown\"\n\ngood_responses = iter([\n    {\n        \"stop_reason\": \"tool_use\",\n        \"content\": [{\"type\": \"tool_use\", \"id\": \"t1\", \"name\": \"area\", \"input\": {\"w\": 5, \"h\": 10}}],\n    },\n    {\n        \"stop_reason\": \"end_turn\",\n        \"content\": [{\"type\": \"text\", \"text\": \"area is 50\"}],\n    },\n])\n\nloop_responses = iter([\n    {\n        \"stop_reason\": \"tool_use\",\n        \"content\": [{\"type\": \"tool_use\", \"id\": \"t1\", \"name\": \"noop\", \"input\": {}}],\n    },\n    {\n        \"stop_reason\": \"tool_use\",\n        \"content\": [{\"type\": \"tool_use\", \"id\": \"t2\", \"name\": \"noop\", \"input\": {}}],\n    },\n    {\n        \"stop_reason\": \"tool_use\",\n        \"content\": [{\"type\": \"tool_use\", \"id\": \"t3\", \"name\": \"noop\", \"input\": {}}],\n    },\n])\n\ncurrent = {\"iter\": good_responses}\n\ndef fake_model(messages):\n    return next(current[\"iter\"])\n\ndef run_agent(question, max_iterations):\n    messages = [{\"role\": \"user\", \"content\": question}]\n    for rounds in range(1, max_iterations + 1):\n        response = fake_model(messages)\n        if response[\"stop_reason\"] == \"end_turn\":\n            return {\n                \"ok\": True,\n                \"answer\": response[\"content\"][0][\"text\"],\n                \"rounds\": rounds,\n            }\n        tool_use = response[\"content\"][0]\n        tool_output = fake_tool(tool_use[\"name\"], tool_use[\"input\"])\n        messages.append({\"role\": \"assistant\", \"content\": response[\"content\"]})\n        messages.append({\n            \"role\": \"user\",\n            \"content\": [{\n                \"type\": \"tool_result\",\n                \"tool_use_id\": tool_use[\"id\"],\n                \"content\": tool_output,\n            }],\n        })\n    return {\"ok\": False, \"answer\": \"capped\", \"rounds\": max_iterations}\n\ncurrent[\"iter\"] = good_responses\nr = run_agent(\"compute area\", 5)\nprint(f\"ok={r['ok']} rounds={r['rounds']} answer={r['answer']}\")\n\ncurrent[\"iter\"] = loop_responses\nr = run_agent(\"loop forever\", 2)\nprint(f\"ok={r['ok']} rounds={r['rounds']} answer={r['answer']}\")\n",
+          "passThreshold": 0.66
+        }
+      ],
+      "xpTotal": 32
+    }
+  ],
+  "xpTotal": 32
+}

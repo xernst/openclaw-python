@@ -1,0 +1,43 @@
+xp: 4
+estSeconds: 100
+concept: agent-loop-must-check-stop-reason
+prompt: |
+  AI wrote an agent loop that checks `stop_reason == "tool_use"` to
+  CONTINUE, but never checks for `end_turn` to STOP. Without an iteration
+  cap, this would run forever in real life — here, the fake model returns
+  `end_turn` after one round, and the loop spins past it because the
+  break condition is wrong. Fix line 13 so the loop exits on `end_turn`.
+
+  Expected output:
+  ```
+  done
+  ```
+brokenCode: |
+  responses = [
+      {"stop_reason": "tool_use", "content": []},
+      {"stop_reason": "end_turn", "content": [{"type": "text", "text": "done"}]},
+  ]
+  i = 0
+
+  def fake_model(messages):
+      nonlocal_i = i
+      return responses[nonlocal_i]
+
+  while i < 5:
+      response = responses[i]
+      if response["stop_reason"] == "tool_use":
+          break
+      i += 1
+  print(response["content"][0]["text"] if response["content"] else "no text")
+bugLines:
+  - 13
+grader:
+  kind: stdout-equality
+  expected: "done"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: 'The loop should break on `end_turn`, not `tool_use`. `tool_use` is the signal to KEEP going.'
+  - level: 2
+    body: 'Change line 13 to `if response["stop_reason"] == "end_turn":`. That''s the exit condition.'
+revealAfter: 5

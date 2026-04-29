@@ -1,0 +1,41 @@
+xp: 4
+estSeconds: 95
+concept: tool-use-id-must-match
+prompt: |
+  The agent loop built a `tool_result` with a hardcoded `tool_use_id`
+  of `"1"`, but the model emitted `"toolu_42"`. The fake server raises
+  a `ValueError` on mismatch. Fix line 9 so the id is read from the
+  `tool_use` block dynamically.
+
+  Expected output:
+  ```
+  matched
+  ```
+brokenCode: |
+  tool_use_block = {
+      "type": "tool_use",
+      "id": "toolu_42",
+      "name": "search",
+      "input": {"q": "tokyo"},
+  }
+
+  reply = {
+      "tool_use_id": "1",
+      "content": "ok",
+  }
+
+  if reply["tool_use_id"] != tool_use_block["id"]:
+      raise ValueError("tool_use_id mismatch")
+  print("matched")
+bugLines:
+  - 9
+grader:
+  kind: stdout-equality
+  expected: "matched"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: 'Read the id from the model''s `tool_use` block instead of hardcoding `"1"`.'
+  - level: 2
+    body: 'Change line 9 to `"tool_use_id": tool_use_block["id"],`. The id flows from the model, not your code.'
+revealAfter: 4

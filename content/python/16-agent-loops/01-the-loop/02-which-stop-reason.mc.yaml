@@ -1,0 +1,30 @@
+xp: 2
+estSeconds: 50
+concept: stop-reason-tool-use
+code: |
+  # the model's response includes both a text block and a tool_use block
+  response = {
+      "stop_reason": "tool_use",
+      "content": [
+          {"type": "text", "text": "I'll look that up."},
+          {"type": "tool_use", "id": "toolu_a", "name": "search", "input": {"q": "best ramen tokyo"}},
+      ],
+  }
+  print(response["stop_reason"])
+prompt: |
+  The agent loop just got back a response with `stop_reason ==
+  "tool_use"`. What does your code do next?
+options:
+  - id: a
+    label: "Print the text and exit"
+    explain: "That's what `end_turn` means. `tool_use` means the model is asking you to run a tool — exiting now skips the actual work."
+  - id: b
+    label: "Run the requested tool, append a tool_result block, and call the model again"
+  - id: c
+    label: "Retry the same call"
+    explain: "Re-sending the identical messages will produce the same tool_use response. You'd loop forever without ever running the tool."
+  - id: d
+    label: "Raise an error"
+    explain: "`tool_use` isn't an error condition — it's the normal mid-conversation signal. Errors come back as exceptions or `isError: true` from MCP."
+answerIds:
+  - b
