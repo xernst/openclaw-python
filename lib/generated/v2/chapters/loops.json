@@ -1,0 +1,586 @@
+{
+  "number": 4,
+  "slug": "loops",
+  "title": "Loops — predict the output",
+  "blurb": "AI writes a loop every time you say *for each*. Half the time it's wrong by one. Read it before you trust it.",
+  "lessons": [
+    {
+      "slug": "predict-the-output",
+      "title": "Loops — read it, predict it, then trust it",
+      "estMinutes": 8,
+      "prerequisites": [],
+      "steps": [
+        {
+          "type": "read",
+          "id": "loops/predict-the-output/s01-01-intro",
+          "xp": 1,
+          "hint": [],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 30,
+          "concept": "for-loop-over-list",
+          "body": "# A loop is whatever AI writes when you say *for each*\n\nIf you've ever asked Claude *go through every row in this CSV and...*, that\n\"go through every\" is a loop.\n\nThe shape on the right:\n\n- `for pet in pets:` — start a loop. `pet` is the temporary name for whatever\n  item the loop is on right now.\n- `print(pet)` — runs once per item, with `pet` rebound each trip.\n\nHit **Run**. The same `print(pet)` line runs three times — once with `pet`\nas `\"luna\"`, once as `\"moose\"`, once as `\"biscuit\"`.",
+          "cta": "Got it",
+          "code": "pets = [\"luna\", \"moose\", \"biscuit\"]\nfor pet in pets:\n    print(pet)\n",
+          "runnable": true
+        },
+        {
+          "type": "mc",
+          "id": "loops/predict-the-output/s02-02-which-loop-shape",
+          "xp": 2,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Python's loop keyword is `for`. The connector is `in`. No parens, no `of`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 35,
+          "concept": "loop-syntax-rules",
+          "prompt": "Cursor offered four lines that could go after `pets = [\"luna\", \"moose\"]`.\nOnly one is valid Python that walks through the list. Which one?\n",
+          "options": [
+            {
+              "id": "a",
+              "label": "`for pet of pets:`",
+              "explain": "`of` is JavaScript. Python uses `in`."
+            },
+            {
+              "id": "b",
+              "label": "`for pet in pets:`"
+            },
+            {
+              "id": "c",
+              "label": "`foreach pet in pets:`",
+              "explain": "`foreach` is C# / PHP. Python's keyword is just `for`."
+            },
+            {
+              "id": "d",
+              "label": "`for (pet in pets):`",
+              "explain": "Python doesn't wrap the loop header in parens."
+            }
+          ],
+          "answerIds": [
+            "b"
+          ],
+          "shuffle": false,
+          "code": "pets = [\"luna\", \"moose\"]\n",
+          "runnable": true
+        },
+        {
+          "type": "read",
+          "id": "loops/predict-the-output/s03-03-range",
+          "xp": 1,
+          "hint": [],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 40,
+          "concept": "range-function",
+          "body": "# `range` makes numbers, and the end is *exclusive*\n\nWhen you don't have a list to walk through and just want to do something\n*N times*, AI reaches for `range`.\n\nTwo rules that catch every newcomer:\n\n- `range(3)` produces `0, 1, 2` — three numbers, starting at zero.\n- `range(1, 4)` produces `1, 2, 3` — the **second number is the stop, and\n  Python stops *before* it**, never on it.\n\nRun the code. The first loop prints `0, 1, 2`. The second prints `1, 2, 3`.\nThe `4` never appears.\n\nThis off-by-one is the single most common loop bug AI ships. Whenever a\nrange looks \"one short\" or \"one over,\" check the `range()` boundaries first.",
+          "cta": "Got it",
+          "code": "for i in range(3):\n    print(i)\n\nprint(\"---\")\n\nfor i in range(1, 4):\n    print(i)\n",
+          "runnable": true
+        },
+        {
+          "type": "predict",
+          "id": "loops/predict-the-output/s04-04-predict-the-list-loop",
+          "xp": 3,
+          "hint": [
+            {
+              "level": 1,
+              "body": "The loop runs three times. Each trip, `p.upper()` returns the uppercase version.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "`CAT`, `DOG`, `SNAIL` — each on its own line.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 60,
+          "concept": "loop-with-string-method",
+          "code": "pets = [\"cat\", \"dog\", \"snail\"]\nfor p in pets:\n    print(p.upper())\n",
+          "prompt": "What does this print? One pet per line, in order.\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "CAT\nDOG\nSNAIL\n",
+            "normalize": "collapse-trailing-newline"
+          }
+        },
+        {
+          "type": "predict",
+          "id": "loops/predict-the-output/s05-05-predict-the-range",
+          "xp": 3,
+          "hint": [
+            {
+              "level": 1,
+              "body": "`range(1, 5)` produces `1, 2, 3, 4` — the `5` is the stop, Python never reaches it.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "`1 + 2 + 3 + 4` is `10`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 60,
+          "concept": "range-exclusive-stop",
+          "code": "total = 0\nfor i in range(1, 5):\n    total = total + i\nprint(total)\n",
+          "prompt": "This adds up some numbers. What's the final total?\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "10",
+            "normalize": "collapse-trailing-newline"
+          }
+        },
+        {
+          "type": "fill",
+          "id": "loops/predict-the-output/s06-06-fill-the-loop-variable",
+          "xp": 3,
+          "hint": [
+            {
+              "level": 1,
+              "body": "`dict.items()` hands back two values per trip — the key and the value. Both blanks need the same name you pick for the value.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "`score` is the obvious one. `for name, score in scores.items():` then `print(f\"{name}: {score}\")`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 50,
+          "concept": "dict-items-iteration",
+          "prompt": "Cursor wrote a loop that walks through a dict and prints each name and score.\nThe loop header is missing the second loop variable. Fill it in.\n```python\nscores = {\"maya\": 92, \"marcus\": 78}\nfor name, ___ in scores.items():\n    print(f\"{name}: {___}\")\n```\nBoth blanks take the same name.\n",
+          "blanks": [
+            {
+              "id": "var1",
+              "accept": [
+                "score",
+                "points",
+                "value",
+                "v"
+              ],
+              "caseSensitive": true,
+              "normalize": "trim"
+            },
+            {
+              "id": "var2",
+              "accept": [
+                "score",
+                "points",
+                "value",
+                "v"
+              ],
+              "caseSensitive": true,
+              "normalize": "trim"
+            }
+          ]
+        },
+        {
+          "type": "fix",
+          "id": "loops/predict-the-output/s07-07-fix-the-off-by-one",
+          "xp": 4,
+          "hint": [
+            {
+              "level": 1,
+              "body": "`range`'s second argument is the stop, and Python stops *before* it. To include `5`, the stop has to be `6`.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Change `range(1, 5)` to `range(1, 6)`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 75,
+          "concept": "range-off-by-one",
+          "brokenCode": "for i in range(1, 5):\n    print(i)\n",
+          "prompt": "Claude wrote a loop that's supposed to print `1, 2, 3, 4, 5` (one per line)\nbut it stops at `4`. This is the most common loop bug AI ships.\n\nFix line 1 so the loop prints all five numbers.\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "1\n2\n3\n4\n5\n",
+            "normalize": "collapse-trailing-newline"
+          },
+          "bugLines": [
+            1
+          ],
+          "revealAfter": 4
+        },
+        {
+          "type": "fix",
+          "id": "loops/predict-the-output/s08-08-fix-the-dict-loop",
+          "xp": 4,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Looping `for x in some_dict` hands you keys only. To get keys *and* values, you need to ask for both.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Change `scores` to `scores.items()` on line 2.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 75,
+          "concept": "dict-default-iteration",
+          "brokenCode": "scores = {\"maya\": 92, \"marcus\": 78}\nfor name, score in scores:\n    print(f\"{name}: {score}\")\n",
+          "prompt": "Cursor wrote this expecting it to print `maya: 92` and `marcus: 78`. Instead\nit crashes with a `ValueError` because looping a dict directly only hands you\nthe keys, not the keys *and* values.\n\nFix line 2 so the loop prints both lines.\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "maya: 92\nmarcus: 78\n",
+            "normalize": "collapse-trailing-newline"
+          },
+          "bugLines": [
+            2
+          ],
+          "revealAfter": 4
+        },
+        {
+          "type": "write",
+          "id": "loops/predict-the-output/s09-09-write-sum-loop",
+          "xp": 5,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Two-line loop. Header: `for n in nums:`. Body: `total = total + n`, indented.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "`for n in nums:` then on the next line, indented, `total = total + n`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 90,
+          "concept": "accumulator-loop",
+          "prompt": "Write a loop that sums every number in `nums = [10, 20, 30, 40]` and prints\nthe total.\n\nExpected output:\n```\n100\n```\n",
+          "starter": "nums = [10, 20, 30, 40]\ntotal = 0\n# your loop here:\n\nprint(total)\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "100",
+            "normalize": "collapse-trailing-newline"
+          },
+          "solution": "nums = [10, 20, 30, 40]\ntotal = 0\nfor n in nums:\n    total = total + n\nprint(total)\n",
+          "hiddenTests": []
+        },
+        {
+          "type": "checkpoint",
+          "id": "loops/predict-the-output/s10-10-checkpoint",
+          "xp": 8,
+          "hint": [
+            {
+              "level": 1,
+              "body": "`for user in users:` walks through the list. Inside, reach into each user's dict for `name` and `score`.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "`for user in users:` then `print(f\"{user['name']}: {user['score']}\")`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "check",
+          "estSeconds": 120,
+          "concept": "loops-recap",
+          "prompt": "One last thing. AI handed back a list of three users with scores. Your job:\nloop through them and print each user's name and score on its own line, in\nthe format `name: score`.\n\nExpected output:\n```\nmaya: 92\nmarcus: 78\npriya: 88\n```\n",
+          "starter": "users = [\n    {\"name\": \"maya\", \"score\": 92},\n    {\"name\": \"marcus\", \"score\": 78},\n    {\"name\": \"priya\", \"score\": 88},\n]\n# your loop here:\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "maya: 92\nmarcus: 78\npriya: 88\n",
+            "normalize": "collapse-trailing-newline"
+          },
+          "solution": "users = [\n    {\"name\": \"maya\", \"score\": 92},\n    {\"name\": \"marcus\", \"score\": 78},\n    {\"name\": \"priya\", \"score\": 88},\n]\nfor user in users:\n    print(f\"{user['name']}: {user['score']}\")\n",
+          "passThreshold": 0.66
+        }
+      ],
+      "xpTotal": 34
+    },
+    {
+      "slug": "while-and-break",
+      "title": "while, break, and the infinite loop AI ships",
+      "estMinutes": 7,
+      "prerequisites": [],
+      "steps": [
+        {
+          "type": "read",
+          "id": "loops/while-and-break/s01-01-intro",
+          "xp": 1,
+          "hint": [],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 40,
+          "concept": "while-loop",
+          "body": "# `while` keeps going until the condition flips\n\nA `for` loop runs once per item in a collection. A `while` loop runs as long\nas a condition is `True`. When the condition becomes `False`, the loop stops\nand the script moves on.\n\nWhen you tell Cursor *\"keep retrying until the API responds\"* or *\"loop\nuntil the user types quit,\"* the thing it reaches for is `while`.\n\nThe shape on the right reads as:\n\n- `while count > 0:` — keep going as long as `count` is positive\n- `count -= 1` — make the condition closer to false each pass\n\nHit **Run**. Three iterations, then liftoff.\n\nThe trap: if the body never changes the condition, the loop never ends.\nThat's the bug we're learning to spot.",
+          "cta": "Got it",
+          "code": "count = 3\nwhile count > 0:\n    print(f\"countdown: {count}\")\n    count -= 1\n\nprint(\"liftoff\")\n",
+          "runnable": true
+        },
+        {
+          "type": "mc",
+          "id": "loops/while-and-break/s02-02-which-while-shape",
+          "xp": 2,
+          "hint": [
+            {
+              "level": 1,
+              "body": "A `while` loop stops only when the body changes whatever the condition is testing. One option never touches the variable in its condition.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Option C never decrements `n`. The condition `n > 0` stays `True` forever — that's the infinite loop AI ships when it forgets the `n -= 1` line.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 40,
+          "concept": "while-syntax",
+          "prompt": "Four `while` loops. Three of them eventually stop. One runs forever.\nWhich one is the infinite loop?\n",
+          "options": [
+            {
+              "id": "a",
+              "label": "`n = 5`<br>`while n > 0:`<br>&nbsp;&nbsp;&nbsp;&nbsp;`print(n)`<br>&nbsp;&nbsp;&nbsp;&nbsp;`n -= 1`",
+              "explain": "`n` shrinks by 1 each pass. After 5 iterations, `n` is `0` and the condition fails. Stops."
+            },
+            {
+              "id": "b",
+              "label": "`n = 0`<br>`while n < 3:`<br>&nbsp;&nbsp;&nbsp;&nbsp;`print(n)`<br>&nbsp;&nbsp;&nbsp;&nbsp;`n += 1`",
+              "explain": "`n` grows from 0 to 3, then the condition fails. Stops."
+            },
+            {
+              "id": "c",
+              "label": "`n = 5`<br>`while n > 0:`<br>&nbsp;&nbsp;&nbsp;&nbsp;`print(n)`"
+            },
+            {
+              "id": "d",
+              "label": "`n = 10`<br>`while n != 0:`<br>&nbsp;&nbsp;&nbsp;&nbsp;`n -= 2`",
+              "explain": "`n` shrinks by 2 each pass — 10, 8, 6, 4, 2, 0. The condition flips when `n` hits zero. Stops."
+            }
+          ],
+          "answerIds": [
+            "c"
+          ],
+          "shuffle": false,
+          "code": "# a while loop that actually stops:\nn = 5\nwhile n > 0:\n    print(n)\n    n -= 1\n",
+          "runnable": true
+        },
+        {
+          "type": "read",
+          "id": "loops/while-and-break/s03-03-break-and-continue",
+          "xp": 1,
+          "hint": [],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 50,
+          "concept": "break-continue",
+          "body": "# `break` ends the loop. `continue` skips one pass.\n\nTwo loop-control keywords. Both work in `for` and `while` loops. AI uses\nthem constantly to bail out early or skip a single bad item.\n\n- `break` — exit the loop right now, don't finish the rest\n- `continue` — abandon this pass, jump to the next iteration\n\nRun the code on the right.\n\n- The first loop counts `0, 1, 2, 3` and then `break` ends it before `4`\n- The second loop counts `0, 1, 3, 4` — `continue` skips `2` but the loop\n  keeps going\n\nThe trap: `break` is final. If you put it inside an `if` that's always true,\nthe loop runs exactly once. We'll fix one of those in a minute.",
+          "cta": "Got it",
+          "code": "# break stops the loop entirely\nfor n in range(10):\n    if n == 4:\n        break\n    print(f\"n: {n}\")\n\nprint(\"---\")\n\n# continue skips the rest of this pass and goes to the next\nfor n in range(5):\n    if n == 2:\n        continue\n    print(f\"m: {n}\")\n",
+          "runnable": true
+        },
+        {
+          "type": "predict",
+          "id": "loops/while-and-break/s04-04-predict-the-while",
+          "xp": 3,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Track `total` step by step: 1, then 3, then 6, then 10, then 15. The check happens *after* adding.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "After adding `5`, total is `15`. That's `> 10`, so `break` fires. Final value is `15`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 60,
+          "concept": "while-with-break",
+          "code": "total = 0\nn = 1\nwhile n <= 100:\n    total += n\n    if total > 10:\n        break\n    n += 1\n\nprint(total)\n",
+          "prompt": "This loop adds `1, 2, 3, ...` to `total` and stops as soon as `total`\nexceeds `10`. What does it print?\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "15",
+            "normalize": "collapse-trailing-newline"
+          }
+        },
+        {
+          "type": "fill",
+          "id": "loops/while-and-break/s05-05-fill-the-condition",
+          "xp": 3,
+          "hint": [
+            {
+              "level": 1,
+              "body": "There's exactly one Python keyword that loops based on a condition (not a collection).",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "It's `while`. The shape is `while <condition>:` followed by an indented body.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 55,
+          "concept": "while-keyword",
+          "prompt": "Cursor wrote a loop that should run as long as `attempts` is less than `3`.\nThe loop keyword is missing. Fill it in.\n```python\nattempts = 0\n___ attempts < 3:\n    print(f\"attempt {attempts + 1}\")\n    attempts += 1\n```\n",
+          "blanks": [
+            {
+              "id": "keyword",
+              "accept": [
+                "while"
+              ],
+              "caseSensitive": true,
+              "normalize": "trim"
+            }
+          ]
+        },
+        {
+          "type": "fix",
+          "id": "loops/while-and-break/s06-06-fix-the-infinite-loop",
+          "xp": 4,
+          "hint": [
+            {
+              "level": 1,
+              "body": "The condition is `count > 0`. The body has to make `count` smaller each pass or it loops forever.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Replace the comment on line 4 with `count -= 1`. That's the line AI forgets to write about a third of the time.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 80,
+          "concept": "missing-decrement",
+          "brokenCode": "count = 5\nwhile count > 0:\n    print(count)\n    # missing: a line that decreases count\n",
+          "prompt": "Claude wrote this and Pyodide will hang if you run it. The loop is supposed\nto count down from `5` to `1`, but the body never changes `count`, so the\ncondition `count > 0` stays `True` forever.\n\nAdd the missing line so the loop actually stops, and the script prints\n`5`, `4`, `3`, `2`, `1` each on its own line.\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "5\n4\n3\n2\n1\n",
+            "normalize": "collapse-trailing-newline"
+          },
+          "bugLines": [
+            4
+          ],
+          "revealAfter": 4
+        },
+        {
+          "type": "fix",
+          "id": "loops/while-and-break/s07-07-fix-the-break",
+          "xp": 4,
+          "hint": [
+            {
+              "level": 1,
+              "body": "`break` ends the whole loop. The prompt asks for a *skip*, not a stop. There's a different keyword for that.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Change `break` to `continue` on line 3. `continue` skips the rest of this pass and goes to the next iteration.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 80,
+          "concept": "break-vs-continue",
+          "brokenCode": "for n in range(1, 7):\n    if n == 4:\n        break\n    print(n)\n",
+          "prompt": "Cursor wrote a loop that should print every number from `1` to `6`,\n*skipping* `4`. Instead, the loop stops dead at `4` and never prints `5`\nor `6`. The wrong keyword is on line 3.\n\nFix it so the output is `1`, `2`, `3`, `5`, `6` — each on its own line.\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "1\n2\n3\n5\n6\n",
+            "normalize": "collapse-trailing-newline"
+          },
+          "bugLines": [
+            3
+          ],
+          "revealAfter": 4
+        },
+        {
+          "type": "write",
+          "id": "loops/while-and-break/s08-08-write-countdown",
+          "xp": 5,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Two lines inside the loop: a `print(n)` and a line that decreases `n` by 2. Condition is `n > 0`.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "`while n > 0:` then `print(n)` and `n -= 2` indented under it. The loop stops when `n` reaches `0`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 100,
+          "concept": "write-while-loop",
+          "prompt": "Write a `while` loop that starts with the number `10` and counts down by 2,\nprinting each value on its own line, until the value is no longer positive.\n\nExpected output:\n```\n10\n8\n6\n4\n2\n```\n",
+          "starter": "n = 10\n\n# while loop below:\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "10\n8\n6\n4\n2\n",
+            "normalize": "collapse-trailing-newline"
+          },
+          "solution": "n = 10\nwhile n > 0:\n    print(n)\n    n -= 2\n",
+          "hiddenTests": []
+        },
+        {
+          "type": "checkpoint",
+          "id": "loops/while-and-break/s09-09-checkpoint",
+          "xp": 8,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Inside the `if`, you need a `break`. Outside the `if` but still inside the `while`, you need `i += 1`. Both fixes.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Replace the first `# missing` with `break`. Replace the second with `i += 1`. The `break` belongs inside the `if`, the increment belongs after it.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "check",
+          "estSeconds": 130,
+          "concept": "while-break-recap",
+          "prompt": "Last one. Cursor wrote a \"find the first match\" loop that walks through a\nlist of usernames and stops as soon as it finds one starting with `\"a\"`.\n\nTwo things are broken: the loop variable never advances (so it'll loop\nforever on the first name), and the `break` is missing — even if the loop\ndid advance, it would scan past the first match.\n\nFix both bugs so the script prints `found: alex`.\n",
+          "starter": "names = [\"sam\", \"alex\", \"jordan\", \"ari\"]\ni = 0\nfound = None\n\nwhile i < len(names):\n    if names[i].startswith(\"a\"):\n        found = names[i]\n        # missing: stop the loop here\n    # missing: advance i\n\nprint(f\"found: {found}\")\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "found: alex",
+            "normalize": "collapse-trailing-newline"
+          },
+          "solution": "names = [\"sam\", \"alex\", \"jordan\", \"ari\"]\ni = 0\nfound = None\n\nwhile i < len(names):\n    if names[i].startswith(\"a\"):\n        found = names[i]\n        break\n    i += 1\n\nprint(f\"found: {found}\")\n",
+          "passThreshold": 0.66
+        }
+      ],
+      "xpTotal": 31
+    }
+  ],
+  "xpTotal": 65
+}

@@ -1,0 +1,514 @@
+{
+  "number": 6,
+  "slug": "tracebacks",
+  "title": "Tracebacks — Cursor wrote this and crashed",
+  "blurb": "When Python crashes, it tells you exactly what happened and where. Most non-engineers panic at the wall of text. You're going to learn to read it.",
+  "lessons": [
+    {
+      "slug": "reading-the-stack",
+      "title": "Tracebacks — read the wall of text",
+      "estMinutes": 7,
+      "prerequisites": [],
+      "steps": [
+        {
+          "type": "read",
+          "id": "tracebacks/reading-the-stack/s01-01-anatomy",
+          "xp": 1,
+          "hint": [],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 50,
+          "concept": "traceback-anatomy",
+          "body": "# A traceback is a map. Read bottom-up.\n\nWhen Python crashes, it prints a wall of text called a **traceback**. Most\nnon-coders panic at it. AI builders read it.\n\nThe structure is always the same:\n\n```\nTraceback (most recent call last):\n  File \"main.py\", line 4, in <module>\n    shout(None)\n  File \"main.py\", line 2, in shout\n    return word.upper()\nAttributeError: 'NoneType' object has no attribute 'upper'\n```\n\nThree things to grab:\n\n1. **The last line** is the actual error: type + message. `AttributeError`\n   means *you tried to access a method on the wrong type*.\n2. **The line right above it** is where it crashed: file + line number +\n   the exact code.\n3. **Everything above that** is the call stack — *who called who*. Usually\n   you only care about the bottom two frames.\n\nHit **Run** on the right. Read the traceback bottom-up. The fix is on line 2,\nbut the bad input came from line 4.",
+          "cta": "Got it",
+          "code": "def shout(word):\n    return word.upper()\n\nshout(None)\n",
+          "runnable": true
+        },
+        {
+          "type": "mc",
+          "id": "tracebacks/reading-the-stack/s02-02-which-error",
+          "xp": 2,
+          "hint": [
+            {
+              "level": 1,
+              "body": "It's a dict lookup with a missing key. Python has a specific error name for that.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 45,
+          "concept": "error-classification",
+          "prompt": "Cursor wrote this snippet and it crashes. Before you run it, what error type\ndoes Python throw?\n",
+          "options": [
+            {
+              "id": "a",
+              "label": "`NameError`",
+              "explain": "`NameError` is for variables that don't exist. `user` is defined fine."
+            },
+            {
+              "id": "b",
+              "label": "`KeyError`"
+            },
+            {
+              "id": "c",
+              "label": "`IndexError`",
+              "explain": "`IndexError` is for lists with a too-large index. This is a dict, not a list."
+            },
+            {
+              "id": "d",
+              "label": "`AttributeError`",
+              "explain": "`AttributeError` is for `.method` calls on the wrong type. This is bracket access."
+            }
+          ],
+          "answerIds": [
+            "b"
+          ],
+          "shuffle": false,
+          "code": "user = {\"name\": \"maya\"}\nprint(user[\"email\"])\n",
+          "runnable": true
+        },
+        {
+          "type": "read",
+          "id": "tracebacks/reading-the-stack/s03-03-error-types",
+          "xp": 1,
+          "hint": [],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 60,
+          "concept": "common-error-types",
+          "body": "# The five errors you'll see ninety percent of the time\n\nEach one tells you *exactly* what went wrong. Memorize the translation\nonce and you'll never panic at a traceback again.\n\n| Error | Plain English |\n| --- | --- |\n| `NameError` | A variable name that doesn't exist. Usually a typo. |\n| `TypeError` | The operation doesn't work on this type. Like `\"5\" + 10`. |\n| `KeyError` | A dict doesn't have the key you asked for. |\n| `IndexError` | A list isn't long enough for the index you asked for. |\n| `AttributeError` | You called `.something()` on the wrong type — usually `None`. |\n\nWhen AI hands you crashing code, the error type is the first hint. If you\nsee `KeyError`, don't read the whole codebase — just check what key got\nasked for and what the dict actually has.",
+          "cta": "Got it",
+          "code": "# The five errors AI ships most often:\n#\n# NameError       — used a variable that doesn't exist\n# TypeError       — wrong type for the operation (e.g. \"5\" + 10)\n# KeyError        — asked a dict for a key it doesn't have\n# IndexError      — asked a list for an index past its end\n# AttributeError  — called a method on the wrong type (e.g. None.upper())\n",
+          "runnable": true
+        },
+        {
+          "type": "predict",
+          "id": "tracebacks/reading-the-stack/s04-04-predict-the-error",
+          "xp": 3,
+          "hint": [
+            {
+              "level": 1,
+              "body": "The list has 2 items. The code asks for index 5. What's the error type for *list too short*?",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "It's `IndexError`. Same family of bugs as off-by-one loop bounds.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 60,
+          "concept": "indexerror-prediction",
+          "code": "pets = [\"luna\", \"moose\"]\nprint(pets[5])\n",
+          "prompt": "This crashes. Type the **error type only** (one word, no message,\nno quotes). For example: `NameError`.\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "IndexError",
+            "normalize": "trim"
+          }
+        },
+        {
+          "type": "fix",
+          "id": "tracebacks/reading-the-stack/s05-05-fix-nameerror",
+          "xp": 4,
+          "hint": [
+            {
+              "level": 1,
+              "body": "`NameError` means a variable name doesn't exist. Compare line 1 and line 2 carefully.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Line 1 defines `username`. Line 2 uses `user_name`. Match them.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 75,
+          "concept": "nameerror-fix",
+          "brokenCode": "username = \"maya\"\nprint(f\"hi, {user_name}\")\n",
+          "prompt": "Cursor wrote this and it crashes with `NameError: name 'user_name' is not defined`.\nRead the traceback when you run it — Python tells you the bad line.\n\nFix it so the code prints `hi, maya`.\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "hi, maya",
+            "normalize": "collapse-trailing-newline"
+          },
+          "bugLines": [
+            2
+          ],
+          "revealAfter": 4
+        },
+        {
+          "type": "fix",
+          "id": "tracebacks/reading-the-stack/s06-06-fix-typeerror",
+          "xp": 4,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Python won't add an int and a string. You need to convert the string to an int with `int(...)`.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Change line 3 to `total = base + int(extra)`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 80,
+          "concept": "typeerror-string-vs-int",
+          "brokenCode": "base = 5\nextra = \"10\"\ntotal = base + extra\nprint(f\"total: {total}\")\n",
+          "prompt": "Claude wrote this expecting `total: 15`. Instead it crashes with\n`TypeError: unsupported operand type(s) for +: 'int' and 'str'`.\n\nThe bug is on line 3: `\"10\"` is a string, not a number. Python won't add\n`5 + \"10\"`. Fix the line so the code prints `total: 15`.\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "total: 15",
+            "normalize": "collapse-trailing-newline"
+          },
+          "bugLines": [
+            3
+          ],
+          "revealAfter": 4
+        },
+        {
+          "type": "fix",
+          "id": "tracebacks/reading-the-stack/s07-07-fix-attributeerror",
+          "xp": 4,
+          "hint": [
+            {
+              "level": 1,
+              "body": "`AttributeError: 'NoneType' object` is the giveaway — the function returned `None`. Why? It has no `return`.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Replace the `# missing return` comment on line 3 with `return name`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 80,
+          "concept": "attributeerror-none",
+          "brokenCode": "def find_name():\n    name = \"maya\"\n    # missing return\n\nresult = find_name()\nprint(result.upper())\n",
+          "prompt": "Cursor wrote a function `find_name` that's supposed to return a name string\nbut returns `None` when the user is missing. Then line 5 calls `.upper()` on\nthe result, which crashes with `AttributeError: 'NoneType' object has no attribute 'upper'`.\n\nFix line 1 so the function actually returns `\"maya\"`. The `None` case is a\nseparate bug — for now, just give the function a real return value so the\nscript prints `MAYA`.\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "MAYA",
+            "normalize": "collapse-trailing-newline"
+          },
+          "bugLines": [
+            3
+          ],
+          "revealAfter": 4
+        },
+        {
+          "type": "checkpoint",
+          "id": "tracebacks/reading-the-stack/s08-08-checkpoint",
+          "xp": 8,
+          "hint": [
+            {
+              "level": 1,
+              "body": "`KeyError: 'email'` means there's no `email` key. Look at line 1 — what key actually holds the email value?",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "The key is `contact`. Change `user['email']` to `user['contact']`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "check",
+          "estSeconds": 120,
+          "concept": "tracebacks-recap",
+          "prompt": "One last thing. AI handed you this script and it crashes. The traceback ends\nwith `KeyError: 'email'`. Your job: read the dict on line 1, then fix the\nlookup on line 2 so the script prints `email: maya@example.com`.\n\nTwo changes total. The dict has the user's email under a different key name —\nuse the correct one.\n",
+          "starter": "user = {\"name\": \"maya\", \"contact\": \"maya@example.com\"}\nprint(f\"email: {user['email']}\")\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "email: maya@example.com",
+            "normalize": "collapse-trailing-newline"
+          },
+          "solution": "user = {\"name\": \"maya\", \"contact\": \"maya@example.com\"}\nprint(f\"email: {user['contact']}\")\n",
+          "passThreshold": 0.66
+        }
+      ],
+      "xpTotal": 27
+    },
+    {
+      "slug": "the-five-error-classes",
+      "title": "Diagnose any crash in one read",
+      "estMinutes": 7,
+      "prerequisites": [],
+      "steps": [
+        {
+          "type": "read",
+          "id": "tracebacks/the-five-error-classes/s01-01-intro",
+          "xp": 1,
+          "hint": [],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 50,
+          "concept": "error-class-diagnostic",
+          "body": "# The error class is the fingerprint\n\nLast lesson you learned the five most common error types. This one teaches\nyou to use the **class alone** — `NameError`, `TypeError`, etc. — to know\nwhat kind of bug AI shipped, before you even read the message.\n\nMatch the class to the cause:\n\n| Class | Cause |\n| --- | --- |\n| `NameError` | Variable doesn't exist. Look for a typo or a forgotten `import`. |\n| `TypeError` | Wrong type for an operation. Look for `str` mixed with `int`, or `None` where a value should be. |\n| `KeyError` | Dict missing a key. Look for a typoed key or a missing field in the JSON. |\n| `IndexError` | List shorter than expected. Look for an off-by-one or an empty list. |\n| `AttributeError` | Method called on the wrong type. Almost always `None.something()`. |\n\nTwo more you'll see:\n\n| Class | Cause |\n| --- | --- |\n| `ValueError` | Right type, wrong content. `int(\"hello\")` is the canonical case. |\n| `ZeroDivisionError` | You divided by `0`. Almost always a denominator that came in empty. |\n\nWhen you see a traceback, glance at the last line and the class tells you\nwhich corner of the codebase to look at. You don't need to read the whole\nstack.",
+          "cta": "Got it",
+          "code": "# Each error class is a fingerprint. The class alone tells you\n# what kind of bug to look for, before you even read the message.\n",
+          "runnable": true
+        },
+        {
+          "type": "mc",
+          "id": "tracebacks/the-five-error-classes/s02-02-which-error-fits",
+          "xp": 2,
+          "hint": [
+            {
+              "level": 1,
+              "body": "The error message names the two types: `int` and `str`. Find the line where those two types collide on a `+`.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "`age + name` is `int + str`. That's the textbook `TypeError`. The other options each map to a different error class.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 45,
+          "concept": "error-class-matching",
+          "prompt": "Cursor wrote a script and the traceback ends with this line:\n\n```\nTypeError: unsupported operand type(s) for +: 'int' and 'str'\n```\n\nWhich line of code is the most likely cause?\n",
+          "options": [
+            {
+              "id": "a",
+              "label": "`name = users[5]` (when `users` has 3 entries)",
+              "explain": "That would be an `IndexError`, not a `TypeError`."
+            },
+            {
+              "id": "b",
+              "label": "`total = age + name` (where `age` is `30` and `name` is `\"alex\"`)"
+            },
+            {
+              "id": "c",
+              "label": "`config[\"port\"]` (when `config` has no `\"port\"` key)",
+              "explain": "That would be a `KeyError`."
+            },
+            {
+              "id": "d",
+              "label": "`response.json()` (when `response` is `None`)",
+              "explain": "That would be an `AttributeError` — `None` has no `.json()` method."
+            }
+          ],
+          "answerIds": [
+            "b"
+          ],
+          "shuffle": false,
+          "code": "# Run this and watch Python complain about adding an int to a str.\nage = 30\nname = \"alex\"\ntotal = age + name\nprint(total)\n",
+          "runnable": true
+        },
+        {
+          "type": "read",
+          "id": "tracebacks/the-five-error-classes/s03-03-zero-division-and-value",
+          "xp": 1,
+          "hint": [],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 50,
+          "concept": "zero-division-and-value-error",
+          "body": "# Two more errors that look similar but mean different things\n\nBoth are about *content*, not type. AI ships these when it forgets that\nreal-world inputs aren't always clean.\n\n**`ZeroDivisionError`** — almost always means the denominator came in\nempty. Pattern: `total / count` where `count` ends up `0`. Common when\ncounting something that has no rows yet.\n\n**`ValueError`** — the type is right but the *content* can't be turned into\nwhat the function wants. The classic case: `int(\"hello\")`. The argument\nis a string, which is what `int()` expects, but the *content* doesn't look\nlike a number.\n\nTranslation rules:\n\n- `ZeroDivisionError` → check what's in your denominator before dividing\n- `ValueError` → check what's actually in the string before casting it\n\nThe fix is usually a one-line guard: `if count == 0: ...` or\n`try: int(x) except ValueError: ...`. We won't cover `try/except` yet, but\nrecognize the error class on sight.",
+          "cta": "Got it",
+          "code": "# Two errors AI ships when it forgets to validate input:\n\n# ZeroDivisionError: when the denominator is empty/zero\ntotal_orders = 0\nrevenue = 1000\n# average = revenue / total_orders   # ZeroDivisionError: division by zero\n\n# ValueError: right type asked, content can't be converted\nuser_input = \"thirty\"\n# age = int(user_input)              # ValueError: invalid literal for int()\n\nprint(\"(uncomment a line above to see the crash)\")\n",
+          "runnable": true
+        },
+        {
+          "type": "predict",
+          "id": "tracebacks/the-five-error-classes/s04-04-predict-the-class",
+          "xp": 3,
+          "hint": [
+            {
+              "level": 1,
+              "body": "A dict missing a key raises one specific class. Match it to the table from earlier.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Asking a dict for a key it doesn't have is `KeyError`. The script prints `KeyError`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 60,
+          "concept": "predict-error-class",
+          "code": "user = {\"name\": \"alex\", \"age\": 34}\n\ntry:\n    print(user[\"email\"])\nexcept KeyError:\n    print(\"KeyError\")\nexcept IndexError:\n    print(\"IndexError\")\nexcept TypeError:\n    print(\"TypeError\")\nexcept AttributeError:\n    print(\"AttributeError\")\n",
+          "prompt": "The dict has no `\"email\"` key. Which error class fires? The `try/except`\nblock prints the class name. What does this print?\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "KeyError",
+            "normalize": "collapse-trailing-newline"
+          }
+        },
+        {
+          "type": "fix",
+          "id": "tracebacks/the-five-error-classes/s05-05-fix-zerodivision",
+          "xp": 4,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Before dividing, check if the denominator is `0` and return `0` early. Two lines instead of one.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Replace line 2 with: `if orders == 0: return 0` then a new line `return revenue / orders`. The guard runs first.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 75,
+          "concept": "zero-division-guard",
+          "brokenCode": "def average_revenue(revenue, orders):\n    return revenue / orders\n\nresult = average_revenue(1000, 0)\nprint(f\"avg: {result}\")\n",
+          "prompt": "Cursor wrote a function that computes the average revenue per order. When\nthere are no orders yet, it crashes with `ZeroDivisionError`.\n\nAdd a one-line guard so that when `orders` is `0`, the function returns\n`0` instead of crashing. The script should print `avg: 0`.\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "avg: 0",
+            "normalize": "collapse-trailing-newline"
+          },
+          "bugLines": [
+            2
+          ],
+          "revealAfter": 4
+        },
+        {
+          "type": "fix",
+          "id": "tracebacks/the-five-error-classes/s06-06-fix-valueerror",
+          "xp": 4,
+          "hint": [
+            {
+              "level": 1,
+              "body": "`int(\"7 dollars\")` fails because the string has the word `dollars` in it. Split on the space and take the first piece.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Change line 2 to `price = int(price_text.split()[0])`. `.split()` returns `[\"7\", \"dollars\"]`, and `[0]` grabs the `\"7\"`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 75,
+          "concept": "valueerror-source",
+          "brokenCode": "price_text = \"7 dollars\"\nprice = int(price_text)\n\nprint(f\"price doubled: {price * 2}\")\n",
+          "prompt": "Cursor wrote this and the traceback ends with\n`ValueError: invalid literal for int() with base 10: '7 dollars'`.\n\nThe variable `price_text` has the dollar amount along with extra text. The\nfix is to pull just the number out before calling `int()`. Use `.split()`\nto grab the first token, then convert that.\n\nThe script should print `price doubled: 14`.\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "price doubled: 14",
+            "normalize": "collapse-trailing-newline"
+          },
+          "bugLines": [
+            2
+          ],
+          "revealAfter": 4
+        },
+        {
+          "type": "fix",
+          "id": "tracebacks/the-five-error-classes/s07-07-fix-indexerror",
+          "xp": 4,
+          "hint": [
+            {
+              "level": 1,
+              "body": "`len(words)` is `3`. `range(len(words) + 1)` produces `0, 1, 2, 3`. There's no index `3` in a 3-item list.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Drop the `+ 1` on line 3. `range(len(words))` gives `0, 1, 2` — exactly the valid indexes.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 75,
+          "concept": "indexerror-source",
+          "brokenCode": "words = [\"hello\", \"world\", \"fine\"]\n\nfor i in range(len(words) + 1):\n    print(words[i])\n",
+          "prompt": "Claude wrote this loop and the last iteration crashes with `IndexError:\nlist index out of range`. The off-by-one is on line 3 — `range(len(words) + 1)`\nwalks one past the end of the list.\n\nFix the off-by-one so the script prints each word, one per line, with no\ncrash. Expected output:\n\n```\nhello\nworld\nfine\n```\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "hello\nworld\nfine\n",
+            "normalize": "collapse-trailing-newline"
+          },
+          "bugLines": [
+            3
+          ],
+          "revealAfter": 4
+        },
+        {
+          "type": "write",
+          "id": "tracebacks/the-five-error-classes/s08-08-write-defensive",
+          "xp": 5,
+          "hint": [
+            {
+              "level": 1,
+              "body": "`key in d` is the membership check that doesn't crash. Use it before reaching for `d[key]`.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "`if key in d: return d[key]` then below it, `return \"missing\"`. The early return handles the present case.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 100,
+          "concept": "defensive-dict-access",
+          "prompt": "Write a function `safe_get` that takes a dict and a key. If the key exists,\nreturn the value. If the key is missing, return the string `\"missing\"`\ninstead of crashing with `KeyError`.\n\nTwo calls happen at the bottom — they should print:\n\n```\nalex\nmissing\n```\n",
+          "starter": "user = {\"name\": \"alex\", \"age\": 34}\n\ndef safe_get(d, key):\n    # your defensive lookup below:\n    pass\n\nprint(safe_get(user, \"name\"))\nprint(safe_get(user, \"email\"))\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "alex\nmissing\n",
+            "normalize": "collapse-trailing-newline"
+          },
+          "solution": "user = {\"name\": \"alex\", \"age\": 34}\n\ndef safe_get(d, key):\n    if key in d:\n        return d[key]\n    return \"missing\"\n\nprint(safe_get(user, \"name\"))\nprint(safe_get(user, \"email\"))\n",
+          "hiddenTests": []
+        },
+        {
+          "type": "checkpoint",
+          "id": "tracebacks/the-five-error-classes/s09-09-checkpoint",
+          "xp": 8,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Three guards. First: `if item is None: return 0.0`. Second: `.get(\"price\", \"\")` to avoid `KeyError`. Third: check the result is non-empty before `float()`.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Start with `if item is None: return 0.0`. Then `raw = item.get(\"price\", \"\")`. Then `if raw == \"\": return 0.0`. Finally `return float(raw)`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "check",
+          "estSeconds": 130,
+          "concept": "error-classes-recap",
+          "prompt": "Last one. Cursor wrote a function `get_price` that pulls the `\"price\"` field\nout of an item dict and converts it to a float. Right now it crashes on\nthree different inputs:\n\n- missing `\"price\"` key → `KeyError`\n- empty string for the price → `ValueError`\n- the dict is `None` → `AttributeError` from the `.get` call\n\nRewrite the function so it returns `0.0` for any of those cases, and\nreturns the parsed float when the value is valid. The script should print:\n\n```\n29.99\n0.0\n0.0\n0.0\n```\n",
+          "starter": "def get_price(item):\n    # handle missing key, empty string, and None safely:\n    return float(item[\"price\"])\n\nprint(get_price({\"price\": \"29.99\"}))\nprint(get_price({\"name\": \"widget\"}))\nprint(get_price({\"price\": \"\"}))\nprint(get_price(None))\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "29.99\n0.0\n0.0\n0.0\n",
+            "normalize": "collapse-trailing-newline"
+          },
+          "solution": "def get_price(item):\n    if item is None:\n        return 0.0\n    raw = item.get(\"price\", \"\")\n    if raw == \"\":\n        return 0.0\n    return float(raw)\n\nprint(get_price({\"price\": \"29.99\"}))\nprint(get_price({\"name\": \"widget\"}))\nprint(get_price({\"price\": \"\"}))\nprint(get_price(None))\n",
+          "passThreshold": 0.66
+        }
+      ],
+      "xpTotal": 32
+    }
+  ],
+  "xpTotal": 59
+}

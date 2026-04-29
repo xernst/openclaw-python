@@ -1,0 +1,514 @@
+{
+  "number": 7,
+  "slug": "mutation-and-state",
+  "title": "Mutation — why your code mysteriously breaks",
+  "blurb": "When a list inside a function changes the list outside the function, that's mutation. AI does this constantly without flagging it, and it's the bug class that takes the longest to find.",
+  "lessons": [
+    {
+      "slug": "why-it-breaks",
+      "title": "Mutation and the action-at-a-distance bug",
+      "estMinutes": 7,
+      "prerequisites": [],
+      "steps": [
+        {
+          "type": "read",
+          "id": "mutation-and-state/why-it-breaks/s01-01-intro",
+          "xp": 1,
+          "hint": [],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 40,
+          "concept": "mutation-vs-reassignment",
+          "body": "# A list passed to a function isn't a copy — it's the same list\n\nRun the code on the right. The function `add_one` only ever sees `items`,\nnever `pets`. But after the call, `pets` has three items, not two.\n\nThat's because Python doesn't copy lists when it passes them. The function\nparameter `items` and the outside variable `pets` point at the *same list\nin memory*. When the function does `items.append`, the outside list changes\ntoo.\n\nThis is the bug AI ships when you ask it to *just process the data*. It\nsilently mutates your input and the rest of your program runs on a\ndifferent list than you thought.\n\nThe technical term for this is **mutation**. Memorize it — when something\n\"mysteriously breaks,\" this is the first thing to check.",
+          "cta": "Got it",
+          "code": "pets = [\"luna\", \"moose\"]\n\ndef add_one(items):\n    items.append(\"biscuit\")\n\nadd_one(pets)\nprint(pets)\n",
+          "runnable": true
+        },
+        {
+          "type": "mc",
+          "id": "mutation-and-state/why-it-breaks/s02-02-which-mutates",
+          "xp": 2,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Methods called *on* the list with a dot tend to mutate. Functions called *with* the list as an argument tend to copy.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 40,
+          "concept": "mutating-vs-non-mutating",
+          "prompt": "Cursor wrote four lines. Three of them leave `pets` unchanged. Which one\n*mutates* the original list?\n",
+          "options": [
+            {
+              "id": "a",
+              "label": "`pets + [\"biscuit\"]`",
+              "explain": "`+` returns a new list. The original is untouched unless you reassign."
+            },
+            {
+              "id": "b",
+              "label": "`sorted(pets)`",
+              "explain": "`sorted` returns a new list. The original is untouched."
+            },
+            {
+              "id": "c",
+              "label": "`pets.append(\"biscuit\")`"
+            },
+            {
+              "id": "d",
+              "label": "`pets[:]`",
+              "explain": "Slicing returns a copy. The original is untouched."
+            }
+          ],
+          "answerIds": [
+            "c"
+          ],
+          "shuffle": false,
+          "code": "pets = [\"luna\", \"moose\"]\npets.append(\"biscuit\")          # mutates pets\nprint(pets)\npets_sorted = sorted(pets)      # leaves pets alone\nprint(pets_sorted)\nprint(pets)                     # still has \"biscuit\"\n",
+          "runnable": true
+        },
+        {
+          "type": "read",
+          "id": "mutation-and-state/why-it-breaks/s03-03-shared-reference",
+          "xp": 1,
+          "hint": [],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 45,
+          "concept": "shared-list-reference",
+          "body": "# `b = a` doesn't copy. It just gives the same list a second name.\n\nRun the code on the right. After `b.append(4)`, *both* `a` and `b` print\n`[1, 2, 3, 4]`. They're the same list. `b = a` didn't copy — it gave the\nexisting list a second name.\n\nThis is the *exact* bug Cursor ships when you ask it to \"make a backup\nbefore modifying.\" It writes `backup = original`, then changes `original`,\nand is shocked when \"the backup also changed.\"\n\nTo actually copy a list:\n\n```python\nb = a[:]        # slice copy\nb = list(a)     # constructor copy\nb = a.copy()    # method copy\n```\n\nAll three create a new list. After any of them, `b.append(4)` only changes\n`b`, not `a`.",
+          "cta": "Got it",
+          "code": "a = [1, 2, 3]\nb = a\n\nb.append(4)\n\nprint(\"a:\", a)\nprint(\"b:\", b)\n",
+          "runnable": true
+        },
+        {
+          "type": "predict",
+          "id": "mutation-and-state/why-it-breaks/s04-04-predict-the-mutation",
+          "xp": 3,
+          "hint": [
+            {
+              "level": 1,
+              "body": "`nums[i] = nums[i] * 2` mutates the list in place. `nums` and `scores` point at the same list.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Each item gets doubled — `[20, 40, 60]`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 60,
+          "concept": "function-mutates-caller",
+          "code": "def double_all(nums):\n    for i in range(len(nums)):\n        nums[i] = nums[i] * 2\n\nscores = [10, 20, 30]\ndouble_all(scores)\nprint(scores)\n",
+          "prompt": "The function modifies the list it receives. What does the final `print` show?\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "[20, 40, 60]",
+            "normalize": "collapse-trailing-newline"
+          }
+        },
+        {
+          "type": "fill",
+          "id": "mutation-and-state/why-it-breaks/s05-05-fill-the-copy",
+          "xp": 3,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Lists have a method that returns a new copy. The name is one short word.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "`items.copy()` — that's the cleanest way to make a new list with the same contents.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 50,
+          "concept": "list-copy",
+          "prompt": "Cursor wrote a function that's supposed to return a *new* list with one extra\nitem, leaving the original alone. The line that copies the list is missing\nthe right method. Fill in the blank with the method name (no parens).\n```python\ndef with_extra(items, extra):\n    copy = items.___()\n    copy.append(extra)\n    return copy\n\npets = [\"luna\", \"moose\"]\nresult = with_extra(pets, \"biscuit\")\nprint(\"pets:\", pets)\nprint(\"result:\", result)\n```\n",
+          "blanks": [
+            {
+              "id": "method",
+              "accept": [
+                "copy"
+              ],
+              "caseSensitive": true,
+              "normalize": "trim"
+            }
+          ]
+        },
+        {
+          "type": "fix",
+          "id": "mutation-and-state/why-it-breaks/s06-06-fix-the-default-arg",
+          "xp": 4,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Never use a mutable default like `[]` or `{}`. Use `None` and create the list inside.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Change the signature to `def add_pet(name, pets=None):` and add `if pets is None: pets = []` as the first line of the function body.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 90,
+          "concept": "mutable-default-arg",
+          "brokenCode": "def add_pet(name, pets=[]):\n    pets.append(name)\n    return pets\n\nprint(add_pet(\"luna\"))\nprint(add_pet(\"moose\"))\n",
+          "prompt": "This is the single most famous Python bug — and AI ships it constantly.\n\nThe function `add_pet` uses `pets=[]` as a default. The trap: that empty\nlist is created **once**, when the function is *defined*, not each time\nit's called. Every call without an argument shares the same list.\n\nRun it as-is and you'll see the second call returns `[\"luna\", \"moose\"]`\ninstead of just `[\"moose\"]`. Fix line 1 so each call without an argument\ngets a fresh list.\n\nExpected output:\n```\n['luna']\n['moose']\n```\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "['luna']\n['moose']\n",
+            "normalize": "collapse-trailing-newline"
+          },
+          "bugLines": [
+            1
+          ],
+          "revealAfter": 4
+        },
+        {
+          "type": "fix",
+          "id": "mutation-and-state/why-it-breaks/s07-07-fix-the-shared-list",
+          "xp": 4,
+          "hint": [
+            {
+              "level": 1,
+              "body": "`result = nums` doesn't copy. Both names point at the same list. Make an actual copy before the loop.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Change `result = nums` to `result = nums.copy()` (or `nums[:]`).",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 80,
+          "concept": "shared-list-fix",
+          "brokenCode": "def double_all(nums):\n    result = nums\n    for i in range(len(result)):\n        result[i] = result[i] * 2\n    return result\n\noriginal = [10, 20, 30]\ndoubled = double_all(original)\n\nprint(f\"original: {original}\")\nprint(f\"doubled: {doubled}\")\n",
+          "prompt": "Claude wrote a function that's supposed to give back a *new* list with the\nscores doubled, leaving the original alone. Instead, it mutates the input —\nafter the call, both `original` and `doubled` are the same doubled list.\n\nFix line 2 so the function works on a copy and the original list stays as\n`[10, 20, 30]`.\n\nExpected output:\n```\noriginal: [10, 20, 30]\ndoubled: [20, 40, 60]\n```\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "original: [10, 20, 30]\ndoubled: [20, 40, 60]\n",
+            "normalize": "collapse-trailing-newline"
+          },
+          "bugLines": [
+            2
+          ],
+          "revealAfter": 4
+        },
+        {
+          "type": "checkpoint",
+          "id": "mutation-and-state/why-it-breaks/s08-08-checkpoint",
+          "xp": 8,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Build `new_user` field by field. The `tags` list needs `.copy()` — without it you'd be sharing the same list.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "`new_user[\"name\"] = user[\"name\"]`, then `new_user[\"tags\"] = user[\"tags\"].copy()`, then `new_user[\"tags\"].append(tag)`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "check",
+          "estSeconds": 130,
+          "concept": "mutation-recap",
+          "prompt": "One last thing. AI wrote a function `tag_user` that's supposed to return a\n*new* user dict with one extra tag, leaving the original user alone. Right\nnow it mutates the input.\n\nFinish the function so the script prints two lines: the original user\nunchanged, and the new user with `\"vip\"` added to its tags.\n\nExpected output:\n```\noriginal tags: ['pm']\ntagged tags: ['pm', 'vip']\n```\n",
+          "starter": "def tag_user(user, tag):\n    # build a new user that has the same fields plus the extra tag.\n    # do not mutate `user`.\n    new_user = {}\n    # your code here:\n    return new_user\n\noriginal = {\"name\": \"maya\", \"tags\": [\"pm\"]}\ntagged = tag_user(original, \"vip\")\n\nprint(f\"original tags: {original['tags']}\")\nprint(f\"tagged tags: {tagged['tags']}\")\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "original tags: ['pm']\ntagged tags: ['pm', 'vip']\n",
+            "normalize": "collapse-trailing-newline"
+          },
+          "solution": "def tag_user(user, tag):\n    new_user = {}\n    new_user[\"name\"] = user[\"name\"]\n    new_user[\"tags\"] = user[\"tags\"].copy()\n    new_user[\"tags\"].append(tag)\n    return new_user\n\noriginal = {\"name\": \"maya\", \"tags\": [\"pm\"]}\ntagged = tag_user(original, \"vip\")\n\nprint(f\"original tags: {original['tags']}\")\nprint(f\"tagged tags: {tagged['tags']}\")\n",
+          "passThreshold": 0.66
+        }
+      ],
+      "xpTotal": 26
+    },
+    {
+      "slug": "copy-vs-reference",
+      "title": "Shallow copy, deep copy, and the nested-dict bug",
+      "estMinutes": 7,
+      "prerequisites": [],
+      "steps": [
+        {
+          "type": "read",
+          "id": "mutation-and-state/copy-vs-reference/s01-01-intro",
+          "xp": 1,
+          "hint": [],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 45,
+          "concept": "shallow-copy-recap",
+          "body": "# A copy is a new container with the same items\n\nLast lesson: `b = a` doesn't copy — it shares. To actually get a separate\nlist, you need one of three things: a slice (`a[:]`), the `list()`\nconstructor, or the `.copy()` method. All three produce a new list.\n\nRun the code on the right.\n\nAfter `a.append(99)`, only `a` changes. `original` stays `[1, 2, 3]`.\n\nThis is called a **shallow copy** — a new outer container, but the items\ninside are shared. For a flat list of numbers or strings, that's fine.\n\nIt stops being fine the moment the items themselves are *also* containers —\nnested lists, dicts inside lists, lists inside dicts. We'll see that bug\nin two steps.",
+          "cta": "Got it",
+          "code": "original = [1, 2, 3]\n\n# three real ways to copy a list\na = original[:]\nb = list(original)\nc = original.copy()\n\na.append(99)\n\nprint(\"original:\", original)\nprint(\"a:\", a)\n",
+          "runnable": true
+        },
+        {
+          "type": "mc",
+          "id": "mutation-and-state/copy-vs-reference/s02-02-which-copies",
+          "xp": 2,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Plain assignment is the trap. The other three each call something — a slice, a constructor, a method.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "`backup = users` is just a second name for the same list. The other three actually build a new list. This is the most common AI bug in this category.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 45,
+          "concept": "copy-vs-alias",
+          "prompt": "Cursor wrote four lines, each meant to \"copy\" a list called `users`. Three\nof them produce an independent copy. One only creates a second name for the\nsame list. Which one is the *not-copy*?\n",
+          "options": [
+            {
+              "id": "a",
+              "label": "`backup = users`"
+            },
+            {
+              "id": "b",
+              "label": "`backup = users[:]`",
+              "explain": "Slice with no bounds is a list copy. Independent."
+            },
+            {
+              "id": "c",
+              "label": "`backup = list(users)`",
+              "explain": "The `list()` constructor builds a new list. Independent."
+            },
+            {
+              "id": "d",
+              "label": "`backup = users.copy()`",
+              "explain": "The `.copy()` method makes a new list. Independent."
+            }
+          ],
+          "answerIds": [
+            "a"
+          ],
+          "shuffle": false,
+          "code": "users = [\"maya\", \"marcus\"]\nbackup = users          # second name for the same list, not a copy\nusers.append(\"priya\")\nprint(users)            # [\"maya\", \"marcus\", \"priya\"]\nprint(backup)           # also [\"maya\", \"marcus\", \"priya\"] — surprise.\n",
+          "runnable": true
+        },
+        {
+          "type": "read",
+          "id": "mutation-and-state/copy-vs-reference/s03-03-deep-copy",
+          "xp": 1,
+          "hint": [],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 60,
+          "concept": "shallow-vs-deep",
+          "body": "# Shallow copy + nested data = surprise mutation\n\nWhen the items inside your container are *also* containers — a list of\nlists, a dict with a nested list, a list of dicts — `.copy()` only copies\nthe outer layer. The inner stuff is still shared.\n\nRun the code on the right.\n\n`shallow[\"skills\"].append(\"javascript\")` reaches **into** `user[\"skills\"]`\nthrough the shared inner list. Both `user` and `shallow` now show the new\nskill. `deep` is the only one that's still clean.\n\nTwo rules of thumb:\n\n- Flat structure (list of numbers, dict of strings) → `.copy()` is fine\n- Nested structure (list of dicts, dict with lists inside) → use\n  `copy.deepcopy(thing)` from the `copy` module\n\n`deepcopy` rebuilds every layer. It's slower, but it's the only way to\nget a *truly* independent copy of a nested thing.",
+          "cta": "Got it",
+          "code": "import copy\n\nuser = {\"name\": \"alex\", \"skills\": [\"python\", \"sql\"]}\n\nshallow = user.copy()\ndeep = copy.deepcopy(user)\n\n# mutate the nested list through the shallow copy\nshallow[\"skills\"].append(\"javascript\")\n\nprint(\"user:    \", user)\nprint(\"shallow: \", shallow)\nprint(\"deep:    \", deep)\n",
+          "runnable": true
+        },
+        {
+          "type": "predict",
+          "id": "mutation-and-state/copy-vs-reference/s04-04-predict-the-shallow",
+          "xp": 3,
+          "hint": [
+            {
+              "level": 1,
+              "body": "`copy_rows.append([5, 6])` only changes the outer list of `copy_rows`. `copy_rows[0].append(99)` reaches into the shared inner list.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "`rows` and `copy_rows` share the inner lists. The first inner list becomes `[1, 2, 99]` for both. The new `[5, 6]` row only goes into `copy_rows`. So `rows` is `[[1, 2, 99], [3, 4]]`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 70,
+          "concept": "predict-shallow-copy",
+          "code": "rows = [[1, 2], [3, 4]]\ncopy_rows = rows.copy()\n\ncopy_rows[0].append(99)\ncopy_rows.append([5, 6])\n\nprint(rows)\n",
+          "prompt": "Two operations on `copy_rows`. One mutates a shared inner list. One adds a\nnew outer item. What does printing `rows` show?\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "[[1, 2, 99], [3, 4]]",
+            "normalize": "collapse-trailing-newline"
+          }
+        },
+        {
+          "type": "fill",
+          "id": "mutation-and-state/copy-vs-reference/s05-05-fill-the-copy-call",
+          "xp": 3,
+          "hint": [
+            {
+              "level": 1,
+              "body": "There's a function in the `copy` module that copies every layer, not just the outer one.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "It's `copy.deepcopy(user)`. `copy.copy()` would only do a shallow copy and the bug would still happen.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 55,
+          "concept": "deepcopy-syntax",
+          "prompt": "Cursor wrote a snippet that needs an *independent* copy of a nested dict.\nThe `copy` module is imported. Fill in the function name on line 4.\n```python\nimport copy\n\nuser = {\"name\": \"alex\", \"skills\": [\"python\"]}\nsafe = copy.___(user)\n\nsafe[\"skills\"].append(\"rust\")\n\nprint(user[\"skills\"])  # should print ['python']\n```\n",
+          "blanks": [
+            {
+              "id": "function",
+              "accept": [
+                "deepcopy"
+              ],
+              "caseSensitive": true,
+              "normalize": "trim"
+            }
+          ]
+        },
+        {
+          "type": "fix",
+          "id": "mutation-and-state/copy-vs-reference/s06-06-fix-the-shallow-bug",
+          "xp": 4,
+          "hint": [
+            {
+              "level": 1,
+              "body": "`.copy()` is shallow — the inner `tags` list is still shared. You need a deep copy.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Change line 5 to `backup = copy.deepcopy(original)`. That copies the dict and the inner list.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 80,
+          "concept": "shallow-copy-not-enough",
+          "brokenCode": "import copy\n\noriginal = {\"name\": \"alex\", \"tags\": [\"admin\"]}\n\nbackup = original.copy()\nbackup[\"tags\"].append(\"temp\")\n\nprint(f\"original tags: {original['tags']}\")\nprint(f\"backup tags:   {backup['tags']}\")\n",
+          "prompt": "Claude wrote a \"make a backup before editing\" snippet. The bug: it used\n`.copy()` on a nested dict. When the script edits the backup's nested\n`tags` list, the original list also changes.\n\nThe expected output is:\n```\noriginal tags: ['admin']\nbackup tags:   ['admin', 'temp']\n```\n\nRight now it's:\n```\noriginal tags: ['admin', 'temp']\nbackup tags:   ['admin', 'temp']\n```\n\nFix line 5 so the backup is truly independent. The `copy` module is already\nimported on line 1.\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "original tags: ['admin']\nbackup tags:   ['admin', 'temp']\n",
+            "normalize": "collapse-trailing-newline"
+          },
+          "bugLines": [
+            5
+          ],
+          "revealAfter": 4
+        },
+        {
+          "type": "fix",
+          "id": "mutation-and-state/copy-vs-reference/s07-07-fix-the-dict-copy",
+          "xp": 4,
+          "hint": [
+            {
+              "level": 1,
+              "body": "`new_config = config` is just a second name for the same dict. The function mutates the caller's dict. Use a real copy.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Change line 2 to `new_config = config.copy()`. The dict is flat (no nested structures), so a shallow copy is enough.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 80,
+          "concept": "dict-aliasing-fix",
+          "brokenCode": "def with_debug(config):\n    new_config = config\n    new_config[\"debug\"] = True\n    return new_config\n\noriginal = {\"port\": 3000, \"debug\": False}\nmodified = with_debug(original)\n\nprint(f\"original debug: {original['debug']}\")\nprint(f\"modified debug: {modified['debug']}\")\n",
+          "prompt": "Cursor wrote a function that's supposed to take a `config` dict, return a\n*modified copy* with `debug` set to `True`, and leave the original alone.\n\nRight now the function mutates the original instead of copying it. The\nexpected output is:\n```\noriginal debug: False\nmodified debug: True\n```\n\nFix line 2 so the function works on a real copy.\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "original debug: False\nmodified debug: True\n",
+            "normalize": "collapse-trailing-newline"
+          },
+          "bugLines": [
+            2
+          ],
+          "revealAfter": 4
+        },
+        {
+          "type": "write",
+          "id": "mutation-and-state/copy-vs-reference/s08-08-write-clone",
+          "xp": 5,
+          "hint": [
+            {
+              "level": 1,
+              "body": "`user.copy()` won't work — `roles` is a nested list. You need the function from the `copy` module that copies every layer.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Replace the `pass` with `return copy.deepcopy(user)`. That's the whole body.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 100,
+          "concept": "write-deep-copy",
+          "prompt": "Write a function `clone_user` that takes a user dict and returns a fully\nindependent copy — meaning if the caller mutates the cloned user's\n`roles` list, the original user's `roles` list does **not** change.\n\nThe `copy` module is already imported. Two prints at the bottom check the\nresult. Expected output:\n```\noriginal roles: ['member']\ncloned roles: ['member', 'admin']\n```\n",
+          "starter": "import copy\n\ndef clone_user(user):\n    # return a fully independent copy:\n    pass\n\nalex = {\"name\": \"alex\", \"roles\": [\"member\"]}\ncloned = clone_user(alex)\ncloned[\"roles\"].append(\"admin\")\n\nprint(f\"original roles: {alex['roles']}\")\nprint(f\"cloned roles: {cloned['roles']}\")\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "original roles: ['member']\ncloned roles: ['member', 'admin']\n",
+            "normalize": "collapse-trailing-newline"
+          },
+          "solution": "import copy\n\ndef clone_user(user):\n    return copy.deepcopy(user)\n\nalex = {\"name\": \"alex\", \"roles\": [\"member\"]}\ncloned = clone_user(alex)\ncloned[\"roles\"].append(\"admin\")\n\nprint(f\"original roles: {alex['roles']}\")\nprint(f\"cloned roles: {cloned['roles']}\")\n",
+          "hiddenTests": []
+        },
+        {
+          "type": "checkpoint",
+          "id": "mutation-and-state/copy-vs-reference/s09-09-checkpoint",
+          "xp": 8,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Two changes. Line 4: `copy.deepcopy(orders)` instead of `orders.copy()`. Last line of the function: `return new_orders`, not `orders`.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Swap line 4 to `new_orders = copy.deepcopy(orders)`. Swap the `return orders` line to `return new_orders`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "check",
+          "estSeconds": 130,
+          "concept": "copy-recap",
+          "prompt": "Last one. Cursor wrote `apply_discount`, a function that's supposed to\ntake a list of order dicts and a percent, and return a *new* list of\norders with the discount applied. The original orders should be unchanged.\n\nTwo bugs: it uses `.copy()` instead of `deepcopy` (so the inner dicts are\nshared), and it returns the wrong variable.\n\nFix the function so the script prints:\n```\noriginal first price: 100\ndiscounted first price: 90.0\n```\n",
+          "starter": "import copy\n\ndef apply_discount(orders, percent):\n    new_orders = orders.copy()\n    for order in new_orders:\n        order[\"price\"] = order[\"price\"] * (1 - percent / 100)\n    return orders\n\ndata = [{\"id\": 1, \"price\": 100}, {\"id\": 2, \"price\": 50}]\ndiscounted = apply_discount(data, 10)\n\nprint(f\"original first price: {data[0]['price']}\")\nprint(f\"discounted first price: {discounted[0]['price']}\")\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "original first price: 100\ndiscounted first price: 90.0\n",
+            "normalize": "collapse-trailing-newline"
+          },
+          "solution": "import copy\n\ndef apply_discount(orders, percent):\n    new_orders = copy.deepcopy(orders)\n    for order in new_orders:\n        order[\"price\"] = order[\"price\"] * (1 - percent / 100)\n    return new_orders\n\ndata = [{\"id\": 1, \"price\": 100}, {\"id\": 2, \"price\": 50}]\ndiscounted = apply_discount(data, 10)\n\nprint(f\"original first price: {data[0]['price']}\")\nprint(f\"discounted first price: {discounted[0]['price']}\")\n",
+          "passThreshold": 0.66
+        }
+      ],
+      "xpTotal": 31
+    }
+  ],
+  "xpTotal": 57
+}

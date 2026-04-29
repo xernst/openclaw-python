@@ -59,7 +59,7 @@
             "c"
           ],
           "shuffle": false,
-          "code": "# Python variable names follow three rules:\n#   - letters, digits, underscores only\n#   - cannot start with a digit\n#   - case-sensitive (Score and score are different)\n",
+          "code": "# valid Python variable names: letters, digits, underscores;\n# cannot start with a digit; case-sensitive.\nscore = 7\nuser_score = 8\nprint(score, user_score)\n",
           "runnable": true
         },
         {

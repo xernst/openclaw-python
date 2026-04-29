@@ -1,0 +1,515 @@
+{
+  "number": 5,
+  "slug": "conditionals",
+  "title": "Conditionals — where AI silently bugs",
+  "blurb": "`if` looks simple. The traps inside it — empty values, `==` vs `is`, the difference between `0` and `None` — are where AI quietly ships wrong code.",
+  "lessons": [
+    {
+      "slug": "truthiness-bugs",
+      "title": "Conditionals and the truthiness traps",
+      "estMinutes": 7,
+      "prerequisites": [],
+      "steps": [
+        {
+          "type": "read",
+          "id": "conditionals/truthiness-bugs/s01-01-intro",
+          "xp": 1,
+          "hint": [],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 35,
+          "concept": "if-statement-shape",
+          "body": "# `if` is a fork in the road\n\nWhen you tell Cursor *only do X if Y*, the thing it reaches for is an `if`\nstatement.\n\nThe shape on the right is the standard three-branch fork:\n\n- `if score >= 90:` — try this first\n- `elif score >= 70:` — only if the first was false, try this\n- `else:` — otherwise, do this\n\nHit **Run**. Only one branch fires per trip. The colon at the end of each\nheader is non-optional — that's the punctuation that starts a block.",
+          "cta": "Got it",
+          "code": "score = 92\n\nif score >= 90:\n    print(\"excellent\")\nelif score >= 70:\n    print(\"good\")\nelse:\n    print(\"needs work\")\n",
+          "runnable": true
+        },
+        {
+          "type": "mc",
+          "id": "conditionals/truthiness-bugs/s02-02-truthiness-quiz",
+          "xp": 2,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Empty containers are falsy in Python. Empty list, empty dict, empty string.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 40,
+          "concept": "truthiness",
+          "prompt": "Cursor wrote `if x:` and the branch did not fire. Which value of `x` would\n*skip* the `if` block?\n",
+          "options": [
+            {
+              "id": "a",
+              "label": "`x = \"hello\"`",
+              "explain": "Non-empty strings are truthy. The branch would fire."
+            },
+            {
+              "id": "b",
+              "label": "`x = [1]`",
+              "explain": "A list with anything in it is truthy. The branch would fire."
+            },
+            {
+              "id": "c",
+              "label": "`x = []`"
+            },
+            {
+              "id": "d",
+              "label": "`x = -5`",
+              "explain": "Any non-zero number is truthy, including negatives. The branch would fire."
+            }
+          ],
+          "answerIds": [
+            "c"
+          ],
+          "shuffle": false,
+          "code": "x = []\nif x:\n    print(\"truthy\")\nelse:\n    print(\"falsy\")\n",
+          "runnable": true
+        },
+        {
+          "type": "read",
+          "id": "conditionals/truthiness-bugs/s03-03-eq-vs-is",
+          "xp": 1,
+          "hint": [],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 45,
+          "concept": "eq-vs-is",
+          "body": "# `==` and `is` are not the same comparison\n\nThis is the bug Claude ships when it writes `if x is \"done\"`. It looks fine.\nIt works on small examples. It silently breaks later.\n\n- `==` asks: *do these have the same value?*\n- `is` asks: *are these the exact same object in memory?*\n\nRun the code on the right. Both `a` and `b` are lists with `[1, 2, 3]` —\nsame value, but two separate lists in memory.\n\n- `a == b` is `True` because the contents match.\n- `a is b` is `False` because they're two different lists.\n\nRule of thumb: use `==` for everything except `None`. The one place `is`\nbelongs: `if x is None:`. Anywhere else, AI is hallucinating.",
+          "cta": "Got it",
+          "code": "a = [1, 2, 3]\nb = [1, 2, 3]\n\nprint(a == b)\nprint(a is b)\n",
+          "runnable": true
+        },
+        {
+          "type": "predict",
+          "id": "conditionals/truthiness-bugs/s04-04-predict-the-empty-list",
+          "xp": 3,
+          "hint": [
+            {
+              "level": 1,
+              "body": "`results` is `[]`. Empty lists are falsy.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Falsy means the `if` branch is skipped. The `else` branch runs.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 60,
+          "concept": "empty-list-truthiness",
+          "code": "results = []\n\nif results:\n    print(\"found something\")\nelse:\n    print(\"empty\")\n",
+          "prompt": "AI uses `if results:` constantly to mean \"if the list has stuff in it.\" What\ndoes this print?\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "empty",
+            "normalize": "collapse-trailing-newline"
+          }
+        },
+        {
+          "type": "fill",
+          "id": "conditionals/truthiness-bugs/s05-05-fill-the-condition",
+          "xp": 3,
+          "hint": [
+            {
+              "level": 1,
+              "body": "There's exactly one place `is` belongs in Python: comparing against `None`.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "`if result is None:` — never `==` for `None` checks.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 50,
+          "concept": "none-check",
+          "prompt": "Cursor wrote a function that should print `no result yet` when the value is\n`None` and `got it: <value>` otherwise. The condition on line 4 is missing\nthe right comparison.\n\nFill in the blank with the correct keyword (one word).\n```python\nresult = None\n\nif result ___ None:\n    print(\"no result yet\")\nelse:\n    print(f\"got it: {result}\")\n```\n",
+          "blanks": [
+            {
+              "id": "comparator",
+              "accept": [
+                "is"
+              ],
+              "caseSensitive": true,
+              "normalize": "trim"
+            }
+          ]
+        },
+        {
+          "type": "fix",
+          "id": "conditionals/truthiness-bugs/s06-06-fix-the-zero-bug",
+          "xp": 4,
+          "hint": [
+            {
+              "level": 1,
+              "body": "`if score:` is wrong because `0` is falsy. You want to check for *not None* specifically.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Change `if score:` to `if score is not None:` on line 3.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 80,
+          "concept": "zero-vs-none-bug",
+          "brokenCode": "score = 0\n\nif score:\n    print(f\"score: {score}\")\nelse:\n    print(\"no score yet\")\n",
+          "prompt": "Claude wrote a function that's supposed to print `score: 0` when the score is\nzero. Instead it prints `no score yet` because `if score:` treats `0` as\nfalsy — same as `None`.\n\nThis is one of the most common silent bugs in AI-generated code. Fix line 3\nso a real score of `0` prints correctly.\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "score: 0",
+            "normalize": "collapse-trailing-newline"
+          },
+          "bugLines": [
+            3
+          ],
+          "revealAfter": 4
+        },
+        {
+          "type": "fix",
+          "id": "conditionals/truthiness-bugs/s07-07-fix-the-is-comparison",
+          "xp": 4,
+          "hint": [
+            {
+              "level": 1,
+              "body": "`is` checks identity, not equality. For strings (and anything other than `None`), use `==`.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Change `is` to `==` on line 3.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 75,
+          "concept": "is-vs-eq-string",
+          "brokenCode": "status = \"done\"\n\nif status is \"done\":\n    print(\"shipping it\")\nelse:\n    print(\"still working\")\n",
+          "prompt": "Cursor wrote `if status is \"done\":` and the branch never fires, even when\n`status` clearly *is* `\"done\"`. The string compare with `is` is unreliable —\nPython only sometimes reuses string objects in memory.\n\nFix line 3 so the script prints `shipping it`.\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "shipping it",
+            "normalize": "collapse-trailing-newline"
+          },
+          "bugLines": [
+            3
+          ],
+          "revealAfter": 4
+        },
+        {
+          "type": "checkpoint",
+          "id": "conditionals/truthiness-bugs/s08-08-checkpoint",
+          "xp": 8,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Two blanks. Line 4 is a string compare — use `==`. Line 5 is a None-check — use `is not None`.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "`tier == \"gold\"` and `points is not None`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "check",
+          "estSeconds": 120,
+          "concept": "conditionals-recap",
+          "prompt": "One last thing. AI wrote a discount-rule script. The starter has the right\nbranches but the conditions are missing. Finish lines 4 and 6 so the script\nprints `vip discount` (because `tier` is `\"gold\"` and `points` is greater\nthan zero).\n\nUse `==` for the string and `is not None` for the points check.\n",
+          "starter": "tier = \"gold\"\npoints = 50\n\nif tier ___ \"gold\":\n    if points ___:\n        print(\"vip discount\")\n        # if both checks pass\n    else:\n        print(\"vip, no points\")\nelse:\n    print(\"standard\")\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "vip discount",
+            "normalize": "collapse-trailing-newline"
+          },
+          "solution": "tier = \"gold\"\npoints = 50\n\nif tier == \"gold\":\n    if points is not None:\n        print(\"vip discount\")\n        # if both checks pass\n    else:\n        print(\"vip, no points\")\nelse:\n    print(\"standard\")\n",
+          "passThreshold": 0.66
+        }
+      ],
+      "xpTotal": 26
+    },
+    {
+      "slug": "elif-and-pattern-match",
+      "title": "elif chains and the match statement Cursor reaches for",
+      "estMinutes": 7,
+      "prerequisites": [],
+      "steps": [
+        {
+          "type": "read",
+          "id": "conditionals/elif-and-pattern-match/s01-01-intro",
+          "xp": 1,
+          "hint": [],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 40,
+          "concept": "elif-chain",
+          "body": "# `elif` is \"otherwise, check this\"\n\n`if` runs one block when its condition is true. `elif` adds *another*\ncondition that's only checked if the previous ones failed. `else` is the\ncatch-all at the bottom.\n\nWhen you ask Cursor for *\"handle each HTTP status differently,\"* the thing\nit reaches for is an `elif` chain.\n\nThe shape on the right reads top to bottom:\n\n- Try `status_code == 200` first\n- If that's false, try `301`\n- Otherwise `404`, otherwise `500`\n- If nothing matched, the `else` runs\n\nHit **Run**. Only one branch fires per trip — the **first** one that's true.\n\nThe trap: Python checks them in order. If you put a broader condition before\na narrower one, the narrower one never runs. We'll fix that bug shortly.",
+          "cta": "Got it",
+          "code": "status_code = 404\n\nif status_code == 200:\n    print(\"ok\")\nelif status_code == 301:\n    print(\"redirect\")\nelif status_code == 404:\n    print(\"not found\")\nelif status_code == 500:\n    print(\"server error\")\nelse:\n    print(\"unknown\")\n",
+          "runnable": true
+        },
+        {
+          "type": "mc",
+          "id": "conditionals/elif-and-pattern-match/s02-02-which-fires-first",
+          "xp": 2,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Python checks the branches in order and stops at the first true one.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "`score >= 60` is true for `95`, so the first branch wins. The narrower `>= 90` check never runs. To fix it, put narrower conditions *first*.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 45,
+          "concept": "elif-order-matters",
+          "prompt": "Cursor wrote this and the output is `pass` — but the user wanted `excellent`\nfor a 95. Why does `pass` fire instead?\n",
+          "options": [
+            {
+              "id": "a",
+              "label": "Python evaluates `elif` branches in reverse, so the last one wins",
+              "explain": "Python reads top to bottom, not bottom to top."
+            },
+            {
+              "id": "b",
+              "label": "`elif` only works if the previous condition was true",
+              "explain": "Reversed. `elif` only runs if the previous conditions were *false*."
+            },
+            {
+              "id": "c",
+              "label": "The first true condition wins, and `score >= 60` is true first"
+            },
+            {
+              "id": "d",
+              "label": "`>=` doesn't work with integers",
+              "explain": "It works fine. The bug is conceptual — branch order, not types."
+            }
+          ],
+          "answerIds": [
+            "c"
+          ],
+          "shuffle": false,
+          "code": "score = 95\n\nif score >= 60:\n    print(\"pass\")\nelif score >= 90:\n    print(\"excellent\")\nelif score >= 75:\n    print(\"good\")\nelse:\n    print(\"fail\")\n",
+          "runnable": true
+        },
+        {
+          "type": "read",
+          "id": "conditionals/elif-and-pattern-match/s03-03-match-statement",
+          "xp": 1,
+          "hint": [],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 50,
+          "concept": "match-statement",
+          "body": "# `match` is the cleaner shape for \"check this one value against a list\"\n\nPython 3.10 added `match`. When you have one value and you want to dispatch\non its exact contents, `match` is what AI reaches for instead of a long\n`if/elif` chain.\n\nThe shape on the right reads as:\n\n- `match command:` — look at this value\n- `case \"start\":` — if it equals `\"start\"`, run this block\n- `case _:` — the underscore is the catch-all (like `else`)\n\nRun the code.\n\n`match` is not a replacement for `elif` in general. Use `if/elif` when each\nbranch has a different *condition*. Use `match` when each branch checks the\nsame value against a different *constant*.\n\nWhen you see AI-generated `match` code, the giveaway is the indented `case`\nkeyword and the underscore `_` at the bottom.",
+          "cta": "Got it",
+          "code": "command = \"stop\"\n\nmatch command:\n    case \"start\":\n        print(\"starting\")\n    case \"stop\":\n        print(\"stopping\")\n    case \"restart\":\n        print(\"restarting\")\n    case _:\n        print(\"unknown command\")\n",
+          "runnable": true
+        },
+        {
+          "type": "predict",
+          "id": "conditionals/elif-and-pattern-match/s04-04-predict-the-elif",
+          "xp": 3,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Check each branch in order. `17 < 13` is false. `17 < 18` is...",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "`17 < 18` is true, so `label = \"teen\"` fires and the rest is skipped.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 60,
+          "concept": "elif-evaluation",
+          "code": "age = 17\n\nif age < 13:\n    label = \"child\"\nelif age < 18:\n    label = \"teen\"\nelif age < 65:\n    label = \"adult\"\nelse:\n    label = \"senior\"\n\nprint(label)\n",
+          "prompt": "Walk through the chain top to bottom. Which branch fires for `age = 17`?\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "teen",
+            "normalize": "collapse-trailing-newline"
+          }
+        },
+        {
+          "type": "fill",
+          "id": "conditionals/elif-and-pattern-match/s05-05-fill-the-elif",
+          "xp": 3,
+          "hint": [
+            {
+              "level": 1,
+              "body": "It's not `if`, it's not `else`. It's the contraction of *else if*.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "It's `elif`. One word, no space. `else if` (two words) is JavaScript or C.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 55,
+          "concept": "elif-keyword",
+          "prompt": "Cursor wrote a three-branch chain. The middle keyword is missing — it's the\none that means \"otherwise, check this.\" Fill it in.\n```python\nweather = \"rain\"\n\nif weather == \"sun\":\n    print(\"shades\")\n___ weather == \"rain\":\n    print(\"umbrella\")\nelse:\n    print(\"just go\")\n```\n",
+          "blanks": [
+            {
+              "id": "keyword",
+              "accept": [
+                "elif"
+              ],
+              "caseSensitive": true,
+              "normalize": "trim"
+            }
+          ]
+        },
+        {
+          "type": "fix",
+          "id": "conditionals/elif-and-pattern-match/s06-06-fix-the-elif-order",
+          "xp": 4,
+          "hint": [
+            {
+              "level": 1,
+              "body": "The first true branch wins. The `A` check has to come *before* the `B` check, or 95 falls into B.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Swap lines 3-4 with lines 5-6. Order should be: `>= 90` for `A`, then `>= 80` for `B`, then `>= 70` for `C`, then `else F`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 80,
+          "concept": "elif-order-bug",
+          "brokenCode": "score = 95\n\nif score >= 80:\n    grade = \"B\"\nelif score >= 90:\n    grade = \"A\"\nelif score >= 70:\n    grade = \"C\"\nelse:\n    grade = \"F\"\n\nprint(grade)\n",
+          "prompt": "Claude generated a grade-letter chain. The output for `score = 95` is `B`\ninstead of `A`. The broader condition `>= 80` is being checked before the\nnarrower `>= 90`, so a 95 always falls into the B bucket.\n\nReorder the branches so a `95` prints `A`, and the chain still works for\nother scores.\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "A",
+            "normalize": "collapse-trailing-newline"
+          },
+          "bugLines": [
+            3,
+            5
+          ],
+          "revealAfter": 4
+        },
+        {
+          "type": "fix",
+          "id": "conditionals/elif-and-pattern-match/s07-07-fix-the-match",
+          "xp": 4,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Every `match` block needs a fallback for values that don't match any of the named cases. The fallback uses an underscore.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Add `case _:` followed by an indented `result = \"unknown\"` line, before the `print`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 75,
+          "concept": "match-default-case",
+          "brokenCode": "command = \"shutdown\"\n\nmatch command:\n    case \"start\":\n        result = \"starting\"\n    case \"stop\":\n        result = \"stopping\"\n    case \"restart\":\n        result = \"restarting\"\n\nprint(result)\n",
+          "prompt": "Cursor wrote a `match` statement that handles three commands but forgot the\ncatch-all. When `command = \"shutdown\"` (which isn't in any case), the\nvariable `result` never gets set, and line 11 crashes with a `NameError`.\n\nAdd a `case _:` block at the end so unmatched commands produce\n`result = \"unknown\"`. The script should print `unknown`.\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "unknown",
+            "normalize": "collapse-trailing-newline"
+          },
+          "bugLines": [
+            9
+          ],
+          "revealAfter": 4
+        },
+        {
+          "type": "write",
+          "id": "conditionals/elif-and-pattern-match/s08-08-write-grade",
+          "xp": 5,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Narrowest band first. `>= 85` is hot, `>= 70` is warm, `>= 55` is cool, anything else is cold.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Four branches. `if temp >= 85: print(\"hot\")`, `elif temp >= 70: print(\"warm\")`, `elif temp >= 55: print(\"cool\")`, `else: print(\"cold\")`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 100,
+          "concept": "write-elif-chain",
+          "prompt": "Write an `if/elif/else` chain that takes the variable `temp = 72` and\nprints exactly one of these labels:\n\n- `\"hot\"` if `temp >= 85`\n- `\"warm\"` if `temp >= 70`\n- `\"cool\"` if `temp >= 55`\n- `\"cold\"` otherwise\n\nFor `temp = 72`, the expected output is:\n```\nwarm\n```\n",
+          "starter": "temp = 72\n\n# if/elif/elif/else below:\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "warm",
+            "normalize": "collapse-trailing-newline"
+          },
+          "solution": "temp = 72\n\nif temp >= 85:\n    print(\"hot\")\nelif temp >= 70:\n    print(\"warm\")\nelif temp >= 55:\n    print(\"cool\")\nelse:\n    print(\"cold\")\n",
+          "hiddenTests": []
+        },
+        {
+          "type": "checkpoint",
+          "id": "conditionals/elif-and-pattern-match/s09-09-checkpoint",
+          "xp": 8,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Five branches. Each one returns a string. `200 <= code < 300` is the Python way to say *between 200 and 299*.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "`if 200 <= code < 300: return \"ok\"`, then `elif 300 <= code < 400: return \"redirect\"`, etc. The last branch is `else: return \"weird\"`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "check",
+          "estSeconds": 130,
+          "concept": "elif-recap",
+          "prompt": "Last one. Cursor wrote a function that classifies an HTTP status code into\na category — `\"ok\"`, `\"redirect\"`, `\"client error\"`, `\"server error\"`, or\n`\"weird\"`. The `elif` chain is mostly there but the function never returns\nanything (only the `pass` placeholder is at the bottom).\n\nReplace the body so the function uses a chain that returns the right\ncategory for each range:\n\n- `200..299` → `\"ok\"`\n- `300..399` → `\"redirect\"`\n- `400..499` → `\"client error\"`\n- `500..599` → `\"server error\"`\n- anything else → `\"weird\"`\n\nThe script calls `classify(404)` and should print `client error`.\n",
+          "starter": "def classify(code):\n    # your if/elif/elif/elif/else chain below:\n    pass\n\nprint(classify(404))\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "client error",
+            "normalize": "collapse-trailing-newline"
+          },
+          "solution": "def classify(code):\n    if 200 <= code < 300:\n        return \"ok\"\n    elif 300 <= code < 400:\n        return \"redirect\"\n    elif 400 <= code < 500:\n        return \"client error\"\n    elif 500 <= code < 600:\n        return \"server error\"\n    else:\n        return \"weird\"\n\nprint(classify(404))\n",
+          "passThreshold": 0.66
+        }
+      ],
+      "xpTotal": 31
+    }
+  ],
+  "xpTotal": 57
+}

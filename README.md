@@ -1,36 +1,46 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# code-killa
 
-## Getting Started
+> Codecademy teaches Python like it's 1995. Boot.dev gamifies the same curriculum. Both assume you want to be a software engineer.
+>
+> code-killa is the school for people who use Cursor every day and need to know what it got wrong.
 
-First, run the development server:
+**Status**: building in public. Early days. Follow [@TFisPython](https://x.com/TFisPython) for daily progress.
+
+---
+
+## What this is
+
+An open-source Python school for the AI-builder era. The curriculum inverts around the workflow you actually use: read code AI wrote, predict what it does, fix what it got wrong, write only what AI fluently can't.
+
+Eight chapters at MVP, all running 100% in your browser via Pyodide. No server. No accounts. No paywalls. No tracking. Free forever.
+
+## Why this exists
+
+Most "learn Python" platforms were designed for people becoming software engineers. Their curriculum is shaped by that endgame: data structures, algorithms, leetcode prep.
+
+Maya doesn't want any of that. She uses Cursor every day, ships AI features at her PM job, and wants to actually understand the 200 lines Claude just wrote. That's a different curriculum.
+
+We skip what AI handles fluently. We double down on what AI gets wrong: hallucinated APIs, silent type bugs, off-by-one errors, traceback reading, environment setup. We teach the mental models you need to *direct* AI, not replace it.
+
+## Stack
+
+Next.js 16 · React 19 · Tailwind 4 · Pyodide-in-Web-Worker · CodeMirror 6 · localStorage. Zero backend. Vercel free tier hosts it forever.
+
+## Run locally
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+pnpm install
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Contributing
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+This is an in-progress build. The schema is documented in `lib/content/schema.ts`. Each lesson is YAML + Markdown in `content/python/`.
 
-## Learn More
+If you've used AI to write Python and gotten burned by something specific — hallucinated API, silent type bug, environment-setup hell — open an issue with the example. That's the curriculum.
 
-To learn more about Next.js, take a look at the following resources:
+## License
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+MIT.

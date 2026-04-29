@@ -1,0 +1,497 @@
+{
+  "number": 8,
+  "slug": "modules-and-imports",
+  "title": "Modules, imports, and why your venv hates you",
+  "blurb": "Half of `pip install x` failures are environment confusion, not Python bugs. Learn what `import` actually does, what a virtual env is for, and why your script can't find the package you just installed.",
+  "lessons": [
+    {
+      "slug": "why-venv-hates-you",
+      "title": "Imports, pip, and the venv that can't see your package",
+      "estMinutes": 8,
+      "prerequisites": [],
+      "steps": [
+        {
+          "type": "read",
+          "id": "modules-and-imports/why-venv-hates-you/s01-01-what-import-does",
+          "xp": 1,
+          "hint": [],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 45,
+          "concept": "import-statement",
+          "body": "# `import` is \"load this other file's code so I can use it\"\n\nWhen AI writes `import math` at the top of a script, it's saying *go find\nthe file called `math.py` somewhere Python knows to look, run it, and let\nme reach into its functions*.\n\nAfter `import math`, every name from that module is reached with `math.xxx`:\n\n- `math.pi` — the constant\n- `math.sqrt(16)` — the function\n\nHit **Run**. The two prints show `3.141592653589793` and `4.0`.\n\nYou'll see this shape every day. AI imports `math`, `json`, `datetime`,\n`random`, `os`, `requests`, `pandas`. The standard library (the first five)\nis built in. The rest you have to install — and that's where `venv` enters\nthe chat.",
+          "cta": "Got it",
+          "code": "import math\n\nprint(math.pi)\nprint(math.sqrt(16))\n",
+          "runnable": true
+        },
+        {
+          "type": "mc",
+          "id": "modules-and-imports/why-venv-hates-you/s02-02-which-import-works",
+          "xp": 2,
+          "hint": [
+            {
+              "level": 1,
+              "body": "The shape is `from <module> import <name>`. Two keywords, in that order.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 40,
+          "concept": "import-syntax",
+          "prompt": "Cursor wants to use `pi` from the `math` module without the `math.` prefix\nevery time. Which import line lets you write just `pi`?\n",
+          "options": [
+            {
+              "id": "a",
+              "label": "`import math`",
+              "explain": "That works, but you'd have to write `math.pi`. The prompt asked for just `pi`."
+            },
+            {
+              "id": "b",
+              "label": "`from math import pi`"
+            },
+            {
+              "id": "c",
+              "label": "`import pi from math`",
+              "explain": "That's not Python syntax. The keywords are `from` then `import`, in that order."
+            },
+            {
+              "id": "d",
+              "label": "`include math.pi`",
+              "explain": "Python doesn't have `include`. That's C++."
+            }
+          ],
+          "answerIds": [
+            "b"
+          ],
+          "shuffle": false,
+          "code": "from math import pi\nprint(pi)\n# 3.141592653589793 — no `math.` prefix because we imported pi by name.\n",
+          "runnable": true
+        },
+        {
+          "type": "read",
+          "id": "modules-and-imports/why-venv-hates-you/s03-03-from-import",
+          "xp": 1,
+          "hint": [],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 50,
+          "concept": "from-import-vs-import",
+          "body": "# `from x import y` pulls one name out\n\nTwo ways to use the same module, both legal, slightly different feel:\n\n```python\nimport random\nrandom.choice(pets)        # full path, every time\n\nfrom random import choice\nchoice(pets)               # just the name\n```\n\nThe first one is louder — every call says where the function came from.\nThe second one is shorter but you lose that signal. AI mixes both styles\nin the same file all the time, which makes its code hard to read.\n\nA practical rule: if the file is short, `from x import y` is fine. If it's\nlong or uses many modules, `import x` keeps the source obvious.\n\nHit **Run** on the right. `choice(pets)` picks one of the three at random.\nRun it a few times — different result each trip.",
+          "cta": "Got it",
+          "code": "from random import choice\n\npets = [\"luna\", \"moose\", \"biscuit\"]\nprint(choice(pets))\n",
+          "runnable": true
+        },
+        {
+          "type": "predict",
+          "id": "modules-and-imports/why-venv-hates-you/s04-04-predict-the-import",
+          "xp": 3,
+          "hint": [
+            {
+              "level": 1,
+              "body": "`sqrt(81)` is the square root of 81. It returns a float, not an int.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "The square root of 81 is 9. Python's `math.sqrt` always returns a float, so it prints `9.0`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 60,
+          "concept": "import-evaluation",
+          "code": "from math import sqrt\n\nresult = sqrt(81)\nprint(result)\n",
+          "prompt": "This script imports just one thing from `math` and uses it. What does it print?\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "9.0",
+            "normalize": "collapse-trailing-newline"
+          }
+        },
+        {
+          "type": "read",
+          "id": "modules-and-imports/why-venv-hates-you/s05-05-venv-explained",
+          "xp": 2,
+          "hint": [],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 90,
+          "concept": "virtual-environment",
+          "body": "# A venv is a folder. Your packages go in it. End of mystery.\n\nWhen you `pip install requests`, the package has to land *somewhere on disk*.\nWithout a virtual environment, it lands in your *system Python* — the same\nplace every other project on your laptop is reading from. Two projects with\ntwo different versions of `requests` will fight, and you'll lose.\n\nA **virtual environment** (venv) is just a folder Python treats as its own\nmini-install:\n\n```\n.venv/\n  bin/python      # a Python that only sees this folder's packages\n  bin/pip\n  lib/python3.x/site-packages/   # where your installs land\n```\n\nThe trap that hits non-engineers most: you create the venv, forget to\nactivate it, run `pip install`, and the package lands in your system Python.\nThen your script (which Cursor configured to use the venv) can't find it.\n\nThe classic error: `ModuleNotFoundError: No module named 'requests'`. Nine\ntimes out of ten, that's not Python's fault. It's that `pip` and your\nscript are looking at two different Python installs.\n\n(This lesson runs in your browser, so we can't make a venv here. But every\nreal Python project on your laptop will use one.)",
+          "cta": "Got it",
+          "code": "# Why your venv hates you, in three lines:\n#\n#   python -m venv .venv          # create an isolated Python install\n#   source .venv/bin/activate     # tell the shell to use it\n#   pip install requests          # installs *into the venv*, not the OS\n#\n# If you skip step 2, `pip install` writes to the wrong Python.\n# Then your script can't find the package and you blame Python.\n",
+          "runnable": true
+        },
+        {
+          "type": "fill",
+          "id": "modules-and-imports/why-venv-hates-you/s06-06-fill-the-import",
+          "xp": 3,
+          "hint": [
+            {
+              "level": 1,
+              "body": "The shape is `from <module> import <name>`. The first word is the missing one.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "It's `from`. `from json import dumps`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 50,
+          "concept": "from-import-syntax",
+          "prompt": "Cursor wants to use `dumps` from the `json` module to turn a dict into a\nstring. The import line is missing a keyword. Fill in the blank.\n```python\n___ json import dumps\n\nuser = {\"name\": \"{{user.name}}\", \"score\": 92}\nprint(dumps(user))\n```\n",
+          "blanks": [
+            {
+              "id": "keyword",
+              "accept": [
+                "from"
+              ],
+              "caseSensitive": true,
+              "normalize": "trim"
+            }
+          ]
+        },
+        {
+          "type": "fix",
+          "id": "modules-and-imports/why-venv-hates-you/s07-07-fix-the-import",
+          "xp": 4,
+          "hint": [
+            {
+              "level": 1,
+              "body": "`import math` makes the module available as `math.xxx`. To use `sqrt`, you have to prefix it.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Change `sqrt(25)` to `math.sqrt(25)` on line 3.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 75,
+          "concept": "import-name-mismatch",
+          "brokenCode": "import math\n\nprint(sqrt(25))\n",
+          "prompt": "Claude wrote this and it crashes with `NameError: name 'sqrt' is not defined`.\nThe `math` module is imported fine on line 1, but line 3 calls `sqrt(25)`\nwithout saying *which* module it came from.\n\nFix line 3 so the script prints `5.0`.\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "5.0",
+            "normalize": "collapse-trailing-newline"
+          },
+          "bugLines": [
+            3
+          ],
+          "revealAfter": 4
+        },
+        {
+          "type": "checkpoint",
+          "id": "modules-and-imports/why-venv-hates-you/s08-08-checkpoint",
+          "xp": 8,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Two lines. Line 1 imports `pi` from `math`. Line 4 multiplies `pi * radius * radius`.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "`from math import pi` then `area = pi * radius * radius`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "check",
+          "estSeconds": 130,
+          "concept": "imports-recap",
+          "prompt": "One last thing. The starter script is supposed to use `pi` from the `math`\nmodule to compute the area of a circle with radius 5. The import line and\nthe math line are both missing.\n\nFinish lines 1 and 4 so the script prints `area: 78.53981633974483`.\n\nUse `from math import pi` so you can write just `pi` without the `math.` prefix.\n",
+          "starter": "# import line goes here:\n\nradius = 5\n# area = pi * radius * radius\narea =\n\nprint(f\"area: {area}\")\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "area: 78.53981633974483",
+            "normalize": "collapse-trailing-newline"
+          },
+          "solution": "from math import pi\n\nradius = 5\narea = pi * radius * radius\n\nprint(f\"area: {area}\")\n",
+          "passThreshold": 0.66
+        }
+      ],
+      "xpTotal": 24
+    },
+    {
+      "slug": "from-imports-and-aliases",
+      "title": "Aliases, multi-imports, and the `np.` you'll see everywhere",
+      "estMinutes": 7,
+      "prerequisites": [],
+      "steps": [
+        {
+          "type": "read",
+          "id": "modules-and-imports/from-imports-and-aliases/s01-01-aliases",
+          "xp": 1,
+          "hint": [],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 50,
+          "concept": "import-aliases",
+          "body": "# `as` lets you rename an import on the spot\n\nWhen AI generates data-science or web code, you'll see imports like this\nconstantly:\n\n```python\nimport numpy as np\nimport pandas as pd\nimport matplotlib.pyplot as plt\nfrom datetime import datetime as dt\n```\n\nThe `as` keyword renames the module (or the imported name) inside *this*\nfile only. The original library is unchanged — you're just picking a shorter\nlocal name.\n\nRun the code on the right.\n\n- `import math as m` lets you write `m.sqrt(81)` instead of `math.sqrt(81)`\n- `from datetime import datetime as dt` is a double-rename: pull `datetime`\n  out of the `datetime` module, and call it `dt` here\n\nTwo reasons aliases exist:\n\n1. **Short names for things you call often.** `np` reads cleaner than\n   `numpy.array(...)`. The convention is so strong that `np`, `pd`, `plt`\n   are basically standardized in AI-generated code.\n2. **Avoiding name clashes.** If two libraries both have a `Path` class,\n   you alias one of them to keep them apart.",
+          "cta": "Got it",
+          "code": "import math as m\nfrom datetime import datetime as dt\n\nprint(m.sqrt(81))\nprint(dt.now().year)\n",
+          "runnable": true
+        },
+        {
+          "type": "mc",
+          "id": "modules-and-imports/from-imports-and-aliases/s02-02-which-alias",
+          "xp": 2,
+          "hint": [
+            {
+              "level": 1,
+              "body": "The keyword is `as`, and it goes right after the module name in a regular `import`.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "`import numpy as np` is the convention. You'll see it at the top of nearly every AI-generated data script.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 40,
+          "concept": "alias-syntax",
+          "prompt": "Cursor offered four ways to import `numpy` as `np`. Only one is the\nstandard, working syntax. Which one?\n",
+          "options": [
+            {
+              "id": "a",
+              "label": "`import numpy as np`"
+            },
+            {
+              "id": "b",
+              "label": "`import np = numpy`",
+              "explain": "Python isn't JavaScript. There's no `=` in an import statement."
+            },
+            {
+              "id": "c",
+              "label": "`from numpy import np`",
+              "explain": "That tries to pull a name called `np` *out of* numpy. There isn't one — `np` is the local alias, not a thing inside the library."
+            },
+            {
+              "id": "d",
+              "label": "`alias numpy as np`",
+              "explain": "There's no `alias` keyword in Python. Aliases happen via `as` inside an `import`."
+            }
+          ],
+          "answerIds": [
+            "a"
+          ],
+          "shuffle": false,
+          "code": "import math as m\nprint(m.pi)\nprint(m.sqrt(16))\n",
+          "runnable": true
+        },
+        {
+          "type": "read",
+          "id": "modules-and-imports/from-imports-and-aliases/s03-03-multi-and-star",
+          "xp": 1,
+          "hint": [],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 60,
+          "concept": "multi-import-and-star",
+          "body": "# Two more shapes you'll see, one to avoid\n\n**Multi-import** — comma-separated names in a single `from` line:\n\n```python\nfrom math import pi, sqrt, floor\n```\n\nPulls three names out of `math` in one statement. Equivalent to three\nseparate `from math import ...` lines. Run the code on the right to see it.\n\n**Star import** — `from x import *`:\n\n```python\nfrom math import *   # don't do this\n```\n\nThis pulls *every* name from `math` into your file's namespace. AI does\nthis sometimes and it's almost always wrong. Two reasons:\n\n1. **You can't tell where a name came from.** Reading `pi` later, you\n   don't know if it's `math.pi` or some local variable. Star imports\n   destroy that signal.\n2. **Name collisions silently overwrite.** If two modules both export\n   `Path`, the second `import *` wipes out the first one.\n\nRule: never `import *`. Either name what you want (`from x import a, b`)\nor import the module and use the dot path (`import x; x.a`).",
+          "cta": "Got it",
+          "code": "# multi-import: pull several names from one module in one line\nfrom math import pi, sqrt, floor\n\nprint(pi)\nprint(sqrt(81))\nprint(floor(3.7))\n",
+          "runnable": true
+        },
+        {
+          "type": "predict",
+          "id": "modules-and-imports/from-imports-and-aliases/s04-04-predict-the-alias",
+          "xp": 3,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Both reach the same value, just via different local names. `round(x, 2)` rounds to 2 decimal places.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "`m.pi` and `PI` both equal `math.pi`. Each one rounded to 2 decimals is `3.14`. Two lines, both `3.14`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 55,
+          "concept": "alias-resolution",
+          "code": "import math as m\nfrom math import pi as PI\n\nprint(round(m.pi, 2))\nprint(round(PI, 2))\n",
+          "prompt": "Two ways of getting at `math.pi`. One uses the module alias, one renames\nthe constant directly. What does this print?\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "3.14\n3.14\n",
+            "normalize": "collapse-trailing-newline"
+          }
+        },
+        {
+          "type": "fill",
+          "id": "modules-and-imports/from-imports-and-aliases/s05-05-fill-the-alias",
+          "xp": 3,
+          "hint": [
+            {
+              "level": 1,
+              "body": "There's exactly one Python keyword that renames an import inline. Two letters.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "It's `as`. The full line reads `import pandas as pd`. You'll see this exact line at the top of half of all AI-generated Python.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 55,
+          "concept": "as-keyword",
+          "prompt": "Cursor wrote a data-science snippet and aliased `pandas` as `pd` — the\nindustry-standard rename. The keyword that does the renaming is missing\non line 1. Fill it in.\n```python\nimport pandas ___ pd\n\n# later in the file:\n# df = pd.DataFrame(rows)\n```\n",
+          "blanks": [
+            {
+              "id": "keyword",
+              "accept": [
+                "as"
+              ],
+              "caseSensitive": true,
+              "normalize": "trim"
+            }
+          ]
+        },
+        {
+          "type": "fix",
+          "id": "modules-and-imports/from-imports-and-aliases/s06-06-fix-the-alias",
+          "xp": 4,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Line 1 renamed `math` to `m` for this file. The original name `math` no longer exists here.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Change line 3 to `print(m.sqrt(81))`. Use the alias, not the original module name.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 70,
+          "concept": "missing-alias",
+          "brokenCode": "import math as m\n\nprint(math.sqrt(81))\n",
+          "prompt": "Cursor imported `math` as `m` on line 1 but then forgot the alias on line 3\nand wrote `math.sqrt(...)` instead. The script crashes with\n`NameError: name 'math' is not defined`.\n\nFix line 3 so the script prints `9.0` using the alias.\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "9.0",
+            "normalize": "collapse-trailing-newline"
+          },
+          "bugLines": [
+            3
+          ],
+          "revealAfter": 4
+        },
+        {
+          "type": "fix",
+          "id": "modules-and-imports/from-imports-and-aliases/s07-07-fix-the-name-clash",
+          "xp": 4,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Two fixes. Replace `from math import *` with a targeted import. Then drop the line that reassigns `sum`.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Line 1: `from math import pi, sqrt`. Delete line 3 (`sum = 99`) entirely so the built-in `sum` stays available.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 75,
+          "concept": "from-import-shadowing",
+          "brokenCode": "from math import *\n\nsum = 99   # shadows the built-in (don't do this)\n\nprint(pi)\nprint(sqrt(81))\nprint(sum([1, 2, 3]))\n",
+          "prompt": "Cursor wrote this and `sum` no longer works the way it should. The bug:\n`from math import *` pulled in everything from `math`, including\n`math.fsum`, but more importantly the user *also* defined a local variable\ncalled `sum`, which silently shadows Python's built-in `sum()` function.\n\nReplace the star import on line 1 with a targeted import that only brings\nin `pi` and `sqrt`. After that, `sum([1, 2, 3])` works again. The script\nshould print:\n```\n3.141592653589793\n9.0\n6\n```\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "3.141592653589793\n9.0\n6\n",
+            "normalize": "collapse-trailing-newline"
+          },
+          "bugLines": [
+            1,
+            3
+          ],
+          "revealAfter": 4
+        },
+        {
+          "type": "write",
+          "id": "modules-and-imports/from-imports-and-aliases/s08-08-write-import",
+          "xp": 5,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Two import lines: `import json` and `from json import dumps, loads`. Then `dumps(data)` produces a string, `loads(...)` reads it back.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "`encoded = dumps(data)` then `decoded = loads(encoded)` then `print(decoded[\"city\"])`. The two import lines come first.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 90,
+          "concept": "write-aliased-import",
+          "prompt": "Write the imports and code so:\n\n1. `json` is imported normally (no alias)\n2. `dumps` and `loads` are pulled out of `json` directly (`from json import ...`)\n3. The script encodes the dict `{\"city\": \"boston\"}` to a JSON string with\n   `dumps`, then decodes it back to a dict with `loads`, and prints the\n   decoded city.\n\nExpected output:\n```\nboston\n```\n",
+          "starter": "# imports go here:\n\ndata = {\"city\": \"boston\"}\n\n# encode then decode:\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "boston",
+            "normalize": "collapse-trailing-newline"
+          },
+          "solution": "import json\nfrom json import dumps, loads\n\ndata = {\"city\": \"boston\"}\n\nencoded = dumps(data)\ndecoded = loads(encoded)\nprint(decoded[\"city\"])\n",
+          "hiddenTests": []
+        },
+        {
+          "type": "checkpoint",
+          "id": "modules-and-imports/from-imports-and-aliases/s09-09-checkpoint",
+          "xp": 8,
+          "hint": [
+            {
+              "level": 1,
+              "body": "The cleanest fix is one line: `from datetime import datetime`. That gives you `datetime.now()` without the alias and without the star import.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Replace lines 1-2 with a single `from datetime import datetime`. Line 3 (`print(datetime.now().year)`) stays as-is.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "check",
+          "estSeconds": 130,
+          "concept": "imports-recap",
+          "prompt": "Last one. Cursor wrote a one-page script that's supposed to print today's\nyear using `datetime`, but the imports are wrong. Three things to fix:\n\n1. The first line uses `import datetime as dt` but then later calls\n   `datetime.now()` directly — those don't match.\n2. The second line `from datetime import *` is the antipattern. Replace\n   it with a targeted `from datetime import datetime`.\n3. After fixing the first two, the third line works on its own — but\n   remove the redundant first line entirely. You only need one of the two\n   ways to reach `datetime.now()`.\n\nAfter the fix, the script should print the current year (a 4-digit number).\nWe'll grade by checking the output is `2026` (matches the current year).\n",
+          "starter": "import datetime as dt\nfrom datetime import *\n\nprint(datetime.now().year)\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "2026",
+            "normalize": "collapse-trailing-newline"
+          },
+          "solution": "from datetime import datetime\n\nprint(datetime.now().year)\n",
+          "passThreshold": 0.66
+        }
+      ],
+      "xpTotal": 31
+    }
+  ],
+  "xpTotal": 55
+}

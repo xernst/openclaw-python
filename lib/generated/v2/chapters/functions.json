@@ -1,0 +1,550 @@
+{
+  "number": 2,
+  "slug": "functions",
+  "title": "Functions — and the most-hallucinated bug AI ships",
+  "blurb": "AI writes functions constantly, and silently forgets the `return` line about a third of the time. Learn to spot the missing return on sight.",
+  "lessons": [
+    {
+      "slug": "return-values",
+      "title": "Functions and the missing return",
+      "estMinutes": 7,
+      "prerequisites": [],
+      "steps": [
+        {
+          "type": "read",
+          "id": "functions/return-values/s01-01-intro",
+          "xp": 1,
+          "hint": [],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 30,
+          "concept": "function-definition",
+          "body": "# Functions — and the line AI forgets\n\nA **function** is a named piece of code you can re-run with different inputs.\nWhen AI hands you the same 30-line block twice, it's missing a function.\n\nThe shape on the right is the one you'll read all day:\n\n- `def double(n):` — define a function called `double` that takes one input\n- `return n * 2` — hand back the answer to whoever called it\n- `double(7)` — call the function with `7` as the input\n\nHit **Run**. The `print` shows what `double(7)` handed back.",
+          "cta": "Got it",
+          "code": "def double(n):\n    return n * 2\n\nprint(double(7))\n",
+          "runnable": true
+        },
+        {
+          "type": "mc",
+          "id": "functions/return-values/s02-02-which-returns",
+          "xp": 2,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Look at line 2. It computes `a + b` but doesn't `return` it.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "A function with no `return` statement always hands back `None`. This is the most common AI bug in functions.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 35,
+          "concept": "return-vs-none",
+          "prompt": "Cursor wrote this and it prints something surprising. What does `result` end up being?\n",
+          "options": [
+            {
+              "id": "a",
+              "label": "`5`",
+              "explain": "The function computes `a + b` but never hands it back. Without `return`, the result vanishes."
+            },
+            {
+              "id": "b",
+              "label": "`None`"
+            },
+            {
+              "id": "c",
+              "label": "`0`",
+              "explain": "Python doesn't default missing returns to zero. The default is `None`."
+            },
+            {
+              "id": "d",
+              "label": "It crashes with an error",
+              "explain": "A function without a `return` is legal Python. It just hands back `None` silently."
+            }
+          ],
+          "answerIds": [
+            "b"
+          ],
+          "shuffle": false,
+          "code": "def add(a, b):\n    a + b\n\nresult = add(2, 3)\nprint(result)\n",
+          "runnable": true
+        },
+        {
+          "type": "read",
+          "id": "functions/return-values/s03-03-return-vs-print",
+          "xp": 1,
+          "hint": [],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 40,
+          "concept": "return-vs-print",
+          "body": "# `return` and `print` are not the same thing\n\nThis is the bug AI ships most often inside a function. They look similar.\nThey aren't.\n\n- `print(x)` — shows `x` on the screen, then keeps going. The function still\n  hands back `None` unless you also `return` something.\n- `return x` — hands `x` back to whoever called the function. Nothing shows\n  on the screen unless someone *prints* what they got back.\n\nRun the code on the right. `shout_returns` hands back the uppercase word —\nso `a` holds `\"HELLO\"`. `shout_prints` shows the word on screen but hands\nback nothing — so `b` is `None`.\n\nWhenever you see a function that \"doesn't seem to work,\" check this first.",
+          "cta": "Got it",
+          "code": "def shout_returns(word):\n    return word.upper()\n\ndef shout_prints(word):\n    print(word.upper())\n\na = shout_returns(\"hello\")\nb = shout_prints(\"hello\")\n\nprint(\"a is:\", a)\nprint(\"b is:\", b)\n",
+          "runnable": true
+        },
+        {
+          "type": "predict",
+          "id": "functions/return-values/s04-04-predict-the-result",
+          "xp": 3,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Work line by line. `triple(4)` returns `12`, so `x` is `12`. Now what is `triple(x)`?",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "`triple(4)` is `12`. `triple(12)` is `36`. The chain compounds.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 60,
+          "concept": "function-call-evaluation",
+          "code": "def triple(n):\n    return n * 3\n\nx = triple(4)\ny = triple(x)\nprint(y)\n",
+          "prompt": "Two calls to the same function, chained through a variable. What does this print?\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "36",
+            "normalize": "collapse-trailing-newline"
+          }
+        },
+        {
+          "type": "fill",
+          "id": "functions/return-values/s05-05-fill-the-return",
+          "xp": 3,
+          "hint": [
+            {
+              "level": 1,
+              "body": "There's exactly one keyword that hands a value back from a function.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "It's `return`. Without it, the function builds the f-string and throws it away.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 50,
+          "concept": "return-keyword",
+          "prompt": "Cursor wrote a function that's supposed to hand back a greeting string,\nbut the keyword on line 2 is missing. Fill in the blank.\n```python\ndef greet(name):\n    ___ f\"hi, {name}\"\n\nprint(greet(\"{{user.name}}\"))\n```\n",
+          "blanks": [
+            {
+              "id": "keyword",
+              "accept": [
+                "return"
+              ],
+              "caseSensitive": true,
+              "normalize": "trim"
+            }
+          ]
+        },
+        {
+          "type": "fix",
+          "id": "functions/return-values/s06-06-fix-the-missing-return",
+          "xp": 4,
+          "hint": [
+            {
+              "level": 1,
+              "body": "The function computes `a + b` but never hands the answer back. What keyword is missing?",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Add `return` in front of `a + b` on line 2.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 75,
+          "concept": "missing-return-bug",
+          "brokenCode": "def add(a, b):\n    a + b\n\nresult = add(7, 8)\nprint(f\"total: {result}\")\n",
+          "prompt": "Claude wrote this and the output is `total: None` instead of `total: 15`.\nThis is the most common bug in AI-generated functions. Fix it so the code prints `total: 15`.\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "total: 15",
+            "normalize": "collapse-trailing-newline"
+          },
+          "bugLines": [
+            2
+          ],
+          "revealAfter": 4
+        },
+        {
+          "type": "fix",
+          "id": "functions/return-values/s07-07-fix-print-vs-return",
+          "xp": 4,
+          "hint": [
+            {
+              "level": 1,
+              "body": "The function shows the answer but doesn't hand it back. The caller on line 4 has no value to add `1` to.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Change `print(n * 2)` to `return n * 2` on line 2. The caller on line 5 already prints the result.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 75,
+          "concept": "print-instead-of-return",
+          "brokenCode": "def double(n):\n    print(n * 2)\n\nresult = double(7)\nprint(f\"doubled plus one: {result + 1}\")\n",
+          "prompt": "Cursor wrote a function that *prints* the doubled number instead of *returning* it.\nThe caller on line 5 needs the value to do math with. Right now `result` is `None`\nand line 6 crashes with a `TypeError`.\n\nFix the function so the script prints `doubled plus one: 15`.\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "doubled plus one: 15\n",
+            "normalize": "collapse-trailing-newline"
+          },
+          "bugLines": [
+            2
+          ],
+          "revealAfter": 4
+        },
+        {
+          "type": "write",
+          "id": "functions/return-values/s08-08-write-double",
+          "xp": 5,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Two pieces. First `def square(n):` with a `return` line inside. Then a `print(square(9))` to actually show the value.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "`def square(n):` then on the next line, indented, `return n * n`. After the function, `print(square(9))`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 90,
+          "concept": "write-function-with-return",
+          "prompt": "Write a function called `square` that takes one number and returns it multiplied\nby itself. Then call it with `9` and print the result.\n\nExpected output:\n```\n81\n```\n",
+          "starter": "# define the function:\n\n# call it and print the result:\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "81",
+            "normalize": "collapse-trailing-newline"
+          },
+          "solution": "def square(n):\n    return n * n\n\nprint(square(9))\n",
+          "hiddenTests": []
+        },
+        {
+          "type": "checkpoint",
+          "id": "functions/return-values/s09-09-checkpoint",
+          "xp": 8,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Replace `pass` with a `return` line. The math is `price * (1 - percent_off / 100)`.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "`return price * (1 - percent_off / 100)` — that's the whole body. Delete the `pass`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "check",
+          "estSeconds": 120,
+          "concept": "functions-recap",
+          "prompt": "One last thing. AI wrote a function `discount` that's supposed to take a price\nand a percent off, and hand back the new price. The function body is missing\nthe line that does the math and returns the answer.\n\nFinish the function so the script prints `final: 80.0`.\n",
+          "starter": "def discount(price, percent_off):\n    # your one line goes here:\n    pass\n\nfinal_price = discount(100, 20)\nprint(f\"final: {final_price}\")\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "final: 80.0",
+            "normalize": "collapse-trailing-newline"
+          },
+          "solution": "def discount(price, percent_off):\n    return price * (1 - percent_off / 100)\n\nfinal_price = discount(100, 20)\nprint(f\"final: {final_price}\")\n",
+          "passThreshold": 0.66
+        }
+      ],
+      "xpTotal": 31
+    },
+    {
+      "slug": "arguments-and-defaults",
+      "title": "Arguments, defaults, and the silent wrong-order bug",
+      "estMinutes": 7,
+      "prerequisites": [],
+      "steps": [
+        {
+          "type": "read",
+          "id": "functions/arguments-and-defaults/s01-01-intro",
+          "xp": 1,
+          "hint": [],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 35,
+          "concept": "positional-arguments",
+          "body": "# Arguments are positional by default\n\nWhen you call a function, the values you pass in line up with the parameters\n**in order**. First value goes to the first parameter, second to the second,\nand so on.\n\nThe shape on the right is what AI writes whenever you ask for \"send an email\"\nor \"log a request\" — three parameters, three arguments, matched left to right.\n\n- `to` gets `\"sam@example.com\"`\n- `subject` gets `\"lunch?\"`\n- `body` gets `\"1pm okay?\"`\n\nHit **Run**. Now imagine reversing two of those arguments by accident. Python\nwon't catch it — the email goes out with the body in the subject line.\nThat's the bug we're learning to spot.",
+          "cta": "Got it",
+          "code": "def send_email(to, subject, body):\n    print(f\"to: {to}\")\n    print(f\"subject: {subject}\")\n    print(f\"body: {body}\")\n\nsend_email(\"sam@example.com\", \"lunch?\", \"1pm okay?\")\n",
+          "runnable": true
+        },
+        {
+          "type": "mc",
+          "id": "functions/arguments-and-defaults/s02-02-positional-vs-keyword",
+          "xp": 2,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Three of these say the same thing. One reverses the source and destination accounts.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Option C swaps `from` and `to`. Python has no way to know — it just trusts the order. This is why keyword arguments matter.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 40,
+          "concept": "keyword-arguments",
+          "prompt": "Four ways to call `transfer`. Three of them work and produce the same output.\nOne is wrong because it relies on positional order — and the order is reversed.\nWhich call is the bug?\n",
+          "options": [
+            {
+              "id": "a",
+              "label": "`transfer(\"checking\", \"savings\", 100)`",
+              "explain": "Positional and in the right order. This works."
+            },
+            {
+              "id": "b",
+              "label": "`transfer(from_account=\"checking\", to_account=\"savings\", amount=100)`",
+              "explain": "All keywords. Order doesn't matter when you name them. Safe."
+            },
+            {
+              "id": "c",
+              "label": "`transfer(\"savings\", \"checking\", 100)`"
+            },
+            {
+              "id": "d",
+              "label": "`transfer(amount=100, from_account=\"checking\", to_account=\"savings\")`",
+              "explain": "Keywords let you write them in any order. Still correct."
+            }
+          ],
+          "answerIds": [
+            "c"
+          ],
+          "shuffle": false,
+          "code": "def transfer(from_account, to_account, amount):\n    print(f\"moved {amount} from {from_account} to {to_account}\")\n",
+          "runnable": true
+        },
+        {
+          "type": "read",
+          "id": "functions/arguments-and-defaults/s03-03-defaults",
+          "xp": 1,
+          "hint": [],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 45,
+          "concept": "default-arguments",
+          "body": "# Default values let callers skip arguments\n\nA parameter with a default — `greeting=\"hi\"` — is optional. If the caller\ndoesn't pass it, Python uses the default. If they do, theirs wins.\n\nThis is how AI almost always writes config-style functions:\n\n- `greet(\"alex\")` — no second argument, uses `\"hi\"`\n- `greet(\"alex\", \"yo\")` — passes `\"yo\"` positionally, overrides the default\n- `greet(\"alex\", greeting=\"howdy\")` — same thing, but named for clarity\n\nRun it. Three calls, three different outputs, one function definition.\n\nThe rule that bites people: **defaulted parameters must come after\nnon-defaulted ones**. `def greet(greeting=\"hi\", name)` is a syntax error.\nPython needs to know what's optional before it sees what's required.",
+          "cta": "Got it",
+          "code": "def greet(name, greeting=\"hi\"):\n    return f\"{greeting}, {name}\"\n\nprint(greet(\"alex\"))\nprint(greet(\"alex\", \"yo\"))\nprint(greet(\"alex\", greeting=\"howdy\"))\n",
+          "runnable": true
+        },
+        {
+          "type": "predict",
+          "id": "functions/arguments-and-defaults/s04-04-predict-the-default",
+          "xp": 3,
+          "hint": [
+            {
+              "level": 1,
+              "body": "First call uses `percent_off=10`. Second call uses `percent_off=25`. Run the math for each.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "`200 * (1 - 10/100)` is `180.0`. `200 * (1 - 25/100)` is `150.0`. Space between them.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 50,
+          "concept": "default-override",
+          "code": "def discount(price, percent_off=10):\n    return price * (1 - percent_off / 100)\n\na = discount(200)\nb = discount(200, 25)\nprint(f\"{a} {b}\")\n",
+          "prompt": "Two calls. The first uses the default, the second overrides it.\nWhat does this print?\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "180.0 150.0",
+            "normalize": "collapse-trailing-newline"
+          }
+        },
+        {
+          "type": "fill",
+          "id": "functions/arguments-and-defaults/s05-05-fill-the-keyword",
+          "xp": 3,
+          "hint": [
+            {
+              "level": 1,
+              "body": "The caller wants to set the third parameter without touching the second. Name the parameter you're targeting.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "The third parameter is `source`. Use `source=\"auth\"` to set it by name and let `level` keep its default.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 55,
+          "concept": "keyword-argument-syntax",
+          "prompt": "Cursor wrote a function with three parameters. The first call uses positional\narguments. The second call wants to skip the middle one and only set the\nlast one. Fill in the missing keyword name on line 6.\n```python\ndef log(message, level=\"info\", source=\"app\"):\n    print(f\"[{level}] {source}: {message}\")\n\nlog(\"started\", \"warn\", \"auth\")\n\nlog(\"started\", ___=\"auth\")\n```\n",
+          "blanks": [
+            {
+              "id": "keyword",
+              "accept": [
+                "source"
+              ],
+              "caseSensitive": true,
+              "normalize": "trim"
+            }
+          ]
+        },
+        {
+          "type": "fix",
+          "id": "functions/arguments-and-defaults/s06-06-fix-the-arg-order",
+          "xp": 4,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Look at the parameter order in the `def`. Then re-read the call. The amount is in the wrong slot.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Change line 5 to `transfer(\"checking\", \"savings\", 100)`. Or use keywords: `transfer(from_account=\"checking\", to_account=\"savings\", amount=100)`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 75,
+          "concept": "argument-order-bug",
+          "brokenCode": "def transfer(from_account, to_account, amount):\n    print(f\"from {from_account} to {to_account}: {amount}\")\n\n# the call below has the arguments in the wrong order\ntransfer(100, \"savings\", \"checking\")\n",
+          "prompt": "Claude generated this and the output is `from 50 to 100: savings`. The\narguments to `transfer` got swapped — `amount` ended up where `from_account`\nshould be. Fix the call on line 5 so the output reads\n`from checking to savings: 100`.\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "from checking to savings: 100",
+            "normalize": "collapse-trailing-newline"
+          },
+          "bugLines": [
+            5
+          ],
+          "revealAfter": 4
+        },
+        {
+          "type": "fix",
+          "id": "functions/arguments-and-defaults/s07-07-fix-the-missing-default",
+          "xp": 4,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Required parameters first, defaulted ones last. `destination` is required. `seats` and `departure` have defaults.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Reorder to `def book_flight(destination, seats=1, departure=\"morning\"):` and the call `book_flight(\"Tokyo\", 2, \"evening\")` lines up by position.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 75,
+          "concept": "default-syntax-error",
+          "brokenCode": "def book_flight(seats=1, destination, departure=\"morning\"):\n    print(f\"{seats} seat(s) to {destination}, {departure}\")\n\nbook_flight(2, \"Tokyo\", \"evening\")\n",
+          "prompt": "Cursor wrote this and it crashes before it even runs. The traceback says\n`SyntaxError: non-default argument follows default argument`.\n\nDefaulted parameters have to come **after** the required ones. Reorder the\nparameters on line 1 so the function definition is valid and the call on\nline 4 still works.\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "2 seat(s) to Tokyo, evening",
+            "normalize": "collapse-trailing-newline"
+          },
+          "bugLines": [
+            1,
+            4
+          ],
+          "revealAfter": 4
+        },
+        {
+          "type": "write",
+          "id": "functions/arguments-and-defaults/s08-08-write-greet",
+          "xp": 5,
+          "hint": [
+            {
+              "level": 1,
+              "body": "The signature is `def greet(name, mood=\"good\"):`. Inside, `return` the f-string. Outside, two `print(greet(...))` calls.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "`def greet(name, mood=\"good\"):` then `return f\"hi {name}, hope you're {mood}\"`. Then `print(greet(\"alex\"))` and `print(greet(\"sam\", \"great\"))`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 90,
+          "concept": "write-function-with-default",
+          "prompt": "Write a function called `greet` that takes a `name` and an optional `mood`\nparameter. `mood` should default to `\"good\"`. The function should return the\nstring `f\"hi {name}, hope you're {mood}\"`.\n\nThen call `greet` twice and print both results:\n- `greet(\"alex\")` — uses the default\n- `greet(\"sam\", \"great\")` — overrides it\n\nExpected output:\n```\nhi alex, hope you're good\nhi sam, hope you're great\n```\n",
+          "starter": "# define greet with a default mood:\n\n# two calls and two prints:\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "hi alex, hope you're good\nhi sam, hope you're great\n",
+            "normalize": "collapse-trailing-newline"
+          },
+          "solution": "def greet(name, mood=\"good\"):\n    return f\"hi {name}, hope you're {mood}\"\n\nprint(greet(\"alex\"))\nprint(greet(\"sam\", \"great\"))\n",
+          "hiddenTests": []
+        },
+        {
+          "type": "checkpoint",
+          "id": "functions/arguments-and-defaults/s09-09-checkpoint",
+          "xp": 8,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Required parameters come before defaulted ones. `message` is required, so it goes first. Then `return f\"[{level}] {source}: {message}\"`.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "`def format_log(message, level=\"info\", source=\"app\"):` then a single `return f\"[{level}] {source}: {message}\"`. Delete the `pass`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "check",
+          "estSeconds": 120,
+          "concept": "arguments-recap",
+          "prompt": "Last one. Cursor wrote a function `format_log` that's supposed to take a\nmessage, an optional level (default `\"info\"`), and an optional source\n(default `\"app\"`), and return a string like `[info] app: started`.\n\nThe signature is wrong (defaults in the wrong order) and the function body\nis missing entirely. Fix the signature and write the one-line body that\nreturns the formatted string.\n\nTwo calls happen at the bottom — they should print:\n```\n[info] app: started\n[warn] auth: login failed\n```\n",
+          "starter": "def format_log(level=\"info\", message, source=\"app\"):\n    # your one-line return goes here:\n    pass\n\nprint(format_log(\"started\"))\nprint(format_log(\"login failed\", \"warn\", \"auth\"))\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "[info] app: started\n[warn] auth: login failed\n",
+            "normalize": "collapse-trailing-newline"
+          },
+          "solution": "def format_log(message, level=\"info\", source=\"app\"):\n    return f\"[{level}] {source}: {message}\"\n\nprint(format_log(\"started\"))\nprint(format_log(\"login failed\", \"warn\", \"auth\"))\n",
+          "passThreshold": 0.66
+        }
+      ],
+      "xpTotal": 31
+    }
+  ],
+  "xpTotal": 62
+}

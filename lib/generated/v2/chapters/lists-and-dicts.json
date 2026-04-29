@@ -1,0 +1,545 @@
+{
+  "number": 3,
+  "slug": "lists-and-dicts",
+  "title": "Lists and dicts — the bones of every API",
+  "blurb": "Every JSON response you've ever copied out of ChatGPT or a REST API is some mix of two things: lists and dicts. Read them on sight.",
+  "lessons": [
+    {
+      "slug": "the-bones-of-apis",
+      "title": "Lists, dicts, and the shape of an API response",
+      "estMinutes": 7,
+      "prerequisites": [],
+      "steps": [
+        {
+          "type": "read",
+          "id": "lists-and-dicts/the-bones-of-apis/s01-01-intro",
+          "xp": 1,
+          "hint": [],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 35,
+          "concept": "list-and-dict-shape",
+          "body": "# Every API response is some mix of two things\n\nEvery JSON blob you've copied out of ChatGPT, every REST response, every\nconfig file Cursor wrote you — it's all the same two shapes nested inside\neach other:\n\n- **List** — `[a, b, c]` — ordered. Get an item by position: `tags[0]`.\n- **Dict** — `{\"name\": \"Maya\"}` — labeled. Get a value by name: `user[\"name\"]`.\n\nThe code on the right is a typical user object — a dict that contains a\nlist. Hit **Run**. Notice line 6 reaches into the list *inside* the dict\nwith `user[\"tags\"][0]`. That stacking is what every API response looks like.",
+          "cta": "Got it",
+          "code": "user = {\n    \"name\": \"Maya\",\n    \"tags\": [\"pm\", \"early-adopter\"],\n    \"score\": 92,\n}\nprint(user[\"name\"])\nprint(user[\"tags\"][0])\n",
+          "runnable": true
+        },
+        {
+          "type": "mc",
+          "id": "lists-and-dicts/the-bones-of-apis/s02-02-which-is-which",
+          "xp": 2,
+          "hint": [
+            {
+              "level": 1,
+              "body": "*Map each X to Y* is the giveaway phrase. You need labels.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 35,
+          "concept": "list-vs-dict",
+          "prompt": "Four shapes. Which one would Cursor reach for if you asked it to *map each user to their score*?\n",
+          "options": [
+            {
+              "id": "a",
+              "label": "`a` — the list",
+              "explain": "A list keeps order but has no labels. You can't ask it for `a[\"maya\"]`."
+            },
+            {
+              "id": "b",
+              "label": "`b` — the dict"
+            },
+            {
+              "id": "c",
+              "label": "`c` — the tuple",
+              "explain": "A tuple is like a list but you can't change it. Still no labels."
+            },
+            {
+              "id": "d",
+              "label": "`d` — the set",
+              "explain": "A set is unordered, no duplicates, no labels. Useful, but not for mapping users to scores."
+            }
+          ],
+          "answerIds": [
+            "b"
+          ],
+          "shuffle": false,
+          "code": "a = [\"maya\", \"marcus\", \"priya\"]\nb = {\"maya\": 92, \"marcus\": 78, \"priya\": 88}\nc = (\"maya\", \"marcus\")\nd = {\"maya\", \"marcus\"}\n",
+          "runnable": true
+        },
+        {
+          "type": "read",
+          "id": "lists-and-dicts/the-bones-of-apis/s03-03-indexing",
+          "xp": 1,
+          "hint": [],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 40,
+          "concept": "zero-based-indexing",
+          "body": "# Indexing starts at zero, and `-1` is the last item\n\nTwo rules you'll trip over once and never again:\n\n- **Lists count from `0`**, not `1`. The first item is `pets[0]`.\n- **Negative numbers count from the end.** `pets[-1]` is the last item,\n  no matter how long the list is.\n\nRun the code. The script prints `luna`, `moose`, `biscuit`, then `biscuit`\nagain — because `[-1]` and `[2]` happen to point at the same spot in this\n3-item list.\n\nThis is one of the top off-by-one bugs AI ships: it'll write `for i in range(1, len(items))` when it meant `range(len(items))`, skipping the first item silently.",
+          "cta": "Got it",
+          "code": "pets = [\"luna\", \"moose\", \"biscuit\"]\n\nprint(pets[0])\nprint(pets[1])\nprint(pets[2])\nprint(pets[-1])\n",
+          "runnable": true
+        },
+        {
+          "type": "predict",
+          "id": "lists-and-dicts/the-bones-of-apis/s04-04-predict-the-index",
+          "xp": 3,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Read it left to right. `users[1]` is the second user. Then `[\"name\"]` reaches into that user's dict.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "`users[1]` is `{\"name\": \"marcus\", \"score\": 78}`. Then `[\"name\"]` is `marcus`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 60,
+          "concept": "nested-indexing",
+          "code": "users = [\n    {\"name\": \"maya\", \"score\": 92},\n    {\"name\": \"marcus\", \"score\": 78},\n]\nprint(users[1][\"name\"])\n",
+          "prompt": "This is the shape every API hands back: a list of dicts. What does line 5 print?\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "marcus",
+            "normalize": "collapse-trailing-newline"
+          }
+        },
+        {
+          "type": "fill",
+          "id": "lists-and-dicts/the-bones-of-apis/s05-05-fill-the-key",
+          "xp": 3,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Dict keys go inside square brackets. The key here is the string `\"email\"`.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "`user[\"email\"]` — quotes around the key, because it's a string.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 50,
+          "concept": "dict-key-access",
+          "prompt": "Cursor wrote a quick lookup of a user's email. It defined the dict on line 1\nand tried to reach for the email on line 2, but it left a blank where the\nkey should go. Fill it in.\n```python\nuser = {\"name\": \"{{user.name}}\", \"email\": \"you@example.com\", \"score\": 92}\nprint(user[___])\n```\nThe script should print the email address.\n",
+          "blanks": [
+            {
+              "id": "key",
+              "accept": [
+                "\"email\"",
+                "'email'"
+              ],
+              "caseSensitive": true,
+              "normalize": "trim"
+            }
+          ]
+        },
+        {
+          "type": "fix",
+          "id": "lists-and-dicts/the-bones-of-apis/s06-06-fix-the-keyerror",
+          "xp": 4,
+          "hint": [
+            {
+              "level": 1,
+              "body": "`KeyError` means the dict has no key by that name. Look at line 1 — what's the actual key?",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "The key on line 1 is `\"name\"`, not `\"username\"`. Change the lookup on line 2 to match.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 75,
+          "concept": "keyerror-debugging",
+          "brokenCode": "user = {\"name\": \"maya\", \"score\": 92}\nprint(f\"hi, {user['username']}\")\n",
+          "prompt": "Claude generated this and it crashes with a `KeyError: 'username'`. That's the\nerror Python throws when you ask a dict for a key it doesn't have.\n\nFix the code so it prints `hi, maya`.\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "hi, maya",
+            "normalize": "collapse-trailing-newline"
+          },
+          "bugLines": [
+            2
+          ],
+          "revealAfter": 4
+        },
+        {
+          "type": "fix",
+          "id": "lists-and-dicts/the-bones-of-apis/s07-07-fix-the-index",
+          "xp": 4,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Lists count from zero. Which index is the first item?",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Change `users[1]` to `users[0]` on line 6.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 75,
+          "concept": "index-off-by-one",
+          "brokenCode": "users = [\n    {\"name\": \"maya\"},\n    {\"name\": \"marcus\"},\n    {\"name\": \"priya\"},\n]\nprint(f\"first user: {users[1]['name']}\")\n",
+          "prompt": "Cursor wrote a script to print the first user's name. It uses `users[1]`, which\nis wrong — that's the *second* user. The output is `marcus` and it should be `maya`.\n\nFix line 6 so the script prints `first user: maya`.\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "first user: maya",
+            "normalize": "collapse-trailing-newline"
+          },
+          "bugLines": [
+            6
+          ],
+          "revealAfter": 4
+        },
+        {
+          "type": "write",
+          "id": "lists-and-dicts/the-bones-of-apis/s08-08-write-append",
+          "xp": 5,
+          "hint": [
+            {
+              "level": 1,
+              "body": "`.append` is a method you call on the list itself. Two lines: one append, one print.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "`pets.append(\"biscuit\")` then `print(pets)`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 90,
+          "concept": "list-append",
+          "prompt": "Start with the list `pets = [\"luna\", \"moose\"]`. Add `\"biscuit\"` to the end of\nit using the `.append` method, then print the whole list.\n\nExpected output:\n```\n['luna', 'moose', 'biscuit']\n```\n",
+          "starter": "pets = [\"luna\", \"moose\"]\n# add \"biscuit\" to the end:\n\n# print the list:\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "['luna', 'moose', 'biscuit']",
+            "normalize": "collapse-trailing-newline"
+          },
+          "solution": "pets = [\"luna\", \"moose\"]\npets.append(\"biscuit\")\nprint(pets)\n",
+          "hiddenTests": []
+        },
+        {
+          "type": "checkpoint",
+          "id": "lists-and-dicts/the-bones-of-apis/s09-09-checkpoint",
+          "xp": 8,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Two reaches stacked. First the index of the second user, then the `score` key.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "`users[1][\"score\"]` is `78`. Wrap that in an f-string: `print(f\"second user score: {users[1]['score']}\")`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "check",
+          "estSeconds": 120,
+          "concept": "lists-and-dicts-recap",
+          "prompt": "One last thing. AI handed back a list of two users from a fake API. Your job:\nprint the second user's score.\n\nThe starter has the data. Finish line 6 so the script prints `second user score: 78`.\n",
+          "starter": "users = [\n    {\"name\": \"maya\", \"score\": 92},\n    {\"name\": \"marcus\", \"score\": 78},\n]\n# your code on the next line — print the second user's score using an f-string:\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "second user score: 78",
+            "normalize": "collapse-trailing-newline"
+          },
+          "solution": "users = [\n    {\"name\": \"maya\", \"score\": 92},\n    {\"name\": \"marcus\", \"score\": 78},\n]\nprint(f\"second user score: {users[1]['score']}\")\n",
+          "passThreshold": 0.66
+        }
+      ],
+      "xpTotal": 31
+    },
+    {
+      "slug": "list-comprehensions",
+      "title": "The one-liner Python writes when it's showing off",
+      "estMinutes": 7,
+      "prerequisites": [],
+      "steps": [
+        {
+          "type": "read",
+          "id": "lists-and-dicts/list-comprehensions/s01-01-intro",
+          "xp": 1,
+          "hint": [],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 40,
+          "concept": "list-comprehension-shape",
+          "body": "# The one-liner AI loves\n\nWhen AI generates a \"transform every item in this list\" snippet, it almost\nnever writes the four-line `for` loop. It writes a **list comprehension** —\nthe same idea collapsed onto one line.\n\nThe shape on the right shows both forms doing the same job. Read them as:\n\n- *\"a new list, where each item is `p * 1.1`, for every `p` in `prices`\"*\n\nRun the code. Both lines print the same list. The comprehension is what\nyou'll see in 90% of AI-written Python — `[expression for item in iterable]`.\n\nThe trap: comprehensions look dense at first. The trick is reading them\n**left to right** as plain English, not as code.",
+          "cta": "Got it",
+          "code": "prices = [10, 20, 30]\n\n# the long way\nwith_tax = []\nfor p in prices:\n    with_tax.append(p * 1.1)\n\n# the same thing as a comprehension\nwith_tax_short = [p * 1.1 for p in prices]\n\nprint(with_tax)\nprint(with_tax_short)\n",
+          "runnable": true
+        },
+        {
+          "type": "mc",
+          "id": "lists-and-dicts/list-comprehensions/s02-02-which-comp-shape",
+          "xp": 2,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Square brackets, expression first, then `for item in iterable`. That's the whole pattern.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Read it left to right: *make a list of `name.upper()`, for every `name` in `names`*. Option A is the only valid Python.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 40,
+          "concept": "comprehension-syntax",
+          "prompt": "You want a new list with every name in upper case. Four candidates from\nCursor. Only one is a valid Python list comprehension. Which one?\n",
+          "options": [
+            {
+              "id": "a",
+              "label": "`[name.upper() for name in names]`"
+            },
+            {
+              "id": "b",
+              "label": "`[for name in names: name.upper()]`",
+              "explain": "The expression goes first, then the `for`. No colon."
+            },
+            {
+              "id": "c",
+              "label": "`{name.upper() for name in names}`",
+              "explain": "Curly braces produce a set, not a list. Different shape, different behavior."
+            },
+            {
+              "id": "d",
+              "label": "`[name.upper() in names]`",
+              "explain": "Missing the `for name`. Without it, Python doesn't know what to iterate over."
+            }
+          ],
+          "answerIds": [
+            "a"
+          ],
+          "shuffle": false,
+          "code": "names = [\"alex\", \"sam\", \"jordan\"]\n",
+          "runnable": true
+        },
+        {
+          "type": "read",
+          "id": "lists-and-dicts/list-comprehensions/s03-03-with-filter",
+          "xp": 1,
+          "hint": [],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 45,
+          "concept": "comprehension-filter",
+          "body": "# Comprehensions can filter, too\n\nTack an `if` onto the end and the comprehension only keeps the items that\npass the test.\n\nThe pattern grows by one piece:\n\n```\n[expression for item in iterable if condition]\n```\n\nRead it as: *\"a new list, where each item is `expression`, for every `item`\nin `iterable`, but only when `condition` is true.\"*\n\nRun the code on the right.\n\n- `passing` keeps only scores ≥ 70 → `[91, 72, 88]`\n- `doubled` does the same filter, then doubles each one → `[182, 144, 176]`\n\nThis is the Swiss-army knife AI reaches for whenever the prompt has the\nwords *\"only the ones that...\"* in it.",
+          "cta": "Got it",
+          "code": "scores = [55, 91, 72, 40, 88, 65]\n\n# keep only the passing scores\npassing = [s for s in scores if s >= 70]\n\n# double every score, but only the passing ones\ndoubled = [s * 2 for s in scores if s >= 70]\n\nprint(passing)\nprint(doubled)\n",
+          "runnable": true
+        },
+        {
+          "type": "predict",
+          "id": "lists-and-dicts/list-comprehensions/s04-04-predict-the-comp",
+          "xp": 3,
+          "hint": [
+            {
+              "level": 1,
+              "body": "The `if n % 2 == 0` keeps only even numbers. Then each survivor gets squared.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Even numbers in `[1, 2, 3, 4, 5]` are `2` and `4`. Squared: `4` and `16`. Output is the list `[4, 16]`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 55,
+          "concept": "comprehension-evaluation",
+          "code": "numbers = [1, 2, 3, 4, 5]\nresult = [n * n for n in numbers if n % 2 == 0]\nprint(result)\n",
+          "prompt": "Read the comprehension left to right. Filter first, then transform.\nWhat does this print?\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "[4, 16]",
+            "normalize": "collapse-trailing-newline"
+          }
+        },
+        {
+          "type": "fill",
+          "id": "lists-and-dicts/list-comprehensions/s05-05-fill-the-comp",
+          "xp": 3,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Every list comprehension needs the keyword that introduces the loop variable.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "It's `for`. The shape is `[expression for item in iterable]`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 55,
+          "concept": "comprehension-keyword",
+          "prompt": "Cursor wrote a comprehension that should walk through `words` and produce\na list of their lengths. The keyword on line 2 is missing. Fill it in.\n```python\nwords = [\"hi\", \"hello\", \"hey\"]\nlengths = [len(w) ___ w in words]\nprint(lengths)\n```\n",
+          "blanks": [
+            {
+              "id": "keyword",
+              "accept": [
+                "for"
+              ],
+              "caseSensitive": true,
+              "normalize": "trim"
+            }
+          ]
+        },
+        {
+          "type": "fix",
+          "id": "lists-and-dicts/list-comprehensions/s06-06-fix-the-comp",
+          "xp": 4,
+          "hint": [
+            {
+              "level": 1,
+              "body": "The expression always goes first, then `for item in iterable`. Not the other way around.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Change line 2 to `doubled = [n * 2 for n in numbers]`. Expression first, loop clause second.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 70,
+          "concept": "comprehension-order",
+          "brokenCode": "numbers = [1, 2, 3]\ndoubled = [for n in numbers n * 2]\nprint(doubled)\n",
+          "prompt": "Claude generated this and it crashes with a `SyntaxError`. The pieces of the\ncomprehension are in the wrong order — the `for` clause came first instead\nof the expression. Reorder line 2 so the script prints `[2, 4, 6]`.\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "[2, 4, 6]",
+            "normalize": "collapse-trailing-newline"
+          },
+          "bugLines": [
+            2
+          ],
+          "revealAfter": 4
+        },
+        {
+          "type": "fix",
+          "id": "lists-and-dicts/list-comprehensions/s07-07-fix-the-filter",
+          "xp": 4,
+          "hint": [
+            {
+              "level": 1,
+              "body": "An `if` at the *end* of a comprehension filters items out. An `if/else` *inside* the expression replaces them. You want the filter.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Change line 2 to `long_names = [n for n in names if len(n) > 3]`. Move the `if` to the end and drop the `else` branch.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 80,
+          "concept": "comprehension-filter-vs-ternary",
+          "brokenCode": "names = [\"alex\", \"bo\", \"jordan\", \"sam\"]\nlong_names = [n if len(n) > 3 else \"-\" for n in names]\nprint(long_names)\n",
+          "prompt": "Cursor wanted to keep only names longer than 3 characters. Instead of\nfiltering them out, it used an `if/else` *inside* the expression, so short\nnames got replaced with the string `\"-\"` instead of removed.\n\nOutput is currently `['alex', '-', 'jordan', '-']`. Fix line 2 so the\noutput is `['alex', 'jordan']` — short names removed entirely.\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "['alex', 'jordan']",
+            "normalize": "collapse-trailing-newline"
+          },
+          "bugLines": [
+            2
+          ],
+          "revealAfter": 4
+        },
+        {
+          "type": "write",
+          "id": "lists-and-dicts/list-comprehensions/s08-08-write-comp",
+          "xp": 5,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Two pieces. The comprehension `[p for p in prices if p > 15]`. Then a `print` of whatever you assigned it to.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "`expensive = [p for p in prices if p > 15]` then `print(expensive)`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 100,
+          "concept": "write-comprehension",
+          "prompt": "Write a list comprehension that takes the list `prices = [12, 50, 8, 99, 30]`\nand produces a new list containing only the prices over `15`. Print the\nresult.\n\nExpected output:\n```\n[50, 99, 30]\n```\n",
+          "starter": "prices = [12, 50, 8, 99, 30]\n\n# one-line list comprehension below:\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "[50, 99, 30]",
+            "normalize": "collapse-trailing-newline"
+          },
+          "solution": "prices = [12, 50, 8, 99, 30]\nexpensive = [p for p in prices if p > 15]\nprint(expensive)\n",
+          "hiddenTests": []
+        },
+        {
+          "type": "checkpoint",
+          "id": "lists-and-dicts/list-comprehensions/s09-09-checkpoint",
+          "xp": 8,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Read it as a sentence: *the name of each user, for every user, if the user's age is at least 18.* That's the comprehension.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "`adult_names = [u[\"name\"] for u in users if u[\"age\"] >= 18]`. Replace the `pass`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "check",
+          "estSeconds": 130,
+          "concept": "comprehensions-recap",
+          "prompt": "Last one. Cursor wrote a snippet to take a list of user dicts and pull out\njust the names of users whose age is at least 18. The comprehension is\nmissing — only the `pass` placeholder is there.\n\nReplace the `pass` line with a single comprehension so the script prints\n`['alex', 'jordan']`.\n",
+          "starter": "users = [\n    {\"name\": \"alex\", \"age\": 34},\n    {\"name\": \"bo\", \"age\": 12},\n    {\"name\": \"jordan\", \"age\": 41},\n    {\"name\": \"sam\", \"age\": 9},\n]\n\n# build a list of names where age >= 18\nadult_names = pass\n\nprint(adult_names)\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "['alex', 'jordan']",
+            "normalize": "collapse-trailing-newline"
+          },
+          "solution": "users = [\n    {\"name\": \"alex\", \"age\": 34},\n    {\"name\": \"bo\", \"age\": 12},\n    {\"name\": \"jordan\", \"age\": 41},\n    {\"name\": \"sam\", \"age\": 9},\n]\n\nadult_names = [u[\"name\"] for u in users if u[\"age\"] >= 18]\n\nprint(adult_names)\n",
+          "passThreshold": 0.66
+        }
+      ],
+      "xpTotal": 31
+    }
+  ],
+  "xpTotal": 62
+}
