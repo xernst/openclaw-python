@@ -1,0 +1,6 @@
+number: 7
+slug: mutation-and-state
+title: "Mutation — why your code mysteriously breaks"
+blurb: "When a list inside a function changes the list outside the function, that's mutation. AI does this constantly without flagging it, and it's the bug class that takes the longest to find."
+lessons:
+  - 01-why-it-breaks

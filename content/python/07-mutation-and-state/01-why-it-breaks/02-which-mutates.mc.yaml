@@ -1,0 +1,26 @@
+xp: 2
+estSeconds: 40
+concept: mutating-vs-non-mutating
+code: |
+  # `.append`, `.pop`, `.sort`, `.reverse` — all change the list in place.
+  # `+`, `sorted(...)`, slicing `[:]` — all create a new list and leave the original alone.
+prompt: |
+  Cursor wrote four lines. Three of them leave `pets` unchanged. Which one
+  *mutates* the original list?
+options:
+  - id: a
+    label: "`pets + [\"biscuit\"]`"
+    explain: "`+` returns a new list. The original is untouched unless you reassign."
+  - id: b
+    label: "`sorted(pets)`"
+    explain: "`sorted` returns a new list. The original is untouched."
+  - id: c
+    label: "`pets.append(\"biscuit\")`"
+  - id: d
+    label: "`pets[:]`"
+    explain: "Slicing returns a copy. The original is untouched."
+answerIds:
+  - c
+hint:
+  - level: 1
+    body: "Methods called *on* the list with a dot tend to mutate. Functions called *with* the list as an argument tend to copy."

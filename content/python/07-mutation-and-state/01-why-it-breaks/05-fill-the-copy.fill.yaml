@@ -1,0 +1,28 @@
+xp: 3
+estSeconds: 50
+concept: list-copy
+prompt: |
+  Cursor wrote a function that's supposed to return a *new* list with one extra
+  item, leaving the original alone. The line that copies the list is missing
+  the right method. Fill in the blank with the method name (no parens).
+  ```python
+  def with_extra(items, extra):
+      copy = items.___()
+      copy.append(extra)
+      return copy
+
+  pets = ["luna", "moose"]
+  result = with_extra(pets, "biscuit")
+  print("pets:", pets)
+  print("result:", result)
+  ```
+blanks:
+  - id: method
+    accept:
+      - copy
+    caseSensitive: true
+hint:
+  - level: 1
+    body: "Lists have a method that returns a new copy. The name is one short word."
+  - level: 2
+    body: "`items.copy()` — that's the cleanest way to make a new list with the same contents."

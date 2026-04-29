@@ -1,0 +1,22 @@
+xp: 3
+estSeconds: 60
+concept: function-mutates-caller
+code: |
+  def double_all(nums):
+      for i in range(len(nums)):
+          nums[i] = nums[i] * 2
+
+  scores = [10, 20, 30]
+  double_all(scores)
+  print(scores)
+prompt: |
+  The function modifies the list it receives. What does the final `print` show?
+grader:
+  kind: stdout-equality
+  expected: "[20, 40, 60]"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "`nums[i] = nums[i] * 2` mutates the list in place. `nums` and `scores` point at the same list."
+  - level: 2
+    body: "Each item gets doubled — `[20, 40, 60]`."

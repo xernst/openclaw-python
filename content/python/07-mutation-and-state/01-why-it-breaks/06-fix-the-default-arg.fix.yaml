@@ -1,0 +1,40 @@
+xp: 4
+estSeconds: 90
+concept: mutable-default-arg
+prompt: |
+  This is the single most famous Python bug — and AI ships it constantly.
+
+  The function `add_pet` uses `pets=[]` as a default. The trap: that empty
+  list is created **once**, when the function is *defined*, not each time
+  it's called. Every call without an argument shares the same list.
+
+  Run it as-is and you'll see the second call returns `["luna", "moose"]`
+  instead of just `["moose"]`. Fix line 1 so each call without an argument
+  gets a fresh list.
+
+  Expected output:
+  ```
+  ['luna']
+  ['moose']
+  ```
+brokenCode: |
+  def add_pet(name, pets=[]):
+      pets.append(name)
+      return pets
+
+  print(add_pet("luna"))
+  print(add_pet("moose"))
+bugLines:
+  - 1
+grader:
+  kind: stdout-equality
+  expected: |
+    ['luna']
+    ['moose']
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "Never use a mutable default like `[]` or `{}`. Use `None` and create the list inside."
+  - level: 2
+    body: "Change the signature to `def add_pet(name, pets=None):` and add `if pets is None: pets = []` as the first line of the function body."
+revealAfter: 4

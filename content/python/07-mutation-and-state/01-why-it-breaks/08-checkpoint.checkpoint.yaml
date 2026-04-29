@@ -1,0 +1,54 @@
+xp: 8
+estSeconds: 130
+concept: mutation-recap
+prompt: |
+  One last thing. AI wrote a function `tag_user` that's supposed to return a
+  *new* user dict with one extra tag, leaving the original user alone. Right
+  now it mutates the input.
+
+  Finish the function so the script prints two lines: the original user
+  unchanged, and the new user with `"vip"` added to its tags.
+
+  Expected output:
+  ```
+  original tags: ['pm']
+  tagged tags: ['pm', 'vip']
+  ```
+starter: |
+  def tag_user(user, tag):
+      # build a new user that has the same fields plus the extra tag.
+      # do not mutate `user`.
+      new_user = {}
+      # your code here:
+      return new_user
+
+  original = {"name": "maya", "tags": ["pm"]}
+  tagged = tag_user(original, "vip")
+
+  print(f"original tags: {original['tags']}")
+  print(f"tagged tags: {tagged['tags']}")
+grader:
+  kind: stdout-equality
+  expected: |
+    original tags: ['pm']
+    tagged tags: ['pm', 'vip']
+  normalize: collapse-trailing-newline
+solution: |
+  def tag_user(user, tag):
+      new_user = {}
+      new_user["name"] = user["name"]
+      new_user["tags"] = user["tags"].copy()
+      new_user["tags"].append(tag)
+      return new_user
+
+  original = {"name": "maya", "tags": ["pm"]}
+  tagged = tag_user(original, "vip")
+
+  print(f"original tags: {original['tags']}")
+  print(f"tagged tags: {tagged['tags']}")
+passThreshold: 0.66
+hint:
+  - level: 1
+    body: "Build `new_user` field by field. The `tags` list needs `.copy()` — without it you'd be sharing the same list."
+  - level: 2
+    body: "`new_user[\"name\"] = user[\"name\"]`, then `new_user[\"tags\"] = user[\"tags\"].copy()`, then `new_user[\"tags\"].append(tag)`."

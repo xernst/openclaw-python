@@ -1,0 +1,42 @@
+xp: 4
+estSeconds: 80
+concept: shared-list-fix
+prompt: |
+  Claude wrote a function that's supposed to give back a *new* list with the
+  scores doubled, leaving the original alone. Instead, it mutates the input —
+  after the call, both `original` and `doubled` are the same doubled list.
+
+  Fix line 2 so the function works on a copy and the original list stays as
+  `[10, 20, 30]`.
+
+  Expected output:
+  ```
+  original: [10, 20, 30]
+  doubled: [20, 40, 60]
+  ```
+brokenCode: |
+  def double_all(nums):
+      result = nums
+      for i in range(len(result)):
+          result[i] = result[i] * 2
+      return result
+
+  original = [10, 20, 30]
+  doubled = double_all(original)
+
+  print(f"original: {original}")
+  print(f"doubled: {doubled}")
+bugLines:
+  - 2
+grader:
+  kind: stdout-equality
+  expected: |
+    original: [10, 20, 30]
+    doubled: [20, 40, 60]
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "`result = nums` doesn't copy. Both names point at the same list. Make an actual copy before the loop."
+  - level: 2
+    body: "Change `result = nums` to `result = nums.copy()` (or `nums[:]`)."
+revealAfter: 4

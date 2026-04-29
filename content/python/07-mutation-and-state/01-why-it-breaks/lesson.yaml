@@ -1,0 +1,13 @@
+slug: why-it-breaks
+title: "Mutation and the action-at-a-distance bug"
+estMinutes: 7
+prerequisites: []
+order:
+  - 01-intro.read.md
+  - 02-which-mutates.mc.yaml
+  - 03-shared-reference.read.md
+  - 04-predict-the-mutation.predict.yaml
+  - 05-fill-the-copy.fill.yaml
+  - 06-fix-the-default-arg.fix.yaml
+  - 07-fix-the-shared-list.fix.yaml
+  - 08-checkpoint.checkpoint.yaml
