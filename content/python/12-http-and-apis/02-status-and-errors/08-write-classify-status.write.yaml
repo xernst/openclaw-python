@@ -1,0 +1,53 @@
+xp: 5
+estSeconds: 110
+concept: write-status-classifier
+prompt: |
+  Write a function `classify(status)` that takes an HTTP status code
+  and returns one of these strings:
+
+  - `"success"` for any 2xx (200-299)
+  - `"client-error"` for any 4xx (400-499)
+  - `"server-error"` for any 5xx (500-599)
+  - `"other"` for anything else (including 1xx and 3xx)
+
+  Then loop over a list of test codes and print the result of each.
+
+  Expected output:
+  ```
+  success
+  client-error
+  server-error
+  other
+  other
+  ```
+starter: |
+  # define classify below
+
+  for code in [200, 404, 503, 301, 100]:
+      print(classify(code))
+grader:
+  kind: stdout-equality
+  expected: |
+    success
+    client-error
+    server-error
+    other
+    other
+  normalize: collapse-trailing-newline
+solution: |
+  def classify(status):
+      if 200 <= status < 300:
+          return "success"
+      if 400 <= status < 500:
+          return "client-error"
+      if 500 <= status < 600:
+          return "server-error"
+      return "other"
+
+  for code in [200, 404, 503, 301, 100]:
+      print(classify(code))
+hint:
+  - level: 1
+    body: "Three range checks (`200-299`, `400-499`, `500-599`) plus a default `return \"other\"`. Use `if/return` for each — no `elif` needed since each branch returns."
+  - level: 2
+    body: "`def classify(status):` then three `if start <= status < end: return \"...\"` lines, then a final `return \"other\"`."

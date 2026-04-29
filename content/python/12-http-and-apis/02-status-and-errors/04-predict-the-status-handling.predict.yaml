@@ -1,0 +1,32 @@
+xp: 3
+estSeconds: 70
+concept: status-branching-output
+code: |
+  def handle(status):
+      if 200 <= status < 300:
+          return "ok"
+      if status == 404:
+          return "not-found"
+      if status >= 500:
+          return "retry"
+      return "client-bug"
+
+  for s in [200, 404, 401, 503]:
+      print(handle(s))
+prompt: |
+  The function `handle` returns one of four strings depending on the
+  status code's family or specific value. The loop calls it with four
+  codes. What does it print? (Four lines, in order.)
+grader:
+  kind: stdout-equality
+  expected: |
+    ok
+    not-found
+    client-bug
+    retry
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "200 → first branch (`ok`). 404 → specific second branch. 401 → none of the specific branches match, falls through to the default (`client-bug`). 503 → 5xx, the third branch (`retry`)."
+  - level: 2
+    body: "Outputs: `ok`, `not-found`, `client-bug`, `retry`. One per line."

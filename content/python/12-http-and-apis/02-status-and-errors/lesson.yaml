@@ -1,0 +1,14 @@
+slug: status-and-errors
+title: "Status codes and error handling — what AI's API calls do when the wire blinks"
+estMinutes: 9
+prerequisites: []
+order:
+  - 01-intro.read.md
+  - 02-which-status-family.mc.yaml
+  - 03-error-bodies-and-retries.read.md
+  - 04-predict-the-status-handling.predict.yaml
+  - 05-fill-the-raise-for-status.fill.yaml
+  - 06-fix-the-missing-check.fix.yaml
+  - 07-fix-the-broad-retry.fix.yaml
+  - 08-write-classify-status.write.yaml
+  - 09-checkpoint.checkpoint.yaml

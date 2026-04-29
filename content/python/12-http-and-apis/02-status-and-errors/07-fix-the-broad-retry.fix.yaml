@@ -1,0 +1,42 @@
+xp: 4
+estSeconds: 100
+concept: retrying-only-5xx
+prompt: |
+  AI wrote a retry helper that re-tries on *any* non-2xx status. That's
+  wrong — 4xx errors mean the request itself is broken, and retrying
+  with the same payload just hammers the API. Only 5xx errors are
+  retry-worthy.
+
+  Fix the condition on line 4 so the function only retries when the
+  status is in the 5xx family. For 4xx, it should return immediately
+  with the string `"client error"`.
+
+  The helper makes up to 3 attempts. With three 4xx responses queued,
+  expected output is:
+  ```
+  client error
+  ```
+  (one attempt, no retries)
+brokenCode: |
+  def fetch_with_retry(responses):
+      for attempt in range(3):
+          status = responses[attempt]
+          if status >= 400:
+              continue   # bug: retries 4xx too
+          return f"ok ({status})"
+      return f"giving up at status {status}"
+
+  print(fetch_with_retry([404, 404, 404]))
+bugLines:
+  - 4
+  - 5
+grader:
+  kind: stdout-equality
+  expected: "client error"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "Distinguish 4xx from 5xx. `if 400 <= status < 500: return \"client error\"`. `elif status >= 500: continue`. Otherwise return success."
+  - level: 2
+    body: "Replace the `if status >= 400: continue` block with: `if 400 <= status < 500: return \"client error\"` then `if status >= 500: continue`. Now 4xx returns immediately and only 5xx retries."
+revealAfter: 4

@@ -1,0 +1,41 @@
+xp: 4
+estSeconds: 90
+concept: status-check-before-json
+prompt: |
+  Claude wrote a fetcher that calls `.json()` straight away without
+  checking the status. The fake response below is a 401 with a JSON
+  error body. The function returns `data["name"]`, which doesn't exist
+  in the error body, so it crashes with a `KeyError` — pointing at the
+  *wrong* line.
+
+  Add an `if response.status_code != 200: return None` guard *before*
+  the `.json()` call so the function returns `None` cleanly when the
+  request failed.
+
+  Expected output:
+  ```
+  None
+  ```
+brokenCode: |
+  def fetch_user(response):
+      data = response.json()
+      return data["name"]
+
+  fake_response = type("R", (), {
+      "status_code": 401,
+      "json": lambda self: {"error": "auth required"},
+  })()
+
+  print(fetch_user(fake_response))
+bugLines:
+  - 2
+grader:
+  kind: stdout-equality
+  expected: "None"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "Add a guard at the top of `fetch_user`: if the status isn't 200, return `None` before touching `.json()`."
+  - level: 2
+    body: "Insert as a new line right before line 2: `if response.status_code != 200: return None`. Then the existing `data = response.json()` and `return data[\"name\"]` only run on success."
+revealAfter: 4

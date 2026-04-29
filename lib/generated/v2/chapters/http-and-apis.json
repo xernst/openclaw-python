@@ -252,7 +252,279 @@
         }
       ],
       "xpTotal": 32
+    },
+    {
+      "slug": "status-and-errors",
+      "title": "Status codes and error handling — what AI's API calls do when the wire blinks",
+      "estMinutes": 9,
+      "prerequisites": [],
+      "steps": [
+        {
+          "type": "read",
+          "id": "http-and-apis/status-and-errors/s01-01-intro",
+          "xp": 1,
+          "hint": [],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 110,
+          "concept": "http-status-families",
+          "body": "# Status codes — three numbers tell you everything\n\nEvery HTTP response carries a *status code*: a three-digit number\nthat tells you what happened. AI ships scripts that read the body\nand ignore the status code constantly — and then can't figure out\nwhy their data is empty when the API actually returned a 401\n\"unauthorized\" page. Reading AI code, the first question is: *does\nthis script check the status code, and how?*\n\nThere are only three families that matter for everyday work, and\nthey're identified by the *first digit* of the code.\n\n## The three families\n\n- **`2xx` — success.** `200 OK` is the workhorse. `201 Created` is\n  what you get back from a POST that made something new. `204 No\n  Content` means \"I did it, no body to return.\" All you need to\n  know: anything in the 200s means the request worked.\n\n- **`4xx` — client error. *You* are wrong.** `400 Bad Request`\n  (your JSON was malformed). `401 Unauthorized` (no/invalid auth).\n  `403 Forbidden` (auth was valid, but you can't access this).\n  `404 Not Found` (the URL or resource doesn't exist). `429 Too\n  Many Requests` (you hit the rate limit). The common thread: don't\n  retry blindly. Fix the request.\n\n- **`5xx` — server error. *They* are wrong.** `500 Internal Server\n  Error` (something exploded on their side). `502 Bad Gateway`,\n  `503 Service Unavailable`, `504 Gateway Timeout`. The common\n  thread: it's not your fault and a retry might work in a few\n  seconds.\n\nThe `// 100` trick: integer-divide a status by 100 to get the\nfamily number. `200 // 100 == 2`, `404 // 100 == 4`, `503 // 100\n== 5`. AI uses this exact pattern when bucketing responses.\n\n## The shape AI ships when it gets it right\n\n```python\nimport httpx\n\nresponse = httpx.get(\"https://api.example.com/users/7\")\n\nif response.status_code == 200:\n    data = response.json()\n    process(data)\nelif response.status_code == 404:\n    return None\nelif response.status_code >= 500:\n    retry_later()\nelse:\n    raise RuntimeError(f\"unexpected status: {response.status_code}\")\n```\n\nFour branches: success, expected-not-found, server-side flake, and\n\"this is a real bug.\" Reading AI code, you want to see this kind of\nexplicit branching, or at least a `response.raise_for_status()` that\ncrashes on anything not in `2xx`. (We'll cover that helper in the\nnext read step.)\n\n## A worked example\n\nThe editor on the right works with three hardcoded fake responses\nsince the browser can't make real network calls:\n\n```python\nresponses = [\n    {\"status\": 200, \"body\": {\"id\": 7, \"name\": \"maya\"}},\n    {\"status\": 404, \"body\": {\"error\": \"user not found\"}},\n    {\"status\": 503, \"body\": {\"error\": \"service unavailable\"}},\n]\n\nfor r in responses:\n    family = r[\"status\"] // 100\n    if family == 2:\n        print(\"ok:\", r[\"body\"])\n    elif family == 4:\n        print(\"client error:\", r[\"body\"][\"error\"])\n    elif family == 5:\n        print(\"server error:\", r[\"body\"][\"error\"])\n```\n\nThree iterations, three branches, three completely different\nbehaviors:\n\n```\nok: {'id': 7, 'name': 'maya'}\nclient error: user not found\nserver error: service unavailable\n```\n\nSame code, three responses, branching on the family digit. This is\nthe mental model: ignore the exact code, look at the family, decide\nthe behavior.\n\n## Where AI specifically gets this wrong\n\nTwo patterns to flag in code Cursor writes you.\n\n**One: ignoring the status code entirely.** The script does\n`response.json()` straight after the call without checking\n`response.status_code` first. If the API returns 401 with a JSON\nerror body, `response.json()` actually succeeds and gives you back\n`{\"error\": \"...\"}`. Now your downstream code expects `data[\"name\"]`\nand gets a `KeyError`. The traceback points at the wrong line. The\nreal bug is six lines higher: nobody checked the status.\n\n**Two: treating 4xx and 5xx the same.** AI sometimes writes a\nsingle `if response.status_code != 200: return None`. That hides\nthe difference between \"the user doesn't exist\" (a normal business\ncase) and \"the upstream service is on fire\" (a transient failure\nthat should be retried). Different responses warrant different\nhandling. Family-based branching is the move.\n\nRun the editor. Three fake responses get routed to three different\nbranches based purely on the first digit of their status.",
+          "cta": "Got it",
+          "code": "# the shape of a real call (read-only — we run a stub here because\n# the browser can't make actual network calls):\n#\n# response = httpx.get(\"https://api.example.com/users/7\")\n# status = response.status_code\n# body = response.json()\n\nresponses = [\n    {\"status\": 200, \"body\": {\"id\": 7, \"name\": \"maya\"}},\n    {\"status\": 404, \"body\": {\"error\": \"user not found\"}},\n    {\"status\": 503, \"body\": {\"error\": \"service unavailable\"}},\n]\n\nfor r in responses:\n    family = r[\"status\"] // 100\n    if family == 2:\n        print(\"ok:\", r[\"body\"])\n    elif family == 4:\n        print(\"client error:\", r[\"body\"][\"error\"])\n    elif family == 5:\n        print(\"server error:\", r[\"body\"][\"error\"])\n",
+          "runnable": true
+        },
+        {
+          "type": "mc",
+          "id": "http-and-apis/status-and-errors/s02-02-which-status-family",
+          "xp": 2,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Server errors live in the 5xx family. The first digit is the giveaway.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "500 (Internal Server Error) and 503 (Service Unavailable) are both 5xx. They mean the server failed — not the request — so a retry might succeed.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 50,
+          "concept": "status-family-meaning",
+          "prompt": "An API returned each of these status codes for different requests.\nWhich set of codes are *server-side errors* — situations where the\nrequest itself was fine and the server is the problem (so a retry\nwith the same request might succeed later)?\n",
+          "options": [
+            {
+              "id": "a",
+              "label": "`200, 401`",
+              "explain": "200 is success. 401 means the *client's* auth was wrong — retrying the same request won't help."
+            },
+            {
+              "id": "b",
+              "label": "`401, 404`",
+              "explain": "Both are 4xx — *client* errors. The server is telling you the request was wrong. Retrying without changes won't fix it."
+            },
+            {
+              "id": "c",
+              "label": "`500, 503`"
+            },
+            {
+              "id": "d",
+              "label": "`200, 500, 503`",
+              "explain": "200 is success, not an error. The server-side error family is 5xx only."
+            }
+          ],
+          "answerIds": [
+            "c"
+          ],
+          "shuffle": false,
+          "code": "status_codes = [200, 401, 404, 500, 503]\n",
+          "runnable": true
+        },
+        {
+          "type": "read",
+          "id": "http-and-apis/status-and-errors/s03-03-error-bodies-and-retries",
+          "xp": 2,
+          "hint": [],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 130,
+          "concept": "raise-for-status-and-retries",
+          "body": "# `raise_for_status`, error bodies, and the retry decision\n\nTwo things AI does once it's checking status codes correctly: it\nuses `response.raise_for_status()` to convert bad statuses into\nexceptions, and it inspects the *body* of an error response to find\nout what went wrong. This step covers both, plus the mental model\nfor retrying.\n\n## `raise_for_status` — turn bad statuses into exceptions\n\n`httpx` (and `requests`, the older library) ship a method that\ncrashes if the response was 4xx or 5xx:\n\n```python\nresponse = httpx.get(\"https://api.example.com/users/7\")\nresponse.raise_for_status()\ndata = response.json()\n```\n\nIf `response.status_code` is 200, the call does nothing. If it's\n404, it raises `httpx.HTTPStatusError`. The win: you don't have to\nwrite `if response.status_code >= 400: raise ...` everywhere — one\nmethod call replaces all of it.\n\nWhen to reach for it: when \"any non-2xx is a problem\" is the right\ndefault. When you specifically want to handle 404 differently from\n500, drop back to manual `status_code` branching.\n\n## Error bodies — read what the server is trying to tell you\n\nWhen an API returns a 4xx or 5xx, it almost always includes a body\nexplaining what went wrong. Two shapes you'll see:\n\n**Structured JSON.** Modern APIs (Stripe, GitHub, OpenAI, anything\nwith a real product team behind it) return JSON like:\n\n```json\n{\"error\": {\"code\": \"invalid_request\", \"message\": \"missing field 'email'\"}}\n```\n\nThe `.json()` method works fine on these. The body tells you\n*exactly* what to fix. Always log this — it's the difference\nbetween debugging in two minutes and debugging in two hours.\n\n**HTML stack traces / load balancer pages.** Older or\ninternal-facing APIs sometimes return a 500 with an HTML page\nattached — a Flask traceback, an nginx default page, something\nunparsable as JSON. Calling `.json()` on those raises\n`JSONDecodeError`. Defensive code looks like this:\n\n```python\ntry:\n    err_body = response.json()\nexcept ValueError:\n    err_body = response.text[:500]   # fall back to raw text, truncated\n```\n\n`response.text` always works — it's the raw body as a string.\n`.json()` only works when the body is JSON. AI sometimes writes\n`response.json()` on the error path without considering this and\nthe error handler itself crashes — masking the original error.\n\n## The retry mental model\n\nThe reason families matter is they tell you whether a retry has any\nchance of working:\n\n- **2xx** — no retry. It already worked.\n- **4xx** — *don't retry*. The server told you your request was\n  wrong. Sending the same request again will fail the same way. The\n  one exception: `429 Too Many Requests` is a \"wait then retry\"\n  signal, often with a `Retry-After` header.\n- **5xx** — *retry, with backoff*. The server failed for reasons\n  unrelated to your request. Wait a bit, try again. Wait longer if\n  it fails again. After 3-5 attempts, give up and surface the error.\n\n\"Backoff\" means doubling the wait time each retry: 1s, 2s, 4s, 8s.\nThat gives the upstream service room to recover without you piling\non. AI rarely writes retry logic from scratch — it imports a\nlibrary like `tenacity`. Reading AI code, what matters is whether\nthe retry is *bounded* (a `max_attempts=5`) and *targeted at 5xx*,\nnot at every error.\n\n## A worked example\n\nThe editor simulates `raise_for_status()` with a fake response\nclass so we can demo the pattern without a network. Three responses\nflow through:\n\n```python\nfor r in responses:\n    try:\n        r.raise_for_status()\n        print(\"ok:\", r.json())\n    except RuntimeError as err:\n        if r.status_code >= 500:\n            print(f\"retry-worthy: {err}\")\n        else:\n            print(f\"caller bug: {err} body={r.json()}\")\n```\n\nThe 200 hits the success branch. The 429 (treated as 4xx — caller's\nproblem) hits the \"caller bug\" branch and shows the body. The 500\nhits the \"retry-worthy\" branch. Three responses, three\nqualitatively different reactions, all from one helper.\n\n## Where AI specifically gets this wrong\n\nThree patterns to flag.\n\n**One: `raise_for_status()` followed by `.json()` with no try.**\n`raise_for_status` doesn't catch — it raises. If you don't wrap the\ncall in `try/except httpx.HTTPStatusError`, your script crashes on\nany 4xx/5xx. AI sometimes ships this without the wrapper, treating\n\"crash on any error\" as the spec.\n\n**Two: retrying 4xx errors.** A common AI mistake: a generic\n\"retry on any exception\" loop that re-sends the same broken request\nto a 401-returning API five times. You hit the rate limit twice as\nfast and the answer is still \"auth was wrong.\" Retry only on 5xx\n(and sometimes 429). Never on 4xx generally.\n\n**Three: not logging the response body on errors.** When the script\ndoes crash, the traceback shows `httpx.HTTPStatusError: 400 Bad\nRequest` and that's it. You have no idea *what* was bad. Always\nlog `response.text` (or `response.json()` defensively) when an\nerror fires. Future-you debugging at 2am will thank you.\n\nRun the editor. Three fake responses, three branches, all driven by\nthe status code.",
+          "cta": "Got it",
+          "code": "# In real code: response.raise_for_status() crashes on any 4xx/5xx.\n# We simulate it here with a class that mimics httpx.Response.\n\nclass FakeResponse:\n    def __init__(self, status, body):\n        self.status_code = status\n        self._body = body\n\n    def json(self):\n        return self._body\n\n    def raise_for_status(self):\n        if 400 <= self.status_code < 600:\n            raise RuntimeError(f\"HTTP {self.status_code}\")\n\nresponses = [\n    FakeResponse(200, {\"id\": 7}),\n    FakeResponse(429, {\"error\": \"rate limited\", \"retry_after\": 1}),\n    FakeResponse(500, {\"error\": \"internal\"}),\n]\n\nfor r in responses:\n    try:\n        r.raise_for_status()\n        print(\"ok:\", r.json())\n    except RuntimeError as err:\n        if r.status_code >= 500:\n            print(f\"retry-worthy: {err}\")\n        else:\n            print(f\"caller bug: {err} body={r.json()}\")\n",
+          "runnable": true
+        },
+        {
+          "type": "predict",
+          "id": "http-and-apis/status-and-errors/s04-04-predict-the-status-handling",
+          "xp": 3,
+          "hint": [
+            {
+              "level": 1,
+              "body": "200 → first branch (`ok`). 404 → specific second branch. 401 → none of the specific branches match, falls through to the default (`client-bug`). 503 → 5xx, the third branch (`retry`).",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Outputs: `ok`, `not-found`, `client-bug`, `retry`. One per line.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 70,
+          "concept": "status-branching-output",
+          "code": "def handle(status):\n    if 200 <= status < 300:\n        return \"ok\"\n    if status == 404:\n        return \"not-found\"\n    if status >= 500:\n        return \"retry\"\n    return \"client-bug\"\n\nfor s in [200, 404, 401, 503]:\n    print(handle(s))\n",
+          "prompt": "The function `handle` returns one of four strings depending on the\nstatus code's family or specific value. The loop calls it with four\ncodes. What does it print? (Four lines, in order.)\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "ok\nnot-found\nclient-bug\nretry\n",
+            "normalize": "collapse-trailing-newline"
+          }
+        },
+        {
+          "type": "fill",
+          "id": "http-and-apis/status-and-errors/s05-05-fill-the-raise-for-status",
+          "xp": 3,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Three words separated by underscores. The method is already defined on the class for you — you just have to call it.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "It's `raise_for_status`. Line 8 should read `r.raise_for_status()`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 60,
+          "concept": "raise-for-status-method-name",
+          "prompt": "Cursor wrote a call against a fake response and forgot the helper\nmethod that crashes on any 4xx or 5xx. Fill in the method name on\nline 8 — the standard helper that mirrors `httpx.Response.___()`.\n\nMethod: ___\n",
+          "code": "class FakeResponse:\n    def raise_for_status(self):\n        if 400 <= self.status_code < 600:\n            raise RuntimeError(f\"HTTP {self.status_code}\")\n\nr = FakeResponse(); r.status_code = 404\ntry:\n    r.___()\nexcept RuntimeError as err:\n    print(f\"caught: {err}\")\n",
+          "blanks": [
+            {
+              "id": "method",
+              "accept": [
+                "raise_for_status"
+              ],
+              "caseSensitive": true,
+              "normalize": "trim"
+            }
+          ]
+        },
+        {
+          "type": "fix",
+          "id": "http-and-apis/status-and-errors/s06-06-fix-the-missing-check",
+          "xp": 4,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Add a guard at the top of `fetch_user`: if the status isn't 200, return `None` before touching `.json()`.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Insert as a new line right before line 2: `if response.status_code != 200: return None`. Then the existing `data = response.json()` and `return data[\"name\"]` only run on success.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 90,
+          "concept": "status-check-before-json",
+          "brokenCode": "def fetch_user(response):\n    data = response.json()\n    return data[\"name\"]\n\nfake_response = type(\"R\", (), {\n    \"status_code\": 401,\n    \"json\": lambda self: {\"error\": \"auth required\"},\n})()\n\nprint(fetch_user(fake_response))\n",
+          "prompt": "Claude wrote a fetcher that calls `.json()` straight away without\nchecking the status. The fake response below is a 401 with a JSON\nerror body. The function returns `data[\"name\"]`, which doesn't exist\nin the error body, so it crashes with a `KeyError` — pointing at the\n*wrong* line.\n\nAdd an `if response.status_code != 200: return None` guard *before*\nthe `.json()` call so the function returns `None` cleanly when the\nrequest failed.\n\nExpected output:\n```\nNone\n```\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "None",
+            "normalize": "collapse-trailing-newline"
+          },
+          "bugLines": [
+            2
+          ],
+          "revealAfter": 4
+        },
+        {
+          "type": "fix",
+          "id": "http-and-apis/status-and-errors/s07-07-fix-the-broad-retry",
+          "xp": 4,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Distinguish 4xx from 5xx. `if 400 <= status < 500: return \"client error\"`. `elif status >= 500: continue`. Otherwise return success.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Replace the `if status >= 400: continue` block with: `if 400 <= status < 500: return \"client error\"` then `if status >= 500: continue`. Now 4xx returns immediately and only 5xx retries.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 100,
+          "concept": "retrying-only-5xx",
+          "brokenCode": "def fetch_with_retry(responses):\n    for attempt in range(3):\n        status = responses[attempt]\n        if status >= 400:\n            continue   # bug: retries 4xx too\n        return f\"ok ({status})\"\n    return f\"giving up at status {status}\"\n\nprint(fetch_with_retry([404, 404, 404]))\n",
+          "prompt": "AI wrote a retry helper that re-tries on *any* non-2xx status. That's\nwrong — 4xx errors mean the request itself is broken, and retrying\nwith the same payload just hammers the API. Only 5xx errors are\nretry-worthy.\n\nFix the condition on line 4 so the function only retries when the\nstatus is in the 5xx family. For 4xx, it should return immediately\nwith the string `\"client error\"`.\n\nThe helper makes up to 3 attempts. With three 4xx responses queued,\nexpected output is:\n```\nclient error\n```\n(one attempt, no retries)\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "client error",
+            "normalize": "collapse-trailing-newline"
+          },
+          "bugLines": [
+            4,
+            5
+          ],
+          "revealAfter": 4
+        },
+        {
+          "type": "write",
+          "id": "http-and-apis/status-and-errors/s08-08-write-classify-status",
+          "xp": 5,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Three range checks (`200-299`, `400-499`, `500-599`) plus a default `return \"other\"`. Use `if/return` for each — no `elif` needed since each branch returns.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "`def classify(status):` then three `if start <= status < end: return \"...\"` lines, then a final `return \"other\"`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 110,
+          "concept": "write-status-classifier",
+          "prompt": "Write a function `classify(status)` that takes an HTTP status code\nand returns one of these strings:\n\n- `\"success\"` for any 2xx (200-299)\n- `\"client-error\"` for any 4xx (400-499)\n- `\"server-error\"` for any 5xx (500-599)\n- `\"other\"` for anything else (including 1xx and 3xx)\n\nThen loop over a list of test codes and print the result of each.\n\nExpected output:\n```\nsuccess\nclient-error\nserver-error\nother\nother\n```\n",
+          "starter": "# define classify below\n\nfor code in [200, 404, 503, 301, 100]:\n    print(classify(code))\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "success\nclient-error\nserver-error\nother\nother\n",
+            "normalize": "collapse-trailing-newline"
+          },
+          "solution": "def classify(status):\n    if 200 <= status < 300:\n        return \"success\"\n    if 400 <= status < 500:\n        return \"client-error\"\n    if 500 <= status < 600:\n        return \"server-error\"\n    return \"other\"\n\nfor code in [200, 404, 503, 301, 100]:\n    print(classify(code))\n",
+          "hiddenTests": []
+        },
+        {
+          "type": "checkpoint",
+          "id": "http-and-apis/status-and-errors/s09-09-checkpoint",
+          "xp": 8,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Order matters: check 200-range first, then the *specific* 404 case, then the broader 4xx, then 5xx, then `raise`. Every branch returns or raises — no fall-through.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Put the `if status == 404:` branch *before* the broader `if 400 <= status < 500:` so the specific case wins. If you check the 4xx range first, 404 gets classified as `\"client error\"` instead of `\"not found\"`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "check",
+          "estSeconds": 160,
+          "concept": "status-and-errors-checkpoint",
+          "prompt": "Last drill. Write a function `safe_fetch(response)` that takes a\nfake response dict (with `status` and `body` keys) and returns:\n\n- The dict's `body` if the status is 2xx (success).\n- The string `\"not found\"` for status 404 specifically.\n- The string `\"client error\"` for any other 4xx.\n- The string `\"retry later\"` for any 5xx.\n- Raise `ValueError(f\"unexpected status: {status}\")` for anything\n  else (1xx, 3xx).\n\nThe starter has four responses to pass through. Use the bottom loop\nas-is.\n\nExpected output:\n```\n{'id': 7}\nnot found\nclient error\nretry later\n```\n",
+          "starter": "# define safe_fetch below\n\nresponses = [\n    {\"status\": 200, \"body\": {\"id\": 7}},\n    {\"status\": 404, \"body\": {\"error\": \"user not found\"}},\n    {\"status\": 401, \"body\": {\"error\": \"auth required\"}},\n    {\"status\": 503, \"body\": {\"error\": \"down for maintenance\"}},\n]\n\nfor r in responses:\n    print(safe_fetch(r))\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "{'id': 7}\nnot found\nclient error\nretry later\n",
+            "normalize": "collapse-trailing-newline"
+          },
+          "solution": "def safe_fetch(response):\n    status = response[\"status\"]\n    if 200 <= status < 300:\n        return response[\"body\"]\n    if status == 404:\n        return \"not found\"\n    if 400 <= status < 500:\n        return \"client error\"\n    if 500 <= status < 600:\n        return \"retry later\"\n    raise ValueError(f\"unexpected status: {status}\")\n\nresponses = [\n    {\"status\": 200, \"body\": {\"id\": 7}},\n    {\"status\": 404, \"body\": {\"error\": \"user not found\"}},\n    {\"status\": 401, \"body\": {\"error\": \"auth required\"}},\n    {\"status\": 503, \"body\": {\"error\": \"down for maintenance\"}},\n]\n\nfor r in responses:\n    print(safe_fetch(r))\n",
+          "passThreshold": 0.66
+        }
+      ],
+      "xpTotal": 32
     }
   ],
-  "xpTotal": 32
+  "xpTotal": 64
 }

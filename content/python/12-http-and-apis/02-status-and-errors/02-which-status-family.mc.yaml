@@ -1,0 +1,29 @@
+xp: 2
+estSeconds: 50
+concept: status-family-meaning
+code: |
+  status_codes = [200, 401, 404, 500, 503]
+prompt: |
+  An API returned each of these status codes for different requests.
+  Which set of codes are *server-side errors* — situations where the
+  request itself was fine and the server is the problem (so a retry
+  with the same request might succeed later)?
+options:
+  - id: a
+    label: "`200, 401`"
+    explain: "200 is success. 401 means the *client's* auth was wrong — retrying the same request won't help."
+  - id: b
+    label: "`401, 404`"
+    explain: "Both are 4xx — *client* errors. The server is telling you the request was wrong. Retrying without changes won't fix it."
+  - id: c
+    label: "`500, 503`"
+  - id: d
+    label: "`200, 500, 503`"
+    explain: "200 is success, not an error. The server-side error family is 5xx only."
+answerIds:
+  - c
+hint:
+  - level: 1
+    body: "Server errors live in the 5xx family. The first digit is the giveaway."
+  - level: 2
+    body: "500 (Internal Server Error) and 503 (Service Unavailable) are both 5xx. They mean the server failed — not the request — so a retry might succeed."

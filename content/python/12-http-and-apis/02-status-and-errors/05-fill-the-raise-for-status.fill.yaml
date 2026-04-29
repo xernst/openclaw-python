@@ -1,0 +1,30 @@
+xp: 3
+estSeconds: 60
+concept: raise-for-status-method-name
+prompt: |
+  Cursor wrote a call against a fake response and forgot the helper
+  method that crashes on any 4xx or 5xx. Fill in the method name on
+  line 8 — the standard helper that mirrors `httpx.Response.___()`.
+
+  Method: ___
+code: |
+  class FakeResponse:
+      def raise_for_status(self):
+          if 400 <= self.status_code < 600:
+              raise RuntimeError(f"HTTP {self.status_code}")
+
+  r = FakeResponse(); r.status_code = 404
+  try:
+      r.___()
+  except RuntimeError as err:
+      print(f"caught: {err}")
+blanks:
+  - id: method
+    accept:
+      - raise_for_status
+    caseSensitive: true
+hint:
+  - level: 1
+    body: "Three words separated by underscores. The method is already defined on the class for you — you just have to call it."
+  - level: 2
+    body: "It's `raise_for_status`. Line 8 should read `r.raise_for_status()`."

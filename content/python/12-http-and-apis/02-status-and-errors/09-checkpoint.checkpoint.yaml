@@ -1,0 +1,72 @@
+xp: 8
+estSeconds: 160
+concept: status-and-errors-checkpoint
+prompt: |
+  Last drill. Write a function `safe_fetch(response)` that takes a
+  fake response dict (with `status` and `body` keys) and returns:
+
+  - The dict's `body` if the status is 2xx (success).
+  - The string `"not found"` for status 404 specifically.
+  - The string `"client error"` for any other 4xx.
+  - The string `"retry later"` for any 5xx.
+  - Raise `ValueError(f"unexpected status: {status}")` for anything
+    else (1xx, 3xx).
+
+  The starter has four responses to pass through. Use the bottom loop
+  as-is.
+
+  Expected output:
+  ```
+  {'id': 7}
+  not found
+  client error
+  retry later
+  ```
+starter: |
+  # define safe_fetch below
+
+  responses = [
+      {"status": 200, "body": {"id": 7}},
+      {"status": 404, "body": {"error": "user not found"}},
+      {"status": 401, "body": {"error": "auth required"}},
+      {"status": 503, "body": {"error": "down for maintenance"}},
+  ]
+
+  for r in responses:
+      print(safe_fetch(r))
+grader:
+  kind: stdout-equality
+  expected: |
+    {'id': 7}
+    not found
+    client error
+    retry later
+  normalize: collapse-trailing-newline
+solution: |
+  def safe_fetch(response):
+      status = response["status"]
+      if 200 <= status < 300:
+          return response["body"]
+      if status == 404:
+          return "not found"
+      if 400 <= status < 500:
+          return "client error"
+      if 500 <= status < 600:
+          return "retry later"
+      raise ValueError(f"unexpected status: {status}")
+
+  responses = [
+      {"status": 200, "body": {"id": 7}},
+      {"status": 404, "body": {"error": "user not found"}},
+      {"status": 401, "body": {"error": "auth required"}},
+      {"status": 503, "body": {"error": "down for maintenance"}},
+  ]
+
+  for r in responses:
+      print(safe_fetch(r))
+passThreshold: 0.66
+hint:
+  - level: 1
+    body: "Order matters: check 200-range first, then the *specific* 404 case, then the broader 4xx, then 5xx, then `raise`. Every branch returns or raises — no fall-through."
+  - level: 2
+    body: "Put the `if status == 404:` branch *before* the broader `if 400 <= status < 500:` so the specific case wins. If you check the 4xx range first, 404 gets classified as `\"client error\"` instead of `\"not found\"`."
