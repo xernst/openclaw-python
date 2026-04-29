@@ -1,0 +1,13 @@
+slug: naming-things
+title: "Naming things you'll point AI at"
+estMinutes: 6
+prerequisites: []
+order:
+  - 01-intro.read.md
+  - 02-which-name-is-valid.mc.yaml
+  - 03-assignment.read.md
+  - 04-predict-the-score.predict.yaml
+  - 05-fill-the-name.fill.yaml
+  - 06-fix-the-typo.fix.yaml
+  - 07-write-greeting.write.yaml
+  - 08-checkpoint.checkpoint.yaml

@@ -1,0 +1,26 @@
+xp: 5
+estSeconds: 90
+concept: write-assign-and-print
+prompt: |
+  Write two lines.
+  Line 1: assign the value `"Pyloft"` to a variable called `app_name`.
+  Line 2: print `welcome to {app_name}` using an f-string.
+
+  Expected output:
+  ```
+  welcome to Pyloft
+  ```
+starter: |
+  # your code:
+grader:
+  kind: stdout-equality
+  expected: "welcome to Pyloft"
+  normalize: collapse-trailing-newline
+solution: |
+  app_name = "Pyloft"
+  print(f"welcome to {app_name}")
+hint:
+  - level: 1
+    body: "Two lines. Line 1 is one assignment. Line 2 is one `print(f\"...\")`."
+  - level: 2
+    body: "`app_name = \"Pyloft\"` on line 1. The f-string puts `{app_name}` inside the message."

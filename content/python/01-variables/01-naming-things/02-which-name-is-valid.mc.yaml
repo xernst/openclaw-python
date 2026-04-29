@@ -1,0 +1,25 @@
+xp: 2
+estSeconds: 35
+concept: variable-naming-rules
+code: |
+  # Python variable names follow three rules:
+  #   - letters, digits, underscores only
+  #   - cannot start with a digit
+  #   - case-sensitive (Score and score are different)
+prompt: |
+  Cursor just wrote you four lines and only one of them is a valid Python variable name.
+  Which one will Python accept?
+options:
+  - id: a
+    label: "`2nd_score`"
+    explain: "Variable names can't start with a digit."
+  - id: b
+    label: "`user-score`"
+    explain: "Hyphens are subtraction in Python — that line is `user` minus `score`, not a name."
+  - id: c
+    label: "`user_score`"
+  - id: d
+    label: "`user score`"
+    explain: "Spaces split a name in two. Python sees `user` and `score` separately."
+answerIds:
+  - c

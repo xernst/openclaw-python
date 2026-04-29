@@ -1,0 +1,24 @@
+xp: 8
+estSeconds: 120
+concept: variables-recap
+prompt: |
+  One last thing. AI wrote a small script that tracks two scores and prints a winner.
+  The starter has the variables already named for you. Finish line 4 so the script
+  prints `winner: maya` (lowercase, no extra punctuation).
+
+  Hint: line 4 should print an f-string that uses `winner_name`.
+starter: |
+  player_one = "maya"
+  player_two = "marcus"
+  winner_name = player_one
+  # your code on the next line:
+grader:
+  kind: stdout-equality
+  expected: "winner: maya"
+  normalize: collapse-trailing-newline
+solution: |
+  player_one = "maya"
+  player_two = "marcus"
+  winner_name = player_one
+  print(f"winner: {winner_name}")
+passThreshold: 0.66

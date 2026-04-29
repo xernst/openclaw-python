@@ -1,26 +1,109 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  --color-background: #0E0F12;
+  --color-foreground: #F7F4ED;
+  --color-ink-50: #fafafa;
+  --color-ink-100: #f4f4f5;
+  --color-ink-200: #e4e4e7;
+  --color-ink-300: #d4d4d8;
+  --color-ink-400: #a1a1aa;
+  --color-ink-500: #71717a;
+  --color-ink-600: #52525b;
+  --color-ink-700: #3f3f46;
+  --color-ink-800: #27272a;
+  --color-ink-900: #18181b;
+  --color-ink-950: #0E0F12;
+  --color-ember-50: #fff4f1;
+  --color-ember-100: #ffe6de;
+  --color-ember-200: #ffd3c6;
+  --color-ember-300: #fdb49d;
+  --color-ember-400: #f98b69;
+  --color-ember-500: #F2683C;
+  --color-ember-600: #e34c1c;
+  --color-ember-700: #be3912;
+  --color-ember-800: #9c3013;
+  --color-ember-900: #812a14;
+  --color-ember-950: #461306;
+  --color-paper: #F7F4ED;
+  --color-signal: #5BC8AF;
+  --color-slate-custom: #9AA0A8;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --font-display: var(--font-fraunces), ui-serif, Georgia, "Times New Roman", serif;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html, body {
+  background: var(--color-background);
+  color: var(--color-foreground);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
 }
+
+.prose {
+  color: var(--color-ink-300);
+  line-height: 1.7;
+}
+.prose h1, .prose h2, .prose h3, .prose h4 {
+  color: var(--color-ink-50);
+  font-weight: 600;
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+  line-height: 1.25;
+}
+.prose h1 { font-size: 1.875rem; }
+.prose h2 { font-size: 1.25rem; border-bottom: 1px solid var(--color-ink-800); padding-bottom: 0.3em; margin-top: 2em; }
+.prose h3 { font-size: 1.05rem; }
+.prose p { margin: 1em 0; }
+.prose ul, .prose ol { margin: 1em 0; padding-left: 1.5em; }
+.prose ul { list-style: disc; }
+.prose ol { list-style: decimal; }
+.prose li { margin: 0.3em 0; }
+.prose strong { color: var(--color-ink-50); font-weight: 600; }
+.prose em { color: var(--color-ink-50); }
+.prose code {
+  background: var(--color-ink-800);
+  color: var(--color-ember-300);
+  padding: 0.15em 0.4em;
+  border-radius: 0.25rem;
+  font-size: 0.9em;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+.prose pre {
+  background: var(--color-ink-950);
+  border: 1px solid var(--color-ink-800);
+  padding: 1em;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  margin: 1.2em 0;
+}
+.prose pre code {
+  background: none;
+  padding: 0;
+  color: inherit;
+  font-size: inherit;
+}
+.prose a { color: var(--color-ember-400); text-decoration: underline; text-underline-offset: 2px; }
+.prose blockquote {
+  border-left: 3px solid var(--color-ink-700);
+  padding-left: 1em;
+  color: var(--color-ink-400);
+  margin: 1.2em 0;
+  font-style: italic;
+}
+.prose hr { border: none; border-top: 1px solid var(--color-ink-800); margin: 2em 0; }
+.prose table { width: 100%; border-collapse: collapse; margin: 1em 0; font-size: 0.9em; }
+.prose th, .prose td { border: 1px solid var(--color-ink-800); padding: 0.5em 0.75em; text-align: left; }
+.prose th { background: var(--color-ink-900); font-weight: 600; }
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--color-ink-800); border-radius: 5px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-ink-700); }
+
+.cm-editor { height: 100%; }
+.cm-scroller { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }

@@ -1,0 +1,19 @@
+xp: 3
+estSeconds: 60
+concept: assignment-rebinding
+code: |
+  score = 5
+  score = score + 3
+  print(score)
+prompt: |
+  Read the code on the right. The second line uses `score` on **both sides** of the `=`.
+  What does this print?
+grader:
+  kind: stdout-equality
+  expected: "8"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "Python evaluates the right side first, then assigns to the left."
+  - level: 2
+    body: "On line 2, `score + 3` is `5 + 3 = 8`. Then `score` gets reassigned to 8."

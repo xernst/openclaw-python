@@ -1,0 +1,21 @@
+xp: 4
+estSeconds: 75
+concept: variable-reference
+prompt: |
+  Claude generated this and it crashes with a `NameError`. There's exactly one bug.
+  Fix it so the code prints `total: 42`.
+brokenCode: |
+  total = 42
+  print(f"total: {totl}")
+bugLines:
+  - 2
+grader:
+  kind: stdout-equality
+  expected: "total: 42"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "`NameError` means Python tried to use a variable that doesn't exist. Look at line 2 carefully."
+  - level: 2
+    body: "Compare the variable name on line 1 to the name inside the f-string on line 2."
+revealAfter: 4

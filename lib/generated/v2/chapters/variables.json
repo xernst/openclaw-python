@@ -1,0 +1,225 @@
+{
+  "number": 1,
+  "slug": "variables",
+  "title": "Variables — what AI reaches for first",
+  "blurb": "When AI writes Python, the first thing it does is name things. Learn to read those names on sight, and to write a few yourself.",
+  "lessons": [
+    {
+      "slug": "naming-things",
+      "title": "Naming things you'll point AI at",
+      "estMinutes": 6,
+      "prerequisites": [],
+      "steps": [
+        {
+          "type": "read",
+          "id": "variables/naming-things/s01-01-intro",
+          "xp": 1,
+          "hint": [],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 25,
+          "concept": "variable-introduction",
+          "body": "# Variables — AI's most-reached-for tool\n\nWhen you tell Cursor *track the user's score*, *store the title*, *remember the\nlast result*, the thing it reaches for first is a **variable** — a name that\nholds a value.\n\nYou won't write many variables yourself. But you'll read AI-generated code that\nuses them constantly. This first lesson is about recognizing them on sight.\n\nThe editor on the right has two lines. Hit **Run** to see what they do.",
+          "cta": "Got it",
+          "code": "score = 7\nprint(score)\n",
+          "runnable": true
+        },
+        {
+          "type": "mc",
+          "id": "variables/naming-things/s02-02-which-name-is-valid",
+          "xp": 2,
+          "hint": [],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 35,
+          "concept": "variable-naming-rules",
+          "prompt": "Cursor just wrote you four lines and only one of them is a valid Python variable name.\nWhich one will Python accept?\n",
+          "options": [
+            {
+              "id": "a",
+              "label": "`2nd_score`",
+              "explain": "Variable names can't start with a digit."
+            },
+            {
+              "id": "b",
+              "label": "`user-score`",
+              "explain": "Hyphens are subtraction in Python — that line is `user` minus `score`, not a name."
+            },
+            {
+              "id": "c",
+              "label": "`user_score`"
+            },
+            {
+              "id": "d",
+              "label": "`user score`",
+              "explain": "Spaces split a name in two. Python sees `user` and `score` separately."
+            }
+          ],
+          "answerIds": [
+            "c"
+          ],
+          "shuffle": false,
+          "code": "# Python variable names follow three rules:\n#   - letters, digits, underscores only\n#   - cannot start with a digit\n#   - case-sensitive (Score and score are different)\n",
+          "runnable": true
+        },
+        {
+          "type": "read",
+          "id": "variables/naming-things/s03-03-assignment",
+          "xp": 1,
+          "hint": [],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 30,
+          "concept": "assignment-operator",
+          "body": "# `=` doesn't mean what it does in math\n\nIn math, `=` is a comparison: *the left side equals the right side*.\n\nIn Python, `=` is **assignment**: *take the value on the right, give it the\nname on the left, replacing whatever was there before.*\n\nRun the code on the right. Notice the value of `user_score` changes between\nthe two `print` calls. The variable is a *box you can put a new thing in*, not\na permanent definition.\n\nThis is the bug that hits non-coders most: when AI rebinds a variable mid-function,\npeople read it as a contradiction instead of a re-assignment.",
+          "cta": "Got it",
+          "code": "user_score = 7\nprint(user_score)\n\nuser_score = 12\nprint(user_score)\n",
+          "runnable": true
+        },
+        {
+          "type": "predict",
+          "id": "variables/naming-things/s04-04-predict-the-score",
+          "xp": 3,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Python evaluates the right side first, then assigns to the left.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "On line 2, `score + 3` is `5 + 3 = 8`. Then `score` gets reassigned to 8.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 60,
+          "concept": "assignment-rebinding",
+          "code": "score = 5\nscore = score + 3\nprint(score)\n",
+          "prompt": "Read the code on the right. The second line uses `score` on **both sides** of the `=`.\nWhat does this print?\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "8",
+            "normalize": "collapse-trailing-newline"
+          }
+        },
+        {
+          "type": "fill",
+          "id": "variables/naming-things/s05-05-fill-the-name",
+          "xp": 2,
+          "hint": [
+            {
+              "level": 1,
+              "body": "f-strings substitute whatever variable name you put inside the curly braces.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "The variable is defined on line 1. Use the same exact name inside `{ }`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 50,
+          "concept": "f-string-interpolation",
+          "prompt": "Cursor wrote this snippet for a greeting feature. The variable was defined on line 1.\nFill in the blank on line 2 so the print statement actually uses it.\n```python\nuser_name = \"Maya\"\nprint(f\"hi, {___}\")\n```\n",
+          "blanks": [
+            {
+              "id": "name",
+              "accept": [
+                "user_name"
+              ],
+              "caseSensitive": true,
+              "normalize": "trim"
+            }
+          ]
+        },
+        {
+          "type": "fix",
+          "id": "variables/naming-things/s06-06-fix-the-typo",
+          "xp": 4,
+          "hint": [
+            {
+              "level": 1,
+              "body": "`NameError` means Python tried to use a variable that doesn't exist. Look at line 2 carefully.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Compare the variable name on line 1 to the name inside the f-string on line 2.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 75,
+          "concept": "variable-reference",
+          "brokenCode": "total = 42\nprint(f\"total: {totl}\")\n",
+          "prompt": "Claude generated this and it crashes with a `NameError`. There's exactly one bug.\nFix it so the code prints `total: 42`.\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "total: 42",
+            "normalize": "collapse-trailing-newline"
+          },
+          "bugLines": [
+            2
+          ],
+          "revealAfter": 4
+        },
+        {
+          "type": "write",
+          "id": "variables/naming-things/s07-07-write-greeting",
+          "xp": 5,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Two lines. Line 1 is one assignment. Line 2 is one `print(f\"...\")`.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "`app_name = \"Pyloft\"` on line 1. The f-string puts `{app_name}` inside the message.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 90,
+          "concept": "write-assign-and-print",
+          "prompt": "Write two lines.\nLine 1: assign the value `\"Pyloft\"` to a variable called `app_name`.\nLine 2: print `welcome to {app_name}` using an f-string.\n\nExpected output:\n```\nwelcome to Pyloft\n```\n",
+          "starter": "# your code:\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "welcome to Pyloft",
+            "normalize": "collapse-trailing-newline"
+          },
+          "solution": "app_name = \"Pyloft\"\nprint(f\"welcome to {app_name}\")\n",
+          "hiddenTests": []
+        },
+        {
+          "type": "checkpoint",
+          "id": "variables/naming-things/s08-08-checkpoint",
+          "xp": 8,
+          "hint": [],
+          "personalize": false,
+          "phase": "check",
+          "estSeconds": 120,
+          "concept": "variables-recap",
+          "prompt": "One last thing. AI wrote a small script that tracks two scores and prints a winner.\nThe starter has the variables already named for you. Finish line 4 so the script\nprints `winner: maya` (lowercase, no extra punctuation).\n\nHint: line 4 should print an f-string that uses `winner_name`.\n",
+          "starter": "player_one = \"maya\"\nplayer_two = \"marcus\"\nwinner_name = player_one\n# your code on the next line:\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "winner: maya",
+            "normalize": "collapse-trailing-newline"
+          },
+          "solution": "player_one = \"maya\"\nplayer_two = \"marcus\"\nwinner_name = player_one\nprint(f\"winner: {winner_name}\")\n",
+          "passThreshold": 0.66
+        }
+      ],
+      "xpTotal": 26
+    }
+  ],
+  "xpTotal": 26
+}
