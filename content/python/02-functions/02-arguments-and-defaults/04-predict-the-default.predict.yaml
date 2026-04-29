@@ -1,0 +1,22 @@
+xp: 3
+estSeconds: 50
+concept: default-override
+code: |
+  def discount(price, percent_off=10):
+      return price * (1 - percent_off / 100)
+
+  a = discount(200)
+  b = discount(200, 25)
+  print(f"{a} {b}")
+prompt: |
+  Two calls. The first uses the default, the second overrides it.
+  What does this print?
+grader:
+  kind: stdout-equality
+  expected: "180.0 150.0"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "First call uses `percent_off=10`. Second call uses `percent_off=25`. Run the math for each."
+  - level: 2
+    body: "`200 * (1 - 10/100)` is `180.0`. `200 * (1 - 25/100)` is `150.0`. Space between them."

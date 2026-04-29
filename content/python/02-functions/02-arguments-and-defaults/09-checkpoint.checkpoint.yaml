@@ -1,0 +1,42 @@
+xp: 8
+estSeconds: 120
+concept: arguments-recap
+prompt: |
+  Last one. Cursor wrote a function `format_log` that's supposed to take a
+  message, an optional level (default `"info"`), and an optional source
+  (default `"app"`), and return a string like `[info] app: started`.
+
+  The signature is wrong (defaults in the wrong order) and the function body
+  is missing entirely. Fix the signature and write the one-line body that
+  returns the formatted string.
+
+  Two calls happen at the bottom — they should print:
+  ```
+  [info] app: started
+  [warn] auth: login failed
+  ```
+starter: |
+  def format_log(level="info", message, source="app"):
+      # your one-line return goes here:
+      pass
+
+  print(format_log("started"))
+  print(format_log("login failed", "warn", "auth"))
+grader:
+  kind: stdout-equality
+  expected: |
+    [info] app: started
+    [warn] auth: login failed
+  normalize: collapse-trailing-newline
+solution: |
+  def format_log(message, level="info", source="app"):
+      return f"[{level}] {source}: {message}"
+
+  print(format_log("started"))
+  print(format_log("login failed", "warn", "auth"))
+passThreshold: 0.66
+hint:
+  - level: 1
+    body: "Required parameters come before defaulted ones. `message` is required, so it goes first. Then `return f\"[{level}] {source}: {message}\"`."
+  - level: 2
+    body: "`def format_log(message, level=\"info\", source=\"app\"):` then a single `return f\"[{level}] {source}: {message}\"`. Delete the `pass`."

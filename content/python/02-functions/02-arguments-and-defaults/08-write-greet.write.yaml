@@ -1,0 +1,38 @@
+xp: 5
+estSeconds: 90
+concept: write-function-with-default
+prompt: |
+  Write a function called `greet` that takes a `name` and an optional `mood`
+  parameter. `mood` should default to `"good"`. The function should return the
+  string `f"hi {name}, hope you're {mood}"`.
+
+  Then call `greet` twice and print both results:
+  - `greet("alex")` — uses the default
+  - `greet("sam", "great")` — overrides it
+
+  Expected output:
+  ```
+  hi alex, hope you're good
+  hi sam, hope you're great
+  ```
+starter: |
+  # define greet with a default mood:
+
+  # two calls and two prints:
+grader:
+  kind: stdout-equality
+  expected: |
+    hi alex, hope you're good
+    hi sam, hope you're great
+  normalize: collapse-trailing-newline
+solution: |
+  def greet(name, mood="good"):
+      return f"hi {name}, hope you're {mood}"
+
+  print(greet("alex"))
+  print(greet("sam", "great"))
+hint:
+  - level: 1
+    body: "The signature is `def greet(name, mood=\"good\"):`. Inside, `return` the f-string. Outside, two `print(greet(...))` calls."
+  - level: 2
+    body: "`def greet(name, mood=\"good\"):` then `return f\"hi {name}, hope you're {mood}\"`. Then `print(greet(\"alex\"))` and `print(greet(\"sam\", \"great\"))`."

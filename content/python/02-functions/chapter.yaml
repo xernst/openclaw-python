@@ -4,3 +4,4 @@ title: "Functions — and the most-hallucinated bug AI ships"
 blurb: "AI writes functions constantly, and silently forgets the `return` line about a third of the time. Learn to spot the missing return on sight."
 lessons:
   - 01-return-values
+  - 02-arguments-and-defaults

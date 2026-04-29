@@ -1,0 +1,26 @@
+xp: 4
+estSeconds: 75
+concept: argument-order-bug
+prompt: |
+  Claude generated this and the output is `from 50 to 100: savings`. The
+  arguments to `transfer` got swapped — `amount` ended up where `from_account`
+  should be. Fix the call on line 5 so the output reads
+  `from checking to savings: 100`.
+brokenCode: |
+  def transfer(from_account, to_account, amount):
+      print(f"from {from_account} to {to_account}: {amount}")
+
+  # the call below has the arguments in the wrong order
+  transfer(100, "savings", "checking")
+bugLines:
+  - 5
+grader:
+  kind: stdout-equality
+  expected: "from checking to savings: 100"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "Look at the parameter order in the `def`. Then re-read the call. The amount is in the wrong slot."
+  - level: 2
+    body: "Change line 5 to `transfer(\"checking\", \"savings\", 100)`. Or use keywords: `transfer(from_account=\"checking\", to_account=\"savings\", amount=100)`."
+revealAfter: 4

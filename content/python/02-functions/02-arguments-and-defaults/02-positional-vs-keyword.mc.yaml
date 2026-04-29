@@ -1,0 +1,29 @@
+xp: 2
+estSeconds: 40
+concept: keyword-arguments
+code: |
+  def transfer(from_account, to_account, amount):
+      print(f"moved {amount} from {from_account} to {to_account}")
+prompt: |
+  Four ways to call `transfer`. Three of them work and produce the same output.
+  One is wrong because it relies on positional order — and the order is reversed.
+  Which call is the bug?
+options:
+  - id: a
+    label: "`transfer(\"checking\", \"savings\", 100)`"
+    explain: "Positional and in the right order. This works."
+  - id: b
+    label: "`transfer(from_account=\"checking\", to_account=\"savings\", amount=100)`"
+    explain: "All keywords. Order doesn't matter when you name them. Safe."
+  - id: c
+    label: "`transfer(\"savings\", \"checking\", 100)`"
+  - id: d
+    label: "`transfer(amount=100, from_account=\"checking\", to_account=\"savings\")`"
+    explain: "Keywords let you write them in any order. Still correct."
+answerIds:
+  - c
+hint:
+  - level: 1
+    body: "Three of these say the same thing. One reverses the source and destination accounts."
+  - level: 2
+    body: "Option C swaps `from` and `to`. Python has no way to know — it just trusts the order. This is why keyword arguments matter."

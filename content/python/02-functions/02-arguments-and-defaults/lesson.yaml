@@ -1,0 +1,14 @@
+slug: arguments-and-defaults
+title: "Arguments, defaults, and the silent wrong-order bug"
+estMinutes: 7
+prerequisites: []
+order:
+  - 01-intro.read.md
+  - 02-positional-vs-keyword.mc.yaml
+  - 03-defaults.read.md
+  - 04-predict-the-default.predict.yaml
+  - 05-fill-the-keyword.fill.yaml
+  - 06-fix-the-arg-order.fix.yaml
+  - 07-fix-the-missing-default.fix.yaml
+  - 08-write-greet.write.yaml
+  - 09-checkpoint.checkpoint.yaml

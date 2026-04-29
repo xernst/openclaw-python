@@ -1,0 +1,28 @@
+xp: 4
+estSeconds: 75
+concept: default-syntax-error
+prompt: |
+  Cursor wrote this and it crashes before it even runs. The traceback says
+  `SyntaxError: non-default argument follows default argument`.
+
+  Defaulted parameters have to come **after** the required ones. Reorder the
+  parameters on line 1 so the function definition is valid and the call on
+  line 4 still works.
+brokenCode: |
+  def book_flight(seats=1, destination, departure="morning"):
+      print(f"{seats} seat(s) to {destination}, {departure}")
+
+  book_flight(2, "Tokyo", "evening")
+bugLines:
+  - 1
+  - 4
+grader:
+  kind: stdout-equality
+  expected: "2 seat(s) to Tokyo, evening"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "Required parameters first, defaulted ones last. `destination` is required. `seats` and `departure` have defaults."
+  - level: 2
+    body: "Reorder to `def book_flight(destination, seats=1, departure=\"morning\"):` and the call `book_flight(\"Tokyo\", 2, \"evening\")` lines up by position."
+revealAfter: 4

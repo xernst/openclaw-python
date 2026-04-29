@@ -1,0 +1,25 @@
+xp: 3
+estSeconds: 55
+concept: keyword-argument-syntax
+prompt: |
+  Cursor wrote a function with three parameters. The first call uses positional
+  arguments. The second call wants to skip the middle one and only set the
+  last one. Fill in the missing keyword name on line 6.
+  ```python
+  def log(message, level="info", source="app"):
+      print(f"[{level}] {source}: {message}")
+
+  log("started", "warn", "auth")
+
+  log("started", ___="auth")
+  ```
+blanks:
+  - id: keyword
+    accept:
+      - source
+    caseSensitive: true
+hint:
+  - level: 1
+    body: "The caller wants to set the third parameter without touching the second. Name the parameter you're targeting."
+  - level: 2
+    body: "The third parameter is `source`. Use `source=\"auth\"` to set it by name and let `level` keep its default."
