@@ -175,13 +175,47 @@ export default function FillBlankStepView({
 
 type Segment = { type: "text"; value: string } | { type: "blank"; blankIndex: number };
 
+const FENCE = "```";
+
+// Splits a prompt on `___` blanks. If a blank lands inside a fenced code
+// block, each text segment gets its share of fence rebalanced so React
+// Markdown renders complete code blocks instead of dangling open fences.
 function splitOnBlanks(prompt: string, blankCount: number): Segment[] {
   const parts = prompt.split(BLANK_TOKEN);
   const segments: Segment[] = [];
+  let inFence = false;
+  let fenceLang = "";
+
   for (let i = 0; i < parts.length; i++) {
-    if (parts[i].length > 0) segments.push({ type: "text", value: parts[i] });
+    let text = parts[i];
+
+    if (inFence) {
+      text = `${FENCE}${fenceLang}\n${text}`;
+    }
+
+    const fenceMatches = [...text.matchAll(/```(\w*)/g)];
+    const willEndInFence = fenceMatches.length % 2 === 1;
+
+    if (willEndInFence && i < parts.length - 1) {
+      text = `${text}\n${FENCE}`;
+    }
+
+    if (text.length > 0) segments.push({ type: "text", value: text });
+
     if (i < parts.length - 1) {
       segments.push({ type: "blank", blankIndex: Math.min(i, blankCount - 1) });
+    }
+
+    if (willEndInFence) {
+      const opener = fenceMatches[fenceMatches.length - 1];
+      fenceLang = opener?.[1] ?? "";
+      inFence = !inFence;
+    } else {
+      // Track every closer/opener pair to keep state consistent in case of
+      // multiple fences in one segment.
+      for (let j = 0; j < fenceMatches.length; j += 2) {
+        // pairs of opener+closer, no state change.
+      }
     }
   }
   return segments;
