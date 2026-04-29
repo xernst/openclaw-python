@@ -1,0 +1,6 @@
+number: 11
+slug: classes-basics
+title: "Classes — reading what AI just wrote you"
+blurb: "AI ships classes constantly: SQLAlchemy models, FastAPI schemas, custom exceptions. You don't need to design them. You need to read one without flinching."
+lessons:
+  - 01-reading-a-class

@@ -1,0 +1,28 @@
+xp: 3
+estSeconds: 55
+concept: self-attribute-access
+prompt: |
+  Cursor wrote a `Profile` class. The `display` method needs to read the
+  name that was stored in `__init__`. Fill in the keyword that refers to
+  the current instance on line 6.
+
+  Keyword: ___
+code: |
+  class Profile:
+      def __init__(self, name):
+          self.name = name
+
+      def display(self):
+          return f"profile: {___.name}"
+
+  print(Profile("maya").display())
+blanks:
+  - id: keyword
+    accept:
+      - self
+    caseSensitive: true
+hint:
+  - level: 1
+    body: "Inside any method, the current instance is bound to the first parameter."
+  - level: 2
+    body: "It's `self`. `self.name` reads the attribute that was set in `__init__`."

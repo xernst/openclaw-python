@@ -1,0 +1,14 @@
+slug: reading-a-class
+title: "class, __init__, self — the three keywords AI uses every time"
+estMinutes: 7
+prerequisites: []
+order:
+  - 01-intro.read.md
+  - 02-which-is-the-method.mc.yaml
+  - 03-self-and-init.read.md
+  - 04-predict-the-instance.predict.yaml
+  - 05-fill-the-self.fill.yaml
+  - 06-fix-the-missing-self.fix.yaml
+  - 07-fix-the-init-args.fix.yaml
+  - 08-write-counter.write.yaml
+  - 09-checkpoint.checkpoint.yaml

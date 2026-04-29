@@ -1,0 +1,29 @@
+xp: 4
+estSeconds: 80
+concept: self-required-on-methods
+prompt: |
+  Claude wrote this and it crashes with a `TypeError` because it forgot
+  `self` in the method definition. Add `self` as the first parameter to
+  `total` so the script prints `15`.
+brokenCode: |
+  class Cart:
+      def __init__(self, items):
+          self.items = items
+
+      def total():
+          return sum(self.items)
+
+  c = Cart([5, 5, 5])
+  print(c.total())
+bugLines:
+  - 5
+grader:
+  kind: stdout-equality
+  expected: "15"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "Every method's first parameter is `self`. Without it, the method can't see instance data."
+  - level: 2
+    body: "Change line 5 from `def total():` to `def total(self):`. Now `self.items` works."
+revealAfter: 4

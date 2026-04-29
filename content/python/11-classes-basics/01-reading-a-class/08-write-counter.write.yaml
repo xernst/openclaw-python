@@ -1,0 +1,40 @@
+xp: 5
+estSeconds: 110
+concept: write-class-with-state
+prompt: |
+  Write a class called `Score` that:
+
+  - Takes no arguments to its `__init__` (besides `self`).
+  - Sets `self.points` to `0` in `__init__`.
+  - Has a method `add(self, n)` that increases `self.points` by `n`.
+
+  Then create one instance, call `.add(3)` and `.add(7)`, and print
+  the final `points`.
+
+  Expected output:
+  ```
+  10
+  ```
+starter: |
+  # define the Score class, then use it
+grader:
+  kind: stdout-equality
+  expected: "10"
+  normalize: collapse-trailing-newline
+solution: |
+  class Score:
+      def __init__(self):
+          self.points = 0
+
+      def add(self, n):
+          self.points += n
+
+  s = Score()
+  s.add(3)
+  s.add(7)
+  print(s.points)
+hint:
+  - level: 1
+    body: "`__init__(self):` with no other params, then `self.points = 0`. The `add` method takes `(self, n)` and runs `self.points += n`."
+  - level: 2
+    body: "After defining the class: `s = Score()`, two `s.add(...)` calls, then `print(s.points)`."

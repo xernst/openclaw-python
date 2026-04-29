@@ -1,0 +1,29 @@
+xp: 3
+estSeconds: 65
+concept: independent-instances
+code: |
+  class Counter:
+      def __init__(self):
+          self.value = 0
+
+      def bump(self):
+          self.value += 1
+
+  a = Counter()
+  b = Counter()
+  a.bump()
+  a.bump()
+  b.bump()
+  print(a.value, b.value)
+prompt: |
+  Read the editor. Two separate `Counter` instances, each bumped a
+  different number of times. What does the last line print?
+grader:
+  kind: stdout-equality
+  expected: "2 1"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "Each `Counter()` call makes a fresh instance with its own `self.value`. They don't share state."
+  - level: 2
+    body: "`a.bump()` runs twice → `a.value` is 2. `b.bump()` runs once → `b.value` is 1. Output: `2 1`."

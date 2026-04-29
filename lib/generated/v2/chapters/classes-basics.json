@@ -1,0 +1,258 @@
+{
+  "number": 11,
+  "slug": "classes-basics",
+  "title": "Classes — reading what AI just wrote you",
+  "blurb": "AI ships classes constantly: SQLAlchemy models, FastAPI schemas, custom exceptions. You don't need to design them. You need to read one without flinching.",
+  "lessons": [
+    {
+      "slug": "reading-a-class",
+      "title": "class, __init__, self — the three keywords AI uses every time",
+      "estMinutes": 7,
+      "prerequisites": [],
+      "steps": [
+        {
+          "type": "read",
+          "id": "classes-basics/reading-a-class/s01-01-intro",
+          "xp": 1,
+          "hint": [],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 35,
+          "concept": "class-introduction",
+          "body": "# A class is a template\n\nWhen AI generates `User`, `Order`, `ChatSession`, `Embedding`, what it's\ngiving you is a **class** — a small template that bundles some data with\nthe functions that operate on that data.\n\nYou'll rarely write classes from scratch. But you'll read them in every\nreal codebase: ORM models, API schemas, agent state, custom errors.\n\nThe three pieces you need to recognize:\n\n- `class Name:` — declares the template.\n- `def __init__(self, ...)` — runs once per new instance, sets up data.\n- `self.something` — the per-instance data; the `self` is the instance itself.\n\nRun the editor. `User(\"maya\")` calls `__init__`, which stashes the name on\nthe new instance. `u.greet()` reads it back.",
+          "cta": "Got it",
+          "code": "class User:\n    def __init__(self, name):\n        self.name = name\n\n    def greet(self):\n        return f\"hi, {self.name}\"\n\nu = User(\"maya\")\nprint(u.greet())\n",
+          "runnable": true
+        },
+        {
+          "type": "mc",
+          "id": "classes-basics/reading-a-class/s02-02-which-is-the-method",
+          "xp": 2,
+          "hint": [],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 45,
+          "concept": "method-vs-attribute",
+          "prompt": "Cursor wrote the `Order` class above. Which line below is calling a\n**method** (a function attached to the instance), not just reading an\nattribute?\n",
+          "options": [
+            {
+              "id": "a",
+              "label": "`o.total`",
+              "explain": "`total` is an attribute. No parens, no call."
+            },
+            {
+              "id": "b",
+              "label": "`o.with_tax`",
+              "explain": "Without parens, you're getting the method object itself, not calling it. The call needs `()`."
+            },
+            {
+              "id": "c",
+              "label": "`o.with_tax()`"
+            },
+            {
+              "id": "d",
+              "label": "`o = Order(100)`",
+              "explain": "That's calling the class — it constructs a new instance via `__init__`. Not a method call on `o`."
+            }
+          ],
+          "answerIds": [
+            "c"
+          ],
+          "shuffle": false,
+          "code": "class Order:\n    def __init__(self, total):\n        self.total = total\n\n    def with_tax(self):\n        return self.total * 1.08\n\no = Order(100)\nprint(o.total)         # attribute — no parens\nprint(o.with_tax())    # method — needs parens\n",
+          "runnable": true
+        },
+        {
+          "type": "read",
+          "id": "classes-basics/reading-a-class/s03-03-self-and-init",
+          "xp": 2,
+          "hint": [],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 60,
+          "concept": "self-parameter",
+          "body": "# `self` is just the instance\n\nThe thing that confuses everyone the first time: every method in a class\ntakes `self` as its first argument, but you never pass it yourself.\n\nWhen you write `rex.describe()`, Python silently calls `Pet.describe(rex)`.\nThe dot does the work. `self` inside the method is whichever instance you\ncalled it on.\n\nThat's why two `Pet` instances can have different names without colliding:\n`self.name` reads from *this* instance, not from the class. Each `Pet(...)`\ngets its own `self`.\n\nRun the editor. Two pets, two `describe()` calls, two different outputs.\nThe class definition doesn't change between calls — only `self` does.",
+          "cta": "Got it",
+          "code": "class Pet:\n    def __init__(self, name, kind):\n        self.name = name\n        self.kind = kind\n\n    def describe(self):\n        return f\"{self.name} is a {self.kind}\"\n\nrex = Pet(\"rex\", \"dog\")\nwhiskers = Pet(\"whiskers\", \"cat\")\nprint(rex.describe())\nprint(whiskers.describe())\n",
+          "runnable": true
+        },
+        {
+          "type": "predict",
+          "id": "classes-basics/reading-a-class/s04-04-predict-the-instance",
+          "xp": 3,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Each `Counter()` call makes a fresh instance with its own `self.value`. They don't share state.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "`a.bump()` runs twice → `a.value` is 2. `b.bump()` runs once → `b.value` is 1. Output: `2 1`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 65,
+          "concept": "independent-instances",
+          "code": "class Counter:\n    def __init__(self):\n        self.value = 0\n\n    def bump(self):\n        self.value += 1\n\na = Counter()\nb = Counter()\na.bump()\na.bump()\nb.bump()\nprint(a.value, b.value)\n",
+          "prompt": "Read the editor. Two separate `Counter` instances, each bumped a\ndifferent number of times. What does the last line print?\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "2 1",
+            "normalize": "collapse-trailing-newline"
+          }
+        },
+        {
+          "type": "fill",
+          "id": "classes-basics/reading-a-class/s05-05-fill-the-self",
+          "xp": 3,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Inside any method, the current instance is bound to the first parameter.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "It's `self`. `self.name` reads the attribute that was set in `__init__`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 55,
+          "concept": "self-attribute-access",
+          "prompt": "Cursor wrote a `Profile` class. The `display` method needs to read the\nname that was stored in `__init__`. Fill in the keyword that refers to\nthe current instance on line 6.\n\nKeyword: ___\n",
+          "code": "class Profile:\n    def __init__(self, name):\n        self.name = name\n\n    def display(self):\n        return f\"profile: {___.name}\"\n\nprint(Profile(\"maya\").display())\n",
+          "blanks": [
+            {
+              "id": "keyword",
+              "accept": [
+                "self"
+              ],
+              "caseSensitive": true,
+              "normalize": "trim"
+            }
+          ]
+        },
+        {
+          "type": "fix",
+          "id": "classes-basics/reading-a-class/s06-06-fix-the-missing-self",
+          "xp": 4,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Every method's first parameter is `self`. Without it, the method can't see instance data.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Change line 5 from `def total():` to `def total(self):`. Now `self.items` works.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 80,
+          "concept": "self-required-on-methods",
+          "brokenCode": "class Cart:\n    def __init__(self, items):\n        self.items = items\n\n    def total():\n        return sum(self.items)\n\nc = Cart([5, 5, 5])\nprint(c.total())\n",
+          "prompt": "Claude wrote this and it crashes with a `TypeError` because it forgot\n`self` in the method definition. Add `self` as the first parameter to\n`total` so the script prints `15`.\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "15",
+            "normalize": "collapse-trailing-newline"
+          },
+          "bugLines": [
+            5
+          ],
+          "revealAfter": 4
+        },
+        {
+          "type": "fix",
+          "id": "classes-basics/reading-a-class/s07-07-fix-the-init-args",
+          "xp": 4,
+          "hint": [
+            {
+              "level": 1,
+              "body": "To persist data on the instance, assign to `self.something`, not a bare local name.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Replace line 4 with `self.title = title`. Now `self.title` exists when `label` reads it.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 80,
+          "concept": "init-stores-on-self",
+          "brokenCode": "class App:\n    def __init__(self, title):\n        # local variable, lost when __init__ returns\n        title = title\n\n    def label(self):\n        return f\"{self.title} v1\"\n\na = App(\"pyloft\")\nprint(a.label())\n",
+          "prompt": "AI wrote `__init__` but forgot to actually store the argument on the\ninstance — it just made a local variable that gets thrown away. Fix\nline 4 so `self.title` is set, then the script will print `pyloft v1`.\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "pyloft v1",
+            "normalize": "collapse-trailing-newline"
+          },
+          "bugLines": [
+            4
+          ],
+          "revealAfter": 4
+        },
+        {
+          "type": "write",
+          "id": "classes-basics/reading-a-class/s08-08-write-counter",
+          "xp": 5,
+          "hint": [
+            {
+              "level": 1,
+              "body": "`__init__(self):` with no other params, then `self.points = 0`. The `add` method takes `(self, n)` and runs `self.points += n`.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "After defining the class: `s = Score()`, two `s.add(...)` calls, then `print(s.points)`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 110,
+          "concept": "write-class-with-state",
+          "prompt": "Write a class called `Score` that:\n\n- Takes no arguments to its `__init__` (besides `self`).\n- Sets `self.points` to `0` in `__init__`.\n- Has a method `add(self, n)` that increases `self.points` by `n`.\n\nThen create one instance, call `.add(3)` and `.add(7)`, and print\nthe final `points`.\n\nExpected output:\n```\n10\n```\n",
+          "starter": "# define the Score class, then use it\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "10",
+            "normalize": "collapse-trailing-newline"
+          },
+          "solution": "class Score:\n    def __init__(self):\n        self.points = 0\n\n    def add(self, n):\n        self.points += n\n\ns = Score()\ns.add(3)\ns.add(7)\nprint(s.points)\n",
+          "hiddenTests": []
+        },
+        {
+          "type": "checkpoint",
+          "id": "classes-basics/reading-a-class/s09-09-checkpoint",
+          "xp": 8,
+          "hint": [],
+          "personalize": false,
+          "phase": "check",
+          "estSeconds": 140,
+          "concept": "classes-checkpoint",
+          "prompt": "AI handed you the skeleton of a `Cart` class. The `__init__` and `add`\nmethods are wired correctly. Your job: finish the `total` method so it\nreturns the sum of all prices currently in `self.items`.\n\nExpected output:\n```\n17\n```\n",
+          "starter": "class Cart:\n    def __init__(self):\n        self.items = []\n\n    def add(self, price):\n        self.items.append(price)\n\n    def total(self):\n        # return the sum of self.items\n        pass\n\nc = Cart()\nc.add(5)\nc.add(12)\nprint(c.total())\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "17",
+            "normalize": "collapse-trailing-newline"
+          },
+          "solution": "class Cart:\n    def __init__(self):\n        self.items = []\n\n    def add(self, price):\n        self.items.append(price)\n\n    def total(self):\n        return sum(self.items)\n\nc = Cart()\nc.add(5)\nc.add(12)\nprint(c.total())\n",
+          "passThreshold": 0.66
+        }
+      ],
+      "xpTotal": 32
+    }
+  ],
+  "xpTotal": 32
+}

@@ -1,6 +1,6 @@
 {
   "version": "0.1.0",
-  "generatedAt": "2026-04-29T16:16:20.790Z",
+  "generatedAt": "2026-04-29T16:17:43.888Z",
   "chapters": [
     {
       "number": 1,
@@ -88,6 +88,15 @@
       "slug": "files-and-io",
       "title": "Files and I/O — moving data in and out",
       "blurb": "Reading a CSV, writing a log, parsing a JSON dump. The first thing AI does in any real project is touch a file. Learn the few patterns it reaches for and the one it forgets.",
+      "lessonCount": 1,
+      "stepCount": 9,
+      "xpTotal": 32
+    },
+    {
+      "number": 11,
+      "slug": "classes-basics",
+      "title": "Classes — reading what AI just wrote you",
+      "blurb": "AI ships classes constantly: SQLAlchemy models, FastAPI schemas, custom exceptions. You don't need to design them. You need to read one without flinching.",
       "lessonCount": 1,
       "stepCount": 9,
       "xpTotal": 32

@@ -1,0 +1,48 @@
+xp: 8
+estSeconds: 140
+concept: classes-checkpoint
+prompt: |
+  AI handed you the skeleton of a `Cart` class. The `__init__` and `add`
+  methods are wired correctly. Your job: finish the `total` method so it
+  returns the sum of all prices currently in `self.items`.
+
+  Expected output:
+  ```
+  17
+  ```
+starter: |
+  class Cart:
+      def __init__(self):
+          self.items = []
+
+      def add(self, price):
+          self.items.append(price)
+
+      def total(self):
+          # return the sum of self.items
+          pass
+
+  c = Cart()
+  c.add(5)
+  c.add(12)
+  print(c.total())
+grader:
+  kind: stdout-equality
+  expected: "17"
+  normalize: collapse-trailing-newline
+solution: |
+  class Cart:
+      def __init__(self):
+          self.items = []
+
+      def add(self, price):
+          self.items.append(price)
+
+      def total(self):
+          return sum(self.items)
+
+  c = Cart()
+  c.add(5)
+  c.add(12)
+  print(c.total())
+passThreshold: 0.66

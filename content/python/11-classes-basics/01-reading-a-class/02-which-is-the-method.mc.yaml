@@ -1,0 +1,32 @@
+xp: 2
+estSeconds: 45
+concept: method-vs-attribute
+code: |
+  class Order:
+      def __init__(self, total):
+          self.total = total
+
+      def with_tax(self):
+          return self.total * 1.08
+
+  o = Order(100)
+  print(o.total)         # attribute — no parens
+  print(o.with_tax())    # method — needs parens
+prompt: |
+  Cursor wrote the `Order` class above. Which line below is calling a
+  **method** (a function attached to the instance), not just reading an
+  attribute?
+options:
+  - id: a
+    label: "`o.total`"
+    explain: "`total` is an attribute. No parens, no call."
+  - id: b
+    label: "`o.with_tax`"
+    explain: "Without parens, you're getting the method object itself, not calling it. The call needs `()`."
+  - id: c
+    label: "`o.with_tax()`"
+  - id: d
+    label: "`o = Order(100)`"
+    explain: "That's calling the class — it constructs a new instance via `__init__`. Not a method call on `o`."
+answerIds:
+  - c

@@ -1,0 +1,30 @@
+xp: 4
+estSeconds: 80
+concept: init-stores-on-self
+prompt: |
+  AI wrote `__init__` but forgot to actually store the argument on the
+  instance — it just made a local variable that gets thrown away. Fix
+  line 4 so `self.title` is set, then the script will print `pyloft v1`.
+brokenCode: |
+  class App:
+      def __init__(self, title):
+          # local variable, lost when __init__ returns
+          title = title
+
+      def label(self):
+          return f"{self.title} v1"
+
+  a = App("pyloft")
+  print(a.label())
+bugLines:
+  - 4
+grader:
+  kind: stdout-equality
+  expected: "pyloft v1"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "To persist data on the instance, assign to `self.something`, not a bare local name."
+  - level: 2
+    body: "Replace line 4 with `self.title = title`. Now `self.title` exists when `label` reads it."
+revealAfter: 4
