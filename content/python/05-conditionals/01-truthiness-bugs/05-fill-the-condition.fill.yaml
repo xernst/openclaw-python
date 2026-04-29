@@ -1,0 +1,27 @@
+xp: 3
+estSeconds: 50
+concept: none-check
+prompt: |
+  Cursor wrote a function that should print `no result yet` when the value is
+  `None` and `got it: <value>` otherwise. The condition on line 4 is missing
+  the right comparison.
+
+  Fill in the blank with the correct keyword (one word).
+  ```python
+  result = None
+
+  if result ___ None:
+      print("no result yet")
+  else:
+      print(f"got it: {result}")
+  ```
+blanks:
+  - id: comparator
+    accept:
+      - is
+    caseSensitive: true
+hint:
+  - level: 1
+    body: "There's exactly one place `is` belongs in Python: comparing against `None`."
+  - level: 2
+    body: "`if result is None:` — never `==` for `None` checks."

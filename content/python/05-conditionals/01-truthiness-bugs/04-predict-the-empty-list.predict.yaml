@@ -1,0 +1,22 @@
+xp: 3
+estSeconds: 60
+concept: empty-list-truthiness
+code: |
+  results = []
+
+  if results:
+      print("found something")
+  else:
+      print("empty")
+prompt: |
+  AI uses `if results:` constantly to mean "if the list has stuff in it." What
+  does this print?
+grader:
+  kind: stdout-equality
+  expected: "empty"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "`results` is `[]`. Empty lists are falsy."
+  - level: 2
+    body: "Falsy means the `if` branch is skipped. The `else` branch runs."

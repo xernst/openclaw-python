@@ -1,0 +1,28 @@
+xp: 4
+estSeconds: 75
+concept: is-vs-eq-string
+prompt: |
+  Cursor wrote `if status is "done":` and the branch never fires, even when
+  `status` clearly *is* `"done"`. The string compare with `is` is unreliable —
+  Python only sometimes reuses string objects in memory.
+
+  Fix line 3 so the script prints `shipping it`.
+brokenCode: |
+  status = "done"
+
+  if status is "done":
+      print("shipping it")
+  else:
+      print("still working")
+bugLines:
+  - 3
+grader:
+  kind: stdout-equality
+  expected: "shipping it"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "`is` checks identity, not equality. For strings (and anything other than `None`), use `==`."
+  - level: 2
+    body: "Change `is` to `==` on line 3."
+revealAfter: 4

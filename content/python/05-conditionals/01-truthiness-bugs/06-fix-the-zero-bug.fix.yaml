@@ -1,0 +1,29 @@
+xp: 4
+estSeconds: 80
+concept: zero-vs-none-bug
+prompt: |
+  Claude wrote a function that's supposed to print `score: 0` when the score is
+  zero. Instead it prints `no score yet` because `if score:` treats `0` as
+  falsy — same as `None`.
+
+  This is one of the most common silent bugs in AI-generated code. Fix line 3
+  so a real score of `0` prints correctly.
+brokenCode: |
+  score = 0
+
+  if score:
+      print(f"score: {score}")
+  else:
+      print("no score yet")
+bugLines:
+  - 3
+grader:
+  kind: stdout-equality
+  expected: "score: 0"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "`if score:` is wrong because `0` is falsy. You want to check for *not None* specifically."
+  - level: 2
+    body: "Change `if score:` to `if score is not None:` on line 3."
+revealAfter: 4

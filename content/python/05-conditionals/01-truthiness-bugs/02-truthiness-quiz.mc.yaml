@@ -1,0 +1,31 @@
+xp: 2
+estSeconds: 40
+concept: truthiness
+code: |
+  # Python treats some non-True values as "falsy":
+  #   - 0
+  #   - "" (empty string)
+  #   - [] (empty list)
+  #   - {} (empty dict)
+  #   - None
+  # Everything else is "truthy".
+prompt: |
+  Cursor wrote `if x:` and the branch did not fire. Which value of `x` would
+  *skip* the `if` block?
+options:
+  - id: a
+    label: "`x = \"hello\"`"
+    explain: "Non-empty strings are truthy. The branch would fire."
+  - id: b
+    label: "`x = [1]`"
+    explain: "A list with anything in it is truthy. The branch would fire."
+  - id: c
+    label: "`x = []`"
+  - id: d
+    label: "`x = -5`"
+    explain: "Any non-zero number is truthy, including negatives. The branch would fire."
+answerIds:
+  - c
+hint:
+  - level: 1
+    body: "Empty containers are falsy in Python. Empty list, empty dict, empty string."

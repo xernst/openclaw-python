@@ -1,0 +1,44 @@
+xp: 8
+estSeconds: 120
+concept: conditionals-recap
+prompt: |
+  One last thing. AI wrote a discount-rule script. The starter has the right
+  branches but the conditions are missing. Finish lines 4 and 6 so the script
+  prints `vip discount` (because `tier` is `"gold"` and `points` is greater
+  than zero).
+
+  Use `==` for the string and `is not None` for the points check.
+starter: |
+  tier = "gold"
+  points = 50
+
+  if tier ___ "gold":
+      if points ___:
+          print("vip discount")
+          # if both checks pass
+      else:
+          print("vip, no points")
+  else:
+      print("standard")
+grader:
+  kind: stdout-equality
+  expected: "vip discount"
+  normalize: collapse-trailing-newline
+solution: |
+  tier = "gold"
+  points = 50
+
+  if tier == "gold":
+      if points is not None:
+          print("vip discount")
+          # if both checks pass
+      else:
+          print("vip, no points")
+  else:
+      print("standard")
+passThreshold: 0.66
+hint:
+  - level: 1
+    body: "Two blanks. Line 4 is a string compare — use `==`. Line 5 is a None-check — use `is not None`."
+  - level: 2
+    body: "`tier == \"gold\"` and `points is not None`."

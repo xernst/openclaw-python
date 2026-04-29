@@ -1,0 +1,13 @@
+slug: truthiness-bugs
+title: "Conditionals and the truthiness traps"
+estMinutes: 7
+prerequisites: []
+order:
+  - 01-intro.read.md
+  - 02-truthiness-quiz.mc.yaml
+  - 03-eq-vs-is.read.md
+  - 04-predict-the-empty-list.predict.yaml
+  - 05-fill-the-condition.fill.yaml
+  - 06-fix-the-zero-bug.fix.yaml
+  - 07-fix-the-is-comparison.fix.yaml
+  - 08-checkpoint.checkpoint.yaml
