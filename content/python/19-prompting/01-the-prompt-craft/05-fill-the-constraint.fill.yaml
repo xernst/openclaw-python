@@ -1,0 +1,28 @@
+xp: 3
+estSeconds: 60
+concept: prompt-constraint-key
+prompt: |
+  AI is reading a prompt template represented as a dict. The four keys
+  are `context`, `goal`, `___`, and `format`. Fill in the missing key —
+  the one that holds the limits and rules the model must respect.
+
+  Key name: ___
+code: |
+  prompt_template = {
+      "context": "...",
+      "goal": "...",
+      "___": "...",
+      "format": "...",
+  }
+  print(list(prompt_template.keys()))
+blanks:
+  - id: key
+    accept:
+      - constraints
+      - constraint
+    caseSensitive: true
+hint:
+  - level: 1
+    body: "The four-part prompt names what you must use, what you must not do, and what edge cases matter. That part has a name."
+  - level: 2
+    body: "It's `constraints` (or `constraint`). The full set is context / goal / constraints / format."

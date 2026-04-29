@@ -1,0 +1,54 @@
+xp: 8
+estSeconds: 130
+concept: prompting-recap
+prompt: |
+  Last one. The starter has a tiny `audit` function that flags a prompt
+  as `weak`, `ok`, or `strong` based on how many of the four parts it
+  has. The prompt dict currently scores `weak`. Add the two missing keys
+  so it scores exactly `strong`.
+
+  Expected output:
+  ```
+  strong
+  ```
+starter: |
+  parts = ["context", "goal", "constraints", "format"]
+
+  def audit(prompt):
+      hits = sum(1 for p in parts if p in prompt)
+      if hits == 4:
+          return "strong"
+      if hits >= 2:
+          return "ok"
+      return "weak"
+
+  prompt = {
+      "context": "fastapi route file",
+      # add the missing keys here:
+  }
+
+  print(audit(prompt))
+grader:
+  kind: stdout-equality
+  expected: "strong"
+  normalize: collapse-trailing-newline
+solution: |
+  parts = ["context", "goal", "constraints", "format"]
+
+  def audit(prompt):
+      hits = sum(1 for p in parts if p in prompt)
+      if hits == 4:
+          return "strong"
+      if hits >= 2:
+          return "ok"
+      return "weak"
+
+  prompt = {
+      "context": "fastapi route file",
+      "goal": "add delete handler",
+      "constraints": "use existing pool",
+      "format": "diff only",
+  }
+
+  print(audit(prompt))
+passThreshold: 0.66

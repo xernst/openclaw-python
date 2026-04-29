@@ -1,0 +1,6 @@
+number: 19
+slug: prompting
+title: "Prompting Cursor and Claude Code effectively"
+blurb: "The difference between a one-shot AI session and a four-hour debugging spiral is almost always the first prompt. Learn the structure that gets you usable code."
+lessons:
+  - 01-the-prompt-craft

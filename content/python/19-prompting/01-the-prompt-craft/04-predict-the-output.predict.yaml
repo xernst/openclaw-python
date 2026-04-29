@@ -1,0 +1,30 @@
+xp: 3
+estSeconds: 70
+concept: prompt-scoring
+code: |
+  # a toy prompt-scorer: 1 point per part present in the prompt.
+  parts = ["context", "goal", "constraint", "format"]
+
+  def score(prompt):
+      return sum(1 for p in parts if p in prompt)
+
+  prompt = {
+      "context": "fastapi route file",
+      "goal":    "add a delete handler",
+      "format":  "diff only",
+  }
+
+  print(f"score: {score(prompt)} / 4")
+prompt: |
+  Read the editor. The toy `score` function counts how many of the four
+  prompt parts are present. The `prompt` dict on the right is missing one
+  of them. What does this print?
+grader:
+  kind: stdout-equality
+  expected: "score: 3 / 4"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "Count the keys in the dict: `context`, `goal`, `format`. That's three."
+  - level: 2
+    body: "The dict is missing `constraint`. The score is `3 / 4`."

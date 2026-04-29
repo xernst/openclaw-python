@@ -1,0 +1,14 @@
+slug: the-prompt-craft
+title: "The four-part prompt that actually works"
+estMinutes: 9
+prerequisites: []
+order:
+  - 01-intro.read.md
+  - 02-which-prompt-is-better.mc.yaml
+  - 03-context-rot.read.md
+  - 04-predict-the-output.predict.yaml
+  - 05-fill-the-constraint.fill.yaml
+  - 06-fix-the-vague-prompt.fix.yaml
+  - 07-fix-the-bloated-context.fix.yaml
+  - 08-write-the-prompt.write.yaml
+  - 09-checkpoint.checkpoint.yaml

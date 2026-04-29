@@ -1,0 +1,40 @@
+xp: 4
+estSeconds: 90
+concept: prompt-rewrite
+prompt: |
+  The toy `validate` function checks that a prompt has at least three
+  of the four parts before it gets sent to the model. The current
+  `prompt` only has two parts and `validate` rejects it. Add the two
+  missing keys (`constraints` and `format`) so the script prints exactly
+  `ok`.
+
+  Expected output:
+  ```
+  ok
+  ```
+brokenCode: |
+  parts = ["context", "goal", "constraints", "format"]
+
+  def validate(prompt):
+      hits = sum(1 for p in parts if p in prompt)
+      return "ok" if hits >= 3 else "needs work"
+
+  prompt = {
+      "context": "fastapi route file",
+      "goal":    "add a delete handler",
+  }
+
+  print(validate(prompt))
+bugLines:
+  - 9
+  - 10
+grader:
+  kind: stdout-equality
+  expected: "ok"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "The dict only has two keys. You need at least three. Add `constraints` and `format` with any string values."
+  - level: 2
+    body: "Add `\"constraints\": \"use existing pool helper\"` and `\"format\": \"diff only\"` to the dict."
+revealAfter: 5

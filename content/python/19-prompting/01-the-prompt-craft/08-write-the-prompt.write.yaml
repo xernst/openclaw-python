@@ -1,0 +1,52 @@
+xp: 5
+estSeconds: 130
+concept: build-the-prompt
+prompt: |
+  Build a function `build_prompt(context, goal, constraints, format)`
+  that returns a single string with each part on its own line, prefixed
+  by the part name and a colon. Then call it with these four arguments
+  and print the result:
+
+  - context: `"fastapi route file"`
+  - goal: `"add delete handler"`
+  - constraints: `"use existing pool"`
+  - format: `"diff only"`
+
+  Expected output:
+  ```
+  context: fastapi route file
+  goal: add delete handler
+  constraints: use existing pool
+  format: diff only
+  ```
+starter: |
+  # define build_prompt below, then print the result
+
+grader:
+  kind: stdout-equality
+  expected: |
+    context: fastapi route file
+    goal: add delete handler
+    constraints: use existing pool
+    format: diff only
+  normalize: collapse-trailing-newline
+solution: |
+  def build_prompt(context, goal, constraints, format):
+      return (
+          f"context: {context}\n"
+          f"goal: {goal}\n"
+          f"constraints: {constraints}\n"
+          f"format: {format}"
+      )
+
+  print(build_prompt(
+      "fastapi route file",
+      "add delete handler",
+      "use existing pool",
+      "diff only",
+  ))
+hint:
+  - level: 1
+    body: "Build the string with f-strings and `\\n` between the parts. Then `print` the return value."
+  - level: 2
+    body: "Concatenate four f-strings (`f\"context: {context}\\n\"` ...) and return them. Then call `build_prompt(...)` with the four positional args and print the result."

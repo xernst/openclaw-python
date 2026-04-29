@@ -1,0 +1,41 @@
+xp: 4
+estSeconds: 90
+concept: context-pruning
+prompt: |
+  The toy `context_health` function rejects a session when the total
+  token count is over 6000. The session log has six turns and is over
+  the limit. Drop the two oldest turns (turns 1 and 2) so the script
+  prints exactly `healthy`.
+
+  Expected output:
+  ```
+  healthy
+  ```
+brokenCode: |
+  session = [
+      {"turn": 1, "tokens": 800},
+      {"turn": 2, "tokens": 1100},
+      {"turn": 3, "tokens": 2400},
+      {"turn": 4, "tokens": 1300},
+      {"turn": 5, "tokens": 900},
+      {"turn": 6, "tokens": 1100},
+  ]
+
+  def context_health(turns):
+      total = sum(t["tokens"] for t in turns)
+      return "healthy" if total <= 6000 else "rotting"
+
+  print(context_health(session))
+bugLines:
+  - 2
+  - 3
+grader:
+  kind: stdout-equality
+  expected: "healthy"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "The total is 7600 tokens. Removing turns 1 and 2 (800 + 1100 = 1900) brings it to 5700 — under the limit."
+  - level: 2
+    body: "Delete the first two dict entries from the `session` list. Keep turns 3 through 6."
+revealAfter: 5

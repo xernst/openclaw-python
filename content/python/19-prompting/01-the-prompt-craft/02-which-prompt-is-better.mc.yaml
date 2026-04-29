@@ -1,0 +1,37 @@
+xp: 2
+estSeconds: 50
+concept: prompt-quality
+code: |
+  # two prompt strings — same goal, very different odds of success.
+  prompt_a = "make the orders endpoint better"
+  prompt_b = (
+      "In app/api/orders.py: add input validation to the POST handler. "
+      "Use pydantic models that already exist in app/schemas/orders.py. "
+      "Return 422 for invalid bodies. Show the diff only."
+  )
+  print(len(prompt_a))
+  print(len(prompt_b))
+prompt: |
+  Cursor will accept both prompts. One has a high chance of landing a
+  usable diff in one shot; the other will need three or four follow-ups.
+  Which prompt has the **four-part structure** (context, goal, constraint,
+  format)?
+options:
+  - id: a
+    label: "`prompt_a`"
+    explain: "It's a goal in vague terms — no context, no constraints, no format. The model has to guess everything."
+  - id: b
+    label: "`prompt_b`"
+  - id: c
+    label: "Both equally — they say the same thing in different lengths."
+    explain: "They don't say the same thing. `prompt_b` carries four pieces of structure that `prompt_a` is missing."
+  - id: d
+    label: "Neither — both are too short to work."
+    explain: "Length is not the metric. Structure is. `prompt_b` is well-scoped despite being a single paragraph."
+answerIds:
+  - b
+hint:
+  - level: 1
+    body: "Look for the four parts: file/stack mention, single concrete goal, named constraints, format spec."
+  - level: 2
+    body: "`prompt_b` names the file, the goal, two constraints (use existing schemas, return 422), and the format (diff only)."
