@@ -292,7 +292,9 @@ async function loadChapter(chapterFolder) {
   const chapterDir = join(CONTENT, chapterFolder);
   const chapterYamlPath = join(chapterDir, "chapter.yaml");
   if (!existsSync(chapterYamlPath)) {
-    throw new Error(`Missing chapter.yaml in ${chapterDir}`);
+    // Authors scaffold lesson folders before writing chapter.yaml. Skip until
+    // they declare it; downstream code already handles "chapter not in TOC."
+    return null;
   }
   const chapterMeta = ChapterYaml.parse(
     YAML.parse(await readFile(chapterYamlPath, "utf8")),
@@ -345,6 +347,10 @@ async function main() {
   for (const folder of folders) {
     process.stdout.write(`  ${folder}... `);
     const chapter = await loadChapter(folder);
+    if (!chapter) {
+      console.log("⏭  no chapter.yaml yet (authoring in progress)");
+      continue;
+    }
     chapters.push(chapter);
     console.log(`✓ (${chapter.lessons.length} lessons, ${chapter.lessons.reduce((a, l) => a + l.steps.length, 0)} steps, ${chapter.xpTotal} XP)`);
   }
