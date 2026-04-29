@@ -1,0 +1,35 @@
+xp: 4
+estSeconds: 85
+concept: tool-arg-validation
+prompt: |
+  The agent called `read_file` with the wrong argument key. The tool
+  schema expects `path`, but the trace shows `filepath`. Fix the
+  `tool_use` block on line 5 so the printed key is exactly `path` and
+  the value is `app/main.py`.
+
+  Expected output:
+  ```
+  path=app/main.py
+  ```
+brokenCode: |
+  tool_use = {
+      "type": "tool_use",
+      "id": "tu_02",
+      "name": "read_file",
+      "input": {"filepath": "app/main.py"},
+  }
+
+  k, v = list(tool_use["input"].items())[0]
+  print(f"{k}={v}")
+bugLines:
+  - 5
+grader:
+  kind: stdout-equality
+  expected: "path=app/main.py"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "The dict key on line 5 is wrong. Rename it to match the schema."
+  - level: 2
+    body: "Change `\"filepath\"` to `\"path\"` so the dict reads `{\"path\": \"app/main.py\"}`."
+revealAfter: 4

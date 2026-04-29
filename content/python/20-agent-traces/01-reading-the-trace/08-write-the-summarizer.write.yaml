@@ -1,0 +1,58 @@
+xp: 5
+estSeconds: 140
+concept: trace-summary
+prompt: |
+  Write a function `summarize(trace)` that takes a list of turns (each
+  is a dict with `n` and `stop_reason`) and returns a single string in
+  this exact form:
+
+  `turns: N | tool_use: T | end_turn: E | other: O`
+
+  ...where `N` is the total number of turns, `T` is the count of
+  `tool_use` stops, `E` is the count of `end_turn` stops, and `O` is the
+  count of everything else.
+
+  Then call it on the provided `trace` and print the result.
+
+  Expected output:
+  ```
+  turns: 5 | tool_use: 3 | end_turn: 1 | other: 1
+  ```
+starter: |
+  trace = [
+      {"n": 1, "stop_reason": "tool_use"},
+      {"n": 2, "stop_reason": "tool_use"},
+      {"n": 3, "stop_reason": "max_tokens"},
+      {"n": 4, "stop_reason": "tool_use"},
+      {"n": 5, "stop_reason": "end_turn"},
+  ]
+
+  # define summarize(trace) below
+
+  print(summarize(trace))
+grader:
+  kind: stdout-equality
+  expected: "turns: 5 | tool_use: 3 | end_turn: 1 | other: 1"
+  normalize: collapse-trailing-newline
+solution: |
+  trace = [
+      {"n": 1, "stop_reason": "tool_use"},
+      {"n": 2, "stop_reason": "tool_use"},
+      {"n": 3, "stop_reason": "max_tokens"},
+      {"n": 4, "stop_reason": "tool_use"},
+      {"n": 5, "stop_reason": "end_turn"},
+  ]
+
+  def summarize(trace):
+      n = len(trace)
+      tu = sum(1 for t in trace if t["stop_reason"] == "tool_use")
+      et = sum(1 for t in trace if t["stop_reason"] == "end_turn")
+      other = n - tu - et
+      return f"turns: {n} | tool_use: {tu} | end_turn: {et} | other: {other}"
+
+  print(summarize(trace))
+hint:
+  - level: 1
+    body: "Four counts. Total length, count of `tool_use`, count of `end_turn`, and the leftover (everything else)."
+  - level: 2
+    body: "Use generator expressions inside `sum(1 for ... if ...)`. Then format with an f-string using the four counts."

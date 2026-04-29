@@ -1,0 +1,40 @@
+xp: 2
+estSeconds: 55
+concept: trace-failure-localization
+code: |
+  trace = [
+      {"turn": 1, "stop_reason": "tool_use",
+       "tool_name": "search_repo", "tool_ok": True},
+      {"turn": 2, "stop_reason": "tool_use",
+       "tool_name": "read_file",   "tool_ok": True},
+      {"turn": 3, "stop_reason": "tool_use",
+       "tool_name": "read_file",   "tool_ok": False},
+      {"turn": 4, "stop_reason": "end_turn",
+       "tool_name": None,           "tool_ok": None},
+  ]
+
+  for t in trace:
+      print(t)
+prompt: |
+  Read the trace on the right. The agent finished in four turns. Three
+  of the tool calls succeeded; one failed. Which turn is the one you'd
+  investigate first?
+options:
+  - id: a
+    label: "Turn 1"
+    explain: "Turn 1 succeeded (`tool_ok` is `True`). It's not where things went wrong."
+  - id: b
+    label: "Turn 2"
+    explain: "Turn 2 also succeeded. Keep scanning."
+  - id: c
+    label: "Turn 3"
+  - id: d
+    label: "Turn 4"
+    explain: "Turn 4 is `end_turn` — the agent finished. The investigation goes one turn back, where the failure happened."
+answerIds:
+  - c
+hint:
+  - level: 1
+    body: "Look for the row where `tool_ok` is `False`. That's the failed call."
+  - level: 2
+    body: "Turn 3 has `tool_ok: False`. Turn 4 just reports the agent ending; the actual fault was upstream."

@@ -1,0 +1,33 @@
+xp: 3
+estSeconds: 60
+concept: tool-use-block-shape
+prompt: |
+  Cursor wrote a stub of an assistant message that requests a tool
+  call. The block has three required keys: `type`, `name`, and `input`.
+  Fill in the value for `type` — the string the agent framework looks
+  for to recognize this as a tool call request.
+
+  Type value (string, no quotes — just the word): ___
+code: |
+  assistant_message = {
+      "role": "assistant",
+      "content": [
+          {
+              "type": "___",
+              "id": "tu_01",
+              "name": "list_prs",
+              "input": {"state": "open"},
+          },
+      ],
+  }
+  print(assistant_message["content"][0]["type"])
+blanks:
+  - id: type
+    accept:
+      - tool_use
+    caseSensitive: true
+hint:
+  - level: 1
+    body: "The two block types you'll see in assistant content are `text` (for plain answers) and one for tool calls."
+  - level: 2
+    body: "It's `tool_use`. The block reads as `{\"type\": \"tool_use\", \"name\": ..., \"input\": ...}`."

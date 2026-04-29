@@ -1,0 +1,28 @@
+xp: 3
+estSeconds: 70
+concept: stop-reason-counting
+code: |
+  trace = [
+      {"n": 1, "stop_reason": "tool_use"},
+      {"n": 2, "stop_reason": "tool_use"},
+      {"n": 3, "stop_reason": "max_tokens"},
+      {"n": 4, "stop_reason": "tool_use"},
+      {"n": 5, "stop_reason": "end_turn"},
+  ]
+
+  suspect = [t["n"] for t in trace
+             if t["stop_reason"] not in ("tool_use", "end_turn")]
+  print(f"suspect turns: {suspect}")
+prompt: |
+  The toy filter on the right flags turns whose `stop_reason` is anything
+  other than the two normal ones (`tool_use` and `end_turn`). Read the
+  trace and predict the output.
+grader:
+  kind: stdout-equality
+  expected: "suspect turns: [3]"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "Scan the list once. Only one turn has a stop reason that isn't `tool_use` or `end_turn`."
+  - level: 2
+    body: "Turn 3 has `max_tokens`. That's the only suspect. The output is `suspect turns: [3]`."

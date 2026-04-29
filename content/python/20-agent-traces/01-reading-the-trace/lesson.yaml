@@ -1,0 +1,14 @@
+slug: reading-the-trace
+title: "What an agent leaves behind"
+estMinutes: 9
+prerequisites: []
+order:
+  - 01-intro.read.md
+  - 02-which-turn-failed.mc.yaml
+  - 03-the-stop-reasons.read.md
+  - 04-predict-the-stop.predict.yaml
+  - 05-fill-the-tool-name.fill.yaml
+  - 06-fix-the-loop.fix.yaml
+  - 07-fix-the-arg-shape.fix.yaml
+  - 08-write-the-summarizer.write.yaml
+  - 09-checkpoint.checkpoint.yaml

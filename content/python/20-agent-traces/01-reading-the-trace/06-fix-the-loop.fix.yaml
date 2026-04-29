@@ -1,0 +1,40 @@
+xp: 4
+estSeconds: 95
+concept: detect-tool-loop
+prompt: |
+  The toy `is_looping` function should flag a session as looping when
+  the same tool is called with the same arguments three turns in a row.
+  The current implementation only checks the tool name, so it misses the
+  fact that the third call has different arguments. Fix the check on
+  line 4 so the function returns `False` for this trace.
+
+  Expected output:
+  ```
+  False
+  ```
+brokenCode: |
+  def is_looping(turns):
+      if len(turns) < 3:
+          return False
+      last_three = turns[-3:]
+      return all(t["tool"] == last_three[0]["tool"] for t in last_three)
+
+  trace = [
+      {"tool": "search_repo", "args": {"q": "auth"}},
+      {"tool": "search_repo", "args": {"q": "auth"}},
+      {"tool": "search_repo", "args": {"q": "billing"}},
+  ]
+
+  print(is_looping(trace))
+bugLines:
+  - 5
+grader:
+  kind: stdout-equality
+  expected: "False"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "The bug is that the check only compares `tool` names. It should also compare `args` — different args means it's making progress, not looping."
+  - level: 2
+    body: "Change line 5 to also compare args: `return all(t[\"tool\"] == last_three[0][\"tool\"] and t[\"args\"] == last_three[0][\"args\"] for t in last_three)`."
+revealAfter: 5

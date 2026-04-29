@@ -1,0 +1,48 @@
+xp: 8
+estSeconds: 130
+concept: trace-recap
+prompt: |
+  Last one. The starter has a trace and a partial `find_first_bad_turn`
+  function. The function should return the `n` value of the first turn
+  whose `stop_reason` is NOT `tool_use` and NOT `end_turn`. Right now it
+  returns `None`. Finish the body so it returns the right turn number.
+
+  Expected output:
+  ```
+  3
+  ```
+starter: |
+  trace = [
+      {"n": 1, "stop_reason": "tool_use"},
+      {"n": 2, "stop_reason": "tool_use"},
+      {"n": 3, "stop_reason": "max_tokens"},
+      {"n": 4, "stop_reason": "tool_use"},
+      {"n": 5, "stop_reason": "end_turn"},
+  ]
+
+  def find_first_bad_turn(trace):
+      # finish me
+      return None
+
+  print(find_first_bad_turn(trace))
+grader:
+  kind: stdout-equality
+  expected: "3"
+  normalize: collapse-trailing-newline
+solution: |
+  trace = [
+      {"n": 1, "stop_reason": "tool_use"},
+      {"n": 2, "stop_reason": "tool_use"},
+      {"n": 3, "stop_reason": "max_tokens"},
+      {"n": 4, "stop_reason": "tool_use"},
+      {"n": 5, "stop_reason": "end_turn"},
+  ]
+
+  def find_first_bad_turn(trace):
+      for t in trace:
+          if t["stop_reason"] not in ("tool_use", "end_turn"):
+              return t["n"]
+      return None
+
+  print(find_first_bad_turn(trace))
+passThreshold: 0.66
