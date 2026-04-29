@@ -1,0 +1,44 @@
+xp: 8
+estSeconds: 150
+concept: nested-checkpoint
+prompt: |
+  Final drill. The `report` dict below holds a list of orders, each with a
+  list of line items. Compute the total dollar value across **all** items
+  in **all** orders, and print it.
+
+  Expected output:
+  ```
+  47
+  ```
+starter: |
+  report = {
+      "month": "april",
+      "orders": [
+          {"id": "A1", "items": [{"sku": "x", "price": 10}, {"sku": "y", "price": 5}]},
+          {"id": "A2", "items": [{"sku": "x", "price": 10}]},
+          {"id": "A3", "items": [{"sku": "z", "price": 12}, {"sku": "x", "price": 10}]},
+      ],
+  }
+
+  # walk every order, every item; sum the prices; print the total
+grader:
+  kind: stdout-equality
+  expected: "47"
+  normalize: collapse-trailing-newline
+solution: |
+  report = {
+      "month": "april",
+      "orders": [
+          {"id": "A1", "items": [{"sku": "x", "price": 10}, {"sku": "y", "price": 5}]},
+          {"id": "A2", "items": [{"sku": "x", "price": 10}]},
+          {"id": "A3", "items": [{"sku": "z", "price": 12}, {"sku": "x", "price": 10}]},
+      ],
+  }
+
+  total = 0
+  for order in report["orders"]:
+      for item in order["items"]:
+          total += item["price"]
+
+  print(total)
+passThreshold: 0.66

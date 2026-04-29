@@ -541,7 +541,256 @@
         }
       ],
       "xpTotal": 31
+    },
+    {
+      "slug": "nested-data-shapes",
+      "title": "Nested dicts and lists — digging through the JSON AI just dumped",
+      "estMinutes": 7,
+      "prerequisites": [],
+      "steps": [
+        {
+          "type": "read",
+          "id": "lists-and-dicts/nested-data-shapes/s01-01-intro",
+          "xp": 1,
+          "hint": [],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 50,
+          "concept": "nested-data-introduction",
+          "body": "# AI dumps nested JSON. You read it.\n\nWhen Cursor calls an API, the response is almost never flat. It's a dict\nthat holds a list of dicts that hold more dicts. Walking that structure\nis half the job.\n\nThe mental model: every step is either `[\"key\"]` (you're inside a dict)\nor `[index]` (you're inside a list). Read left to right, peel one layer\nat a time.\n\nIn the editor, `response[\"users\"]` gives you a list. `[1]` picks the\nsecond user. `[\"name\"]` reads a string from that user dict. `[\"tags\"][0]`\nreaches into the user's tag list.\n\nRun it. Two prints, two paths through the same structure.",
+          "cta": "Got it",
+          "code": "response = {\n    \"ok\": True,\n    \"users\": [\n        {\"id\": 1, \"name\": \"maya\", \"tags\": [\"admin\"]},\n        {\"id\": 2, \"name\": \"marcus\", \"tags\": [\"billing\", \"ops\"]},\n    ],\n}\n\nprint(response[\"users\"][1][\"name\"])\nprint(response[\"users\"][1][\"tags\"][0])\n",
+          "runnable": true
+        },
+        {
+          "type": "mc",
+          "id": "lists-and-dicts/nested-data-shapes/s02-02-which-path",
+          "xp": 2,
+          "hint": [],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 60,
+          "concept": "choosing-access-path",
+          "prompt": "Read the `data` shape in the editor. Which expression evaluates to the\nstring `\"marcus\"`?\n",
+          "options": [
+            {
+              "id": "a",
+              "label": "`data[\"members\"][\"name\"][1]`",
+              "explain": "`data[\"members\"]` is a list, not a dict. You can't index a list with `\"name\"`."
+            },
+            {
+              "id": "b",
+              "label": "`data[\"members\"][1][\"name\"]`"
+            },
+            {
+              "id": "c",
+              "label": "`data[\"team\"][\"members\"][1]`",
+              "explain": "`data[\"team\"]` is the string `\"pyloft\"`. There's no further structure to walk."
+            },
+            {
+              "id": "d",
+              "label": "`data[1][\"members\"][\"name\"]`",
+              "explain": "`data` is a dict, not a list. Indexing it with `1` raises a `KeyError`."
+            }
+          ],
+          "answerIds": [
+            "b"
+          ],
+          "shuffle": false,
+          "code": "data = {\n    \"team\": \"pyloft\",\n    \"members\": [\n        {\"name\": \"maya\", \"role\": \"founder\"},\n        {\"name\": \"marcus\", \"role\": \"eng\"},\n    ],\n}\n\n# which expression reads \"marcus\"?\nprint(data[\"members\"][1][\"name\"])\n",
+          "runnable": true
+        },
+        {
+          "type": "read",
+          "id": "lists-and-dicts/nested-data-shapes/s03-03-walking-the-shape",
+          "xp": 2,
+          "hint": [],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 60,
+          "concept": "walking-nested-with-loop",
+          "body": "# Loop through the list, dict-access each item\n\nWhen you have a list of dicts, the typical pattern is to loop over the\nlist and pull fields out of each dict. AI writes this constantly.\n\nTwo rules to keep in your head while reading nested code:\n\n1. After `for X in Y[\"key\"]`, `X` is one element of that list. If the\n   list held dicts, `X` is a dict.\n2. The keys you can read from `X` are whatever keys those inner dicts\n   actually have — not the keys of the outer dict.\n\nRun the editor. The loop visits each team, prints the team name, and the\nmember count for that team. The two `team[\"name\"]`s come from *different*\ndicts, even though they share a key name.",
+          "cta": "Got it",
+          "code": "org = {\n    \"name\": \"pyloft\",\n    \"teams\": [\n        {\"name\": \"eng\", \"members\": [\"maya\", \"marcus\"]},\n        {\"name\": \"ops\", \"members\": [\"riley\"]},\n    ],\n}\n\nfor team in org[\"teams\"]:\n    print(team[\"name\"], \"→\", len(team[\"members\"]))\n",
+          "runnable": true
+        },
+        {
+          "type": "predict",
+          "id": "lists-and-dicts/nested-data-shapes/s04-04-predict-the-deep-key",
+          "xp": 3,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Walk left to right: `result` → dict, `items` → list, `[1]` → second item, `stock` → dict, `store` → int.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Item 1 is `B2`. Its `stock.store` is `7`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 75,
+          "concept": "deep-nested-access",
+          "code": "payload = {\n    \"result\": {\n        \"items\": [\n            {\"sku\": \"A1\", \"stock\": {\"warehouse\": 12, \"store\": 3}},\n            {\"sku\": \"B2\", \"stock\": {\"warehouse\": 0, \"store\": 7}},\n        ],\n    },\n}\n\nprint(payload[\"result\"][\"items\"][1][\"stock\"][\"store\"])\n",
+          "prompt": "Read the editor. Four layers deep. What does the print line output?\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "7",
+            "normalize": "collapse-trailing-newline"
+          }
+        },
+        {
+          "type": "fill",
+          "id": "lists-and-dicts/nested-data-shapes/s05-05-fill-the-index",
+          "xp": 3,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Lists are zero-indexed in Python. The first element sits at the smallest non-negative integer.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "It's `0`. Lists start at index `0`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 55,
+          "concept": "list-index-after-dict-key",
+          "prompt": "Cursor wrote a script that wants the **first** team's name. Fill in the\nlist index on line 7 to get `\"eng\"` printed.\n\nIndex: ___\n",
+          "code": "org = {\n    \"teams\": [\n        {\"name\": \"eng\", \"members\": [\"maya\"]},\n        {\"name\": \"ops\", \"members\": [\"riley\"]},\n    ],\n}\n\nprint(org[\"teams\"][___][\"name\"])\n",
+          "blanks": [
+            {
+              "id": "keyword",
+              "accept": [
+                "0"
+              ],
+              "caseSensitive": true,
+              "normalize": "trim"
+            }
+          ]
+        },
+        {
+          "type": "fix",
+          "id": "lists-and-dicts/nested-data-shapes/s06-06-fix-the-wrong-path",
+          "xp": 4,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Each user dict has a nested `profile` layer. The email lives inside `profile`, not on the user dict itself.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Change line 15 to `print(data[\"users\"][1][\"profile\"][\"email\"])`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 85,
+          "concept": "correct-access-path",
+          "brokenCode": "data = {\n    \"ok\": True,\n    \"users\": [\n        {\n            \"id\": 1,\n            \"profile\": {\"name\": \"maya\", \"email\": \"maya@pyloft.dev\"},\n        },\n        {\n            \"id\": 2,\n            \"profile\": {\"name\": \"marcus\", \"email\": \"marcus@pyloft.dev\"},\n        },\n    ],\n}\n\nprint(data[\"users\"][1][\"email\"])\n",
+          "prompt": "Claude wrote this to grab the second user's email and got the path\nwrong. The script crashes with a `KeyError`. Fix line 13 so the script\nprints `marcus@pyloft.dev`.\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "marcus@pyloft.dev",
+            "normalize": "collapse-trailing-newline"
+          },
+          "bugLines": [
+            15
+          ],
+          "revealAfter": 4
+        },
+        {
+          "type": "fix",
+          "id": "lists-and-dicts/nested-data-shapes/s07-07-fix-the-list-vs-dict",
+          "xp": 4,
+          "hint": [
+            {
+              "level": 1,
+              "body": "You can't index a list with a string. To get the first item, use a numeric index.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Change `user[\"roles\"][\"admin\"]` to `user[\"roles\"][0]`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 80,
+          "concept": "list-vs-dict-confusion",
+          "brokenCode": "user = {\n    \"id\": 7,\n    \"name\": \"maya\",\n    # roles is a list of strings, not a dict\n    \"roles\": [\"admin\", \"billing\"],\n}\n\n# the access below is wrong because roles is a list, not a dict\nprint(user[\"roles\"][\"admin\"])\n",
+          "prompt": "AI tried to read `roles[\\\"admin\\\"]` from a list and crashed with\n`TypeError: list indices must be integers`. The roles field is a\n*list of strings*, not a dict. Fix line 10 so the script prints\n`admin` (the first role).\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "admin",
+            "normalize": "collapse-trailing-newline"
+          },
+          "bugLines": [
+            9
+          ],
+          "revealAfter": 4
+        },
+        {
+          "type": "write",
+          "id": "lists-and-dicts/nested-data-shapes/s08-08-write-extract-emails",
+          "xp": 5,
+          "hint": [
+            {
+              "level": 1,
+              "body": "List comprehension: `[u[\"profile\"][\"email\"] for u in payload[\"users\"]]`. Or a regular `for` loop that appends to a list.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "After defining `all_emails`, do a `for email in all_emails(payload):` and print each.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 110,
+          "concept": "extract-from-nested",
+          "prompt": "Below is a `payload` that mimics a real API response. Write a function\n`all_emails(payload)` that returns a list of every user's email\n(one per user, in order). Then print each email on its own line.\n\nExpected output:\n```\nmaya@pyloft.dev\nmarcus@pyloft.dev\n```\n",
+          "starter": "payload = {\n    \"users\": [\n        {\"id\": 1, \"profile\": {\"email\": \"maya@pyloft.dev\"}},\n        {\"id\": 2, \"profile\": {\"email\": \"marcus@pyloft.dev\"}},\n    ],\n}\n\n# define all_emails(payload) and use it\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "maya@pyloft.dev\nmarcus@pyloft.dev\n",
+            "normalize": "collapse-trailing-newline"
+          },
+          "solution": "payload = {\n    \"users\": [\n        {\"id\": 1, \"profile\": {\"email\": \"maya@pyloft.dev\"}},\n        {\"id\": 2, \"profile\": {\"email\": \"marcus@pyloft.dev\"}},\n    ],\n}\n\ndef all_emails(payload):\n    return [u[\"profile\"][\"email\"] for u in payload[\"users\"]]\n\nfor email in all_emails(payload):\n    print(email)\n",
+          "hiddenTests": []
+        },
+        {
+          "type": "checkpoint",
+          "id": "lists-and-dicts/nested-data-shapes/s09-09-checkpoint",
+          "xp": 8,
+          "hint": [],
+          "personalize": false,
+          "phase": "check",
+          "estSeconds": 150,
+          "concept": "nested-checkpoint",
+          "prompt": "Final drill. The `report` dict below holds a list of orders, each with a\nlist of line items. Compute the total dollar value across **all** items\nin **all** orders, and print it.\n\nExpected output:\n```\n47\n```\n",
+          "starter": "report = {\n    \"month\": \"april\",\n    \"orders\": [\n        {\"id\": \"A1\", \"items\": [{\"sku\": \"x\", \"price\": 10}, {\"sku\": \"y\", \"price\": 5}]},\n        {\"id\": \"A2\", \"items\": [{\"sku\": \"x\", \"price\": 10}]},\n        {\"id\": \"A3\", \"items\": [{\"sku\": \"z\", \"price\": 12}, {\"sku\": \"x\", \"price\": 10}]},\n    ],\n}\n\n# walk every order, every item; sum the prices; print the total\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "47",
+            "normalize": "collapse-trailing-newline"
+          },
+          "solution": "report = {\n    \"month\": \"april\",\n    \"orders\": [\n        {\"id\": \"A1\", \"items\": [{\"sku\": \"x\", \"price\": 10}, {\"sku\": \"y\", \"price\": 5}]},\n        {\"id\": \"A2\", \"items\": [{\"sku\": \"x\", \"price\": 10}]},\n        {\"id\": \"A3\", \"items\": [{\"sku\": \"z\", \"price\": 12}, {\"sku\": \"x\", \"price\": 10}]},\n    ],\n}\n\ntotal = 0\nfor order in report[\"orders\"]:\n    for item in order[\"items\"]:\n        total += item[\"price\"]\n\nprint(total)\n",
+          "passThreshold": 0.66
+        }
+      ],
+      "xpTotal": 32
     }
   ],
-  "xpTotal": 62
+  "xpTotal": 94
 }

@@ -1,0 +1,30 @@
+xp: 4
+estSeconds: 80
+concept: list-vs-dict-confusion
+prompt: |
+  AI tried to read `roles[\"admin\"]` from a list and crashed with
+  `TypeError: list indices must be integers`. The roles field is a
+  *list of strings*, not a dict. Fix line 10 so the script prints
+  `admin` (the first role).
+brokenCode: |
+  user = {
+      "id": 7,
+      "name": "maya",
+      # roles is a list of strings, not a dict
+      "roles": ["admin", "billing"],
+  }
+
+  # the access below is wrong because roles is a list, not a dict
+  print(user["roles"]["admin"])
+bugLines:
+  - 9
+grader:
+  kind: stdout-equality
+  expected: "admin"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "You can't index a list with a string. To get the first item, use a numeric index."
+  - level: 2
+    body: "Change `user[\"roles\"][\"admin\"]` to `user[\"roles\"][0]`."
+revealAfter: 4

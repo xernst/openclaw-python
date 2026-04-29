@@ -1,0 +1,14 @@
+slug: nested-data-shapes
+title: "Nested dicts and lists — digging through the JSON AI just dumped"
+estMinutes: 7
+prerequisites: []
+order:
+  - 01-intro.read.md
+  - 02-which-path.mc.yaml
+  - 03-walking-the-shape.read.md
+  - 04-predict-the-deep-key.predict.yaml
+  - 05-fill-the-index.fill.yaml
+  - 06-fix-the-wrong-path.fix.yaml
+  - 07-fix-the-list-vs-dict.fix.yaml
+  - 08-write-extract-emails.write.yaml
+  - 09-checkpoint.checkpoint.yaml

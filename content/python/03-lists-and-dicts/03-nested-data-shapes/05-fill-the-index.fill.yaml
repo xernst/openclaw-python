@@ -1,0 +1,27 @@
+xp: 3
+estSeconds: 55
+concept: list-index-after-dict-key
+prompt: |
+  Cursor wrote a script that wants the **first** team's name. Fill in the
+  list index on line 7 to get `"eng"` printed.
+
+  Index: ___
+code: |
+  org = {
+      "teams": [
+          {"name": "eng", "members": ["maya"]},
+          {"name": "ops", "members": ["riley"]},
+      ],
+  }
+
+  print(org["teams"][___]["name"])
+blanks:
+  - id: keyword
+    accept:
+      - "0"
+    caseSensitive: true
+hint:
+  - level: 1
+    body: "Lists are zero-indexed in Python. The first element sits at the smallest non-negative integer."
+  - level: 2
+    body: "It's `0`. Lists start at index `0`."

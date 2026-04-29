@@ -5,3 +5,4 @@ blurb: "Every JSON response you've ever copied out of ChatGPT or a REST API is s
 lessons:
   - 01-the-bones-of-apis
   - 02-list-comprehensions
+  - 03-nested-data-shapes

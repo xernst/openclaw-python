@@ -1,0 +1,35 @@
+xp: 4
+estSeconds: 85
+concept: correct-access-path
+prompt: |
+  Claude wrote this to grab the second user's email and got the path
+  wrong. The script crashes with a `KeyError`. Fix line 13 so the script
+  prints `marcus@pyloft.dev`.
+brokenCode: |
+  data = {
+      "ok": True,
+      "users": [
+          {
+              "id": 1,
+              "profile": {"name": "maya", "email": "maya@pyloft.dev"},
+          },
+          {
+              "id": 2,
+              "profile": {"name": "marcus", "email": "marcus@pyloft.dev"},
+          },
+      ],
+  }
+
+  print(data["users"][1]["email"])
+bugLines:
+  - 15
+grader:
+  kind: stdout-equality
+  expected: "marcus@pyloft.dev"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "Each user dict has a nested `profile` layer. The email lives inside `profile`, not on the user dict itself."
+  - level: 2
+    body: "Change line 15 to `print(data[\"users\"][1][\"profile\"][\"email\"])`."
+revealAfter: 4

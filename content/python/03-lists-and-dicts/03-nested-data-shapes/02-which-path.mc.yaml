@@ -1,0 +1,31 @@
+xp: 2
+estSeconds: 60
+concept: choosing-access-path
+code: |
+  data = {
+      "team": "pyloft",
+      "members": [
+          {"name": "maya", "role": "founder"},
+          {"name": "marcus", "role": "eng"},
+      ],
+  }
+
+  # which expression reads "marcus"?
+  print(data["members"][1]["name"])
+prompt: |
+  Read the `data` shape in the editor. Which expression evaluates to the
+  string `"marcus"`?
+options:
+  - id: a
+    label: "`data[\"members\"][\"name\"][1]`"
+    explain: "`data[\"members\"]` is a list, not a dict. You can't index a list with `\"name\"`."
+  - id: b
+    label: "`data[\"members\"][1][\"name\"]`"
+  - id: c
+    label: "`data[\"team\"][\"members\"][1]`"
+    explain: "`data[\"team\"]` is the string `\"pyloft\"`. There's no further structure to walk."
+  - id: d
+    label: "`data[1][\"members\"][\"name\"]`"
+    explain: "`data` is a dict, not a list. Indexing it with `1` raises a `KeyError`."
+answerIds:
+  - b

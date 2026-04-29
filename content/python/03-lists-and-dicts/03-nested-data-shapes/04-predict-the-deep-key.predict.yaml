@@ -1,0 +1,25 @@
+xp: 3
+estSeconds: 75
+concept: deep-nested-access
+code: |
+  payload = {
+      "result": {
+          "items": [
+              {"sku": "A1", "stock": {"warehouse": 12, "store": 3}},
+              {"sku": "B2", "stock": {"warehouse": 0, "store": 7}},
+          ],
+      },
+  }
+
+  print(payload["result"]["items"][1]["stock"]["store"])
+prompt: |
+  Read the editor. Four layers deep. What does the print line output?
+grader:
+  kind: stdout-equality
+  expected: "7"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "Walk left to right: `result` → dict, `items` → list, `[1]` → second item, `stock` → dict, `store` → int."
+  - level: 2
+    body: "Item 1 is `B2`. Its `stock.store` is `7`."

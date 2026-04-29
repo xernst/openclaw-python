@@ -1,0 +1,46 @@
+xp: 5
+estSeconds: 110
+concept: extract-from-nested
+prompt: |
+  Below is a `payload` that mimics a real API response. Write a function
+  `all_emails(payload)` that returns a list of every user's email
+  (one per user, in order). Then print each email on its own line.
+
+  Expected output:
+  ```
+  maya@pyloft.dev
+  marcus@pyloft.dev
+  ```
+starter: |
+  payload = {
+      "users": [
+          {"id": 1, "profile": {"email": "maya@pyloft.dev"}},
+          {"id": 2, "profile": {"email": "marcus@pyloft.dev"}},
+      ],
+  }
+
+  # define all_emails(payload) and use it
+grader:
+  kind: stdout-equality
+  expected: |
+    maya@pyloft.dev
+    marcus@pyloft.dev
+  normalize: collapse-trailing-newline
+solution: |
+  payload = {
+      "users": [
+          {"id": 1, "profile": {"email": "maya@pyloft.dev"}},
+          {"id": 2, "profile": {"email": "marcus@pyloft.dev"}},
+      ],
+  }
+
+  def all_emails(payload):
+      return [u["profile"]["email"] for u in payload["users"]]
+
+  for email in all_emails(payload):
+      print(email)
+hint:
+  - level: 1
+    body: "List comprehension: `[u[\"profile\"][\"email\"] for u in payload[\"users\"]]`. Or a regular `for` loop that appends to a list."
+  - level: 2
+    body: "After defining `all_emails`, do a `for email in all_emails(payload):` and print each."

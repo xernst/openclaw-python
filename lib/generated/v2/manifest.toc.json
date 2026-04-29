@@ -1,6 +1,6 @@
 {
   "version": "0.1.0",
-  "generatedAt": "2026-04-29T16:21:03.893Z",
+  "generatedAt": "2026-04-29T16:22:34.911Z",
   "chapters": [
     {
       "number": 1,
@@ -25,9 +25,9 @@
       "slug": "lists-and-dicts",
       "title": "Lists and dicts — the bones of every API",
       "blurb": "Every JSON response you've ever copied out of ChatGPT or a REST API is some mix of two things: lists and dicts. Read them on sight.",
-      "lessonCount": 2,
-      "stepCount": 18,
-      "xpTotal": 62
+      "lessonCount": 3,
+      "stepCount": 27,
+      "xpTotal": 94
     },
     {
       "number": 4,
