@@ -1,0 +1,32 @@
+xp: 8
+estSeconds: 120
+concept: functions-recap
+prompt: |
+  One last thing. AI wrote a function `discount` that's supposed to take a price
+  and a percent off, and hand back the new price. The function body is missing
+  the line that does the math and returns the answer.
+
+  Finish the function so the script prints `final: 80.0`.
+starter: |
+  def discount(price, percent_off):
+      # your one line goes here:
+      pass
+
+  final_price = discount(100, 20)
+  print(f"final: {final_price}")
+grader:
+  kind: stdout-equality
+  expected: "final: 80.0"
+  normalize: collapse-trailing-newline
+solution: |
+  def discount(price, percent_off):
+      return price * (1 - percent_off / 100)
+
+  final_price = discount(100, 20)
+  print(f"final: {final_price}")
+passThreshold: 0.66
+hint:
+  - level: 1
+    body: "Replace `pass` with a `return` line. The math is `price * (1 - percent_off / 100)`."
+  - level: 2
+    body: "`return price * (1 - percent_off / 100)` — that's the whole body. Delete the `pass`."

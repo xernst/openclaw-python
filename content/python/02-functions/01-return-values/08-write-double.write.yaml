@@ -1,0 +1,29 @@
+xp: 5
+estSeconds: 90
+concept: write-function-with-return
+prompt: |
+  Write a function called `square` that takes one number and returns it multiplied
+  by itself. Then call it with `9` and print the result.
+
+  Expected output:
+  ```
+  81
+  ```
+starter: |
+  # define the function:
+
+  # call it and print the result:
+grader:
+  kind: stdout-equality
+  expected: "81"
+  normalize: collapse-trailing-newline
+solution: |
+  def square(n):
+      return n * n
+
+  print(square(9))
+hint:
+  - level: 1
+    body: "Two pieces. First `def square(n):` with a `return` line inside. Then a `print(square(9))` to actually show the value."
+  - level: 2
+    body: "`def square(n):` then on the next line, indented, `return n * n`. After the function, `print(square(9))`."

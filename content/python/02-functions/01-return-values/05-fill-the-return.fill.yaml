@@ -1,0 +1,22 @@
+xp: 3
+estSeconds: 50
+concept: return-keyword
+prompt: |
+  Cursor wrote a function that's supposed to hand back a greeting string,
+  but the keyword on line 2 is missing. Fill in the blank.
+  ```python
+  def greet(name):
+      ___ f"hi, {name}"
+
+  print(greet("{{user.name}}"))
+  ```
+blanks:
+  - id: keyword
+    accept:
+      - return
+    caseSensitive: true
+hint:
+  - level: 1
+    body: "There's exactly one keyword that hands a value back from a function."
+  - level: 2
+    body: "It's `return`. Without it, the function builds the f-string and throws it away."

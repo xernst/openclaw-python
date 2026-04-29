@@ -1,0 +1,30 @@
+xp: 2
+estSeconds: 35
+concept: return-vs-none
+code: |
+  def add(a, b):
+      a + b
+
+  result = add(2, 3)
+  print(result)
+prompt: |
+  Cursor wrote this and it prints something surprising. What does `result` end up being?
+options:
+  - id: a
+    label: "`5`"
+    explain: "The function computes `a + b` but never hands it back. Without `return`, the result vanishes."
+  - id: b
+    label: "`None`"
+  - id: c
+    label: "`0`"
+    explain: "Python doesn't default missing returns to zero. The default is `None`."
+  - id: d
+    label: "It crashes with an error"
+    explain: "A function without a `return` is legal Python. It just hands back `None` silently."
+answerIds:
+  - b
+hint:
+  - level: 1
+    body: "Look at line 2. It computes `a + b` but doesn't `return` it."
+  - level: 2
+    body: "A function with no `return` statement always hands back `None`. This is the most common AI bug in functions."

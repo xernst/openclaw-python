@@ -1,0 +1,21 @@
+xp: 3
+estSeconds: 60
+concept: function-call-evaluation
+code: |
+  def triple(n):
+      return n * 3
+
+  x = triple(4)
+  y = triple(x)
+  print(y)
+prompt: |
+  Two calls to the same function, chained through a variable. What does this print?
+grader:
+  kind: stdout-equality
+  expected: "36"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "Work line by line. `triple(4)` returns `12`, so `x` is `12`. Now what is `triple(x)`?"
+  - level: 2
+    body: "`triple(4)` is `12`. `triple(12)` is `36`. The chain compounds."

@@ -1,0 +1,14 @@
+slug: return-values
+title: "Functions and the missing return"
+estMinutes: 7
+prerequisites: []
+order:
+  - 01-intro.read.md
+  - 02-which-returns.mc.yaml
+  - 03-return-vs-print.read.md
+  - 04-predict-the-result.predict.yaml
+  - 05-fill-the-return.fill.yaml
+  - 06-fix-the-missing-return.fix.yaml
+  - 07-fix-print-vs-return.fix.yaml
+  - 08-write-double.write.yaml
+  - 09-checkpoint.checkpoint.yaml

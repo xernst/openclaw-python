@@ -1,0 +1,24 @@
+xp: 4
+estSeconds: 75
+concept: missing-return-bug
+prompt: |
+  Claude wrote this and the output is `total: None` instead of `total: 15`.
+  This is the most common bug in AI-generated functions. Fix it so the code prints `total: 15`.
+brokenCode: |
+  def add(a, b):
+      a + b
+
+  result = add(7, 8)
+  print(f"total: {result}")
+bugLines:
+  - 2
+grader:
+  kind: stdout-equality
+  expected: "total: 15"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "The function computes `a + b` but never hands the answer back. What keyword is missing?"
+  - level: 2
+    body: "Add `return` in front of `a + b` on line 2."
+revealAfter: 4

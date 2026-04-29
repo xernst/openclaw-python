@@ -1,0 +1,28 @@
+xp: 4
+estSeconds: 75
+concept: print-instead-of-return
+prompt: |
+  Cursor wrote a function that *prints* the doubled number instead of *returning* it.
+  The caller on line 5 needs the value to do math with. Right now `result` is `None`
+  and line 6 crashes with a `TypeError`.
+
+  Fix the function so the script prints `doubled plus one: 15`.
+brokenCode: |
+  def double(n):
+      print(n * 2)
+
+  result = double(7)
+  print(f"doubled plus one: {result + 1}")
+bugLines:
+  - 2
+grader:
+  kind: stdout-equality
+  expected: |
+    doubled plus one: 15
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "The function shows the answer but doesn't hand it back. The caller on line 4 has no value to add `1` to."
+  - level: 2
+    body: "Change `print(n * 2)` to `return n * 2` on line 2. The caller on line 5 already prints the result."
+revealAfter: 4
