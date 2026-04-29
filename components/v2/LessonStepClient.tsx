@@ -16,6 +16,7 @@ import {
   setLastVisitedV2,
   markLessonStarted,
   markLessonComplete,
+  getStepProgress,
 } from "@/lib/storage";
 import { cn } from "@/lib/utils";
 
@@ -52,7 +53,9 @@ export default function LessonStepClient({
   const [latestAttempt, setLatestAttempt] = useState<StepAttempt | null>(null);
   const ideRef = useRef<PersistentIDEHandle>(null);
 
-  // Load profile + record visit on mount / step change.
+  // Load profile + record visit on mount / step change. Restore any
+  // previously-passed attempt for this step so reload doesn't ask the user
+  // to re-pass content they've already completed.
   useEffect(() => {
     const progress = loadProgressV2();
     if (progress.profile) {
@@ -66,8 +69,13 @@ export default function LessonStepClient({
     if (stepIndex === 0) {
       markLessonStarted(chapter.slug, lesson.slug);
     }
-    setLatestAttempt(null);
-  }, [chapter.slug, lesson.slug, stepIndex]);
+    const prior = getStepProgress(step.id);
+    const lastPassed = prior?.attempts
+      ?.slice()
+      .reverse()
+      .find((a) => a.correct);
+    setLatestAttempt(lastPassed ?? null);
+  }, [chapter.slug, lesson.slug, stepIndex, step.id]);
 
   const ideFiles = useMemo<IDEFile[]>(() => buildFilesForStep(step), [step]);
   const stepRunnable = useMemo(() => stepIsRunnable(step), [step]);
