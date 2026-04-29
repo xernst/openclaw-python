@@ -244,17 +244,42 @@ function buildFilesForStep(step: Step): IDEFile[] {
           language: "python",
         },
       ];
-    case "fill":
-    case "reorder":
+    case "fill": {
+      // Pull the code template out of the prompt's first python fence so the
+      // IDE always shows code, never narrative. Blanks (`___`) stay visible
+      // in the editor as part of the read-only template; the user types the
+      // answer in the prompt panel input. Fixes "IDE holds directions, not
+      // code" feedback.
+      const code = extractFirstPythonFence(step.prompt);
       return [
         {
           name: "main.py",
-          body: "",
+          body: code,
           readOnly: true,
           language: "python",
         },
       ];
+    }
+    case "reorder": {
+      // Reorder shows the unsorted fragments concatenated in the IDE so the
+      // editor isn't blank. The drag interaction lives in the prompt panel.
+      const code = step.fragments.map((f) => f.code).join("\n");
+      return [
+        {
+          name: "main.py",
+          body: code,
+          readOnly: true,
+          language: "python",
+        },
+      ];
+    }
   }
+}
+
+function extractFirstPythonFence(markdown: string): string {
+  const match = markdown.match(/```(?:python|py)?\n([\s\S]*?)```/);
+  if (!match) return "";
+  return match[1].replace(/\n+$/, "") + "\n";
 }
 
 function stepIsRunnable(step: Step): boolean {
