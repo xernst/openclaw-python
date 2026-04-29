@@ -546,7 +546,256 @@
         }
       ],
       "xpTotal": 31
+    },
+    {
+      "slug": "closures-and-decorators",
+      "title": "Closures and the @ symbol — what AI is doing when it stacks decorators",
+      "estMinutes": 7,
+      "prerequisites": [],
+      "steps": [
+        {
+          "type": "read",
+          "id": "functions/closures-and-decorators/s01-01-intro",
+          "xp": 1,
+          "hint": [],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 50,
+          "concept": "closure-introduction",
+          "body": "# A closure is a function that remembers\n\nWhen AI writes a route handler, a retry wrapper, or a rate-limit guard, it\noften defines a function *inside* another function and returns it. The\ninner function \"remembers\" the outer function's arguments — that memory\nis called a **closure**.\n\nIn the editor, `make_greeter(\"hi\")` returns the inner `greet` function.\nBut the returned function still knows what `prefix` was, even though\n`make_greeter` already finished running.\n\nYou'll see this constantly in framework code: FastAPI dependencies, Flask\nview decorators, LangChain tool-binding. They all lean on closures.\n\nRun the editor. Two greeters, two different prefixes, neither leaks into\nthe other.",
+          "cta": "Got it",
+          "code": "def make_greeter(prefix):\n    def greet(name):\n        return f\"{prefix}, {name}\"\n    return greet\n\nhi = make_greeter(\"hi\")\nhello = make_greeter(\"hello\")\n\nprint(hi(\"maya\"))\nprint(hello(\"marcus\"))\n",
+          "runnable": true
+        },
+        {
+          "type": "mc",
+          "id": "functions/closures-and-decorators/s02-02-which-line-is-the-closure",
+          "xp": 2,
+          "hint": [],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 50,
+          "concept": "spotting-the-closure",
+          "prompt": "Read the editor. The whole point is that `multiply` remembers `factor`\neven after `make_multiplier` returns. Which line is the closure being\n*captured*?\n",
+          "options": [
+            {
+              "id": "a",
+              "label": "Line 1: `def make_multiplier(factor):`",
+              "explain": "That defines the outer function, but the closure isn't formed until the inner `def` references `factor`."
+            },
+            {
+              "id": "b",
+              "label": "Line 3: `return x * factor`",
+              "explain": "This *uses* `factor` from the enclosing scope, but the capture happens when `multiply` is defined, not each time it runs."
+            },
+            {
+              "id": "c",
+              "label": "Line 2: `def multiply(x):`"
+            },
+            {
+              "id": "d",
+              "label": "Line 6: `double = make_multiplier(2)`",
+              "explain": "This is when the closure is *built and returned*, but the capture mechanism is the inner `def` itself."
+            }
+          ],
+          "answerIds": [
+            "c"
+          ],
+          "shuffle": false,
+          "code": "def make_multiplier(factor):\n    def multiply(x):\n        return x * factor\n    return multiply\n\ndouble = make_multiplier(2)\ntriple = make_multiplier(3)\nprint(double(5))\nprint(triple(5))\n",
+          "runnable": true
+        },
+        {
+          "type": "read",
+          "id": "functions/closures-and-decorators/s03-03-the-at-sign",
+          "xp": 2,
+          "hint": [],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 60,
+          "concept": "decorator-syntax",
+          "body": "# `@something` — the decorator shortcut\n\nEvery time you've seen `@app.get(\"/users\")`, `@retry(3)`, or `@cache`,\nyou've seen a **decorator**. It's a function that takes a function and\nreturns a (usually wrapped) function.\n\nThe `@loud` line above is shorthand for:\n\n```python\nadd = loud(add)\n```\n\nThat's it. The `@` saves you from typing the rebinding line. AI uses\ndecorators heavily for logging, retries, auth checks, caching, and route\nregistration.\n\nRun the editor. The `wrapper` runs first (printing the call), then it\ncalls the original `add`. The output reflects both: `calling: add`, then\n`5`.",
+          "cta": "Got it",
+          "code": "def loud(fn):\n    def wrapper(*args, **kwargs):\n        print(\"calling:\", fn.__name__)\n        return fn(*args, **kwargs)\n    return wrapper\n\n@loud\ndef add(a, b):\n    return a + b\n\nprint(add(2, 3))\n",
+          "runnable": true
+        },
+        {
+          "type": "predict",
+          "id": "functions/closures-and-decorators/s04-04-predict-the-counter",
+          "xp": 3,
+          "hint": [
+            {
+              "level": 1,
+              "body": "`nonlocal` lets the inner function modify the outer scope's `count`. Each call increments it before returning.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "First call → 1, second → 2, third → 3. The closure carries the counter between calls.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 70,
+          "concept": "closure-shared-state",
+          "code": "def make_counter():\n    count = 0\n    def bump():\n        nonlocal count\n        count += 1\n        return count\n    return bump\n\nc = make_counter()\nprint(c())\nprint(c())\nprint(c())\n",
+          "prompt": "Read the editor. `c` is a function that bumps and returns its own\ninternal counter. What does the script print? (Three lines, in order.)\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "1\n2\n3\n",
+            "normalize": "collapse-trailing-newline"
+          }
+        },
+        {
+          "type": "fill",
+          "id": "functions/closures-and-decorators/s05-05-fill-the-decorator",
+          "xp": 3,
+          "hint": [
+            {
+              "level": 1,
+              "body": "It's one character. The same symbol you've seen above any decorated function.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "The `@` symbol. `@timed` on its own line above the function definition.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 55,
+          "concept": "at-sign-syntax",
+          "prompt": "Cursor wrote a decorator and a function. The `@` line is missing.\nFill in the symbol that applies the `timed` decorator to `slow_add`\non line 8.\n\nSymbol: ___\n",
+          "code": "def timed(fn):\n    def wrapper(*args, **kwargs):\n        result = fn(*args, **kwargs)\n        return f\"timed: {result}\"\n    return wrapper\n\n___timed\ndef slow_add(a, b):\n    return a + b\n\nprint(slow_add(2, 3))\n",
+          "blanks": [
+            {
+              "id": "keyword",
+              "accept": [
+                "@"
+              ],
+              "caseSensitive": true,
+              "normalize": "trim"
+            }
+          ]
+        },
+        {
+          "type": "fix",
+          "id": "functions/closures-and-decorators/s06-06-fix-the-missing-return",
+          "xp": 4,
+          "hint": [
+            {
+              "level": 1,
+              "body": "A decorator's outer function must return the wrapper. Without that, the decorator binds the function name to `None`.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Add `return wrapper` as the last line of `loud` (indented inside `loud`, after the inner `def`).",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 80,
+          "concept": "decorator-must-return-wrapper",
+          "brokenCode": "def loud(fn):\n    def wrapper(*args, **kwargs):\n        print(\"calling:\", fn.__name__)\n        return fn(*args, **kwargs)\n    # the line that turns this into a real decorator is missing\n\n@loud\ndef add(a, b):\n    return a + b\n\nprint(add(2, 3))\n",
+          "prompt": "Claude wrote a decorator and forgot to return the inner `wrapper` from\nthe outer function. As a result, the decorated function is `None` and\nthe script crashes with a `TypeError`. Add the missing `return wrapper`\ninside `loud`. Output should be:\n\n```\ncalling: add\n5\n```\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "calling: add\n5\n",
+            "normalize": "collapse-trailing-newline"
+          },
+          "bugLines": [
+            5
+          ],
+          "revealAfter": 4
+        },
+        {
+          "type": "fix",
+          "id": "functions/closures-and-decorators/s07-07-fix-the-decorator-call",
+          "xp": 4,
+          "hint": [
+            {
+              "level": 1,
+              "body": "The wrapper calls `fn(...)` but throws the result away. You need to send it back to the caller.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Change line 4 from `fn(*args, **kwargs)` to `return fn(*args, **kwargs)`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 80,
+          "concept": "wrapper-must-return-result",
+          "brokenCode": "def trace(fn):\n    def wrapper(*args, **kwargs):\n        # fn runs but its result is dropped\n        fn(*args, **kwargs)\n    return wrapper\n\n@trace\ndef add(a, b):\n    return a + b\n\nprint(add(2, 3))\n",
+          "prompt": "AI wrote a decorator that runs the wrapped function but forgets to\nreturn its value. So the decorated function returns `None` and the\nscript prints `None` instead of `5`. Add a `return` to the wrapper so\nthe script prints `5`.\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "5",
+            "normalize": "collapse-trailing-newline"
+          },
+          "bugLines": [
+            4
+          ],
+          "revealAfter": 4
+        },
+        {
+          "type": "write",
+          "id": "functions/closures-and-decorators/s08-08-write-tiny-decorator",
+          "xp": 5,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Three pieces: outer `shout(fn)`, inner `wrapper(*args, **kwargs)` that processes the result, and `return wrapper` at the bottom.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Inside the wrapper: `result = fn(*args, **kwargs); return result.replace(\"!\", \"\").upper()`. Then `@shout` on `say_hi`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 120,
+          "concept": "write-decorator",
+          "prompt": "Write a decorator called `shout` that takes a function returning a\nstring, calls it, and returns the result with `!` removed and converted\nto uppercase. (We don't use exclamation marks, but other people's code\ndoes — your decorator strips them.)\n\nThen decorate a function `say_hi` that returns `\"hi!\"` and print\nthe result.\n\nExpected output:\n```\nHI\n```\n",
+          "starter": "# define `shout`, then use @shout on say_hi\n# say_hi should return \"hi!\"\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "HI",
+            "normalize": "collapse-trailing-newline"
+          },
+          "solution": "def shout(fn):\n    def wrapper(*args, **kwargs):\n        result = fn(*args, **kwargs)\n        return result.replace(\"!\", \"\").upper()\n    return wrapper\n\n@shout\ndef say_hi():\n    return \"hi!\"\n\nprint(say_hi())\n",
+          "hiddenTests": []
+        },
+        {
+          "type": "checkpoint",
+          "id": "functions/closures-and-decorators/s09-09-checkpoint",
+          "xp": 8,
+          "hint": [],
+          "personalize": false,
+          "phase": "check",
+          "estSeconds": 150,
+          "concept": "closure-decorator-checkpoint",
+          "prompt": "Final drill. Build a decorator factory called `prefixed` that takes\na string and returns a decorator. The decorator wraps a function so\nits return value gets the prefix prepended.\n\nUse it like this:\n\n```python\n@prefixed(\"[INFO] \")\ndef msg():\n    return \"started\"\n\nprint(msg())     # [INFO] started\n```\n\nExpected output:\n```\n[INFO] started\n```\n",
+          "starter": "# define prefixed(prefix) — it returns a decorator\n# then decorate msg with @prefixed(\"[INFO] \")\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "[INFO] started",
+            "normalize": "collapse-trailing-newline"
+          },
+          "solution": "def prefixed(prefix):\n    def decorator(fn):\n        def wrapper(*args, **kwargs):\n            return prefix + fn(*args, **kwargs)\n        return wrapper\n    return decorator\n\n@prefixed(\"[INFO] \")\ndef msg():\n    return \"started\"\n\nprint(msg())\n",
+          "passThreshold": 0.66
+        }
+      ],
+      "xpTotal": 32
     }
   ],
-  "xpTotal": 62
+  "xpTotal": 94
 }

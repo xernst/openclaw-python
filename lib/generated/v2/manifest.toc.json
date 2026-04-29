@@ -1,6 +1,6 @@
 {
   "version": "0.1.0",
-  "generatedAt": "2026-04-29T16:19:33.364Z",
+  "generatedAt": "2026-04-29T16:21:03.893Z",
   "chapters": [
     {
       "number": 1,
@@ -16,9 +16,9 @@
       "slug": "functions",
       "title": "Functions — and the most-hallucinated bug AI ships",
       "blurb": "AI writes functions constantly, and silently forgets the `return` line about a third of the time. Learn to spot the missing return on sight.",
-      "lessonCount": 2,
-      "stepCount": 18,
-      "xpTotal": 62
+      "lessonCount": 3,
+      "stepCount": 27,
+      "xpTotal": 94
     },
     {
       "number": 3,
