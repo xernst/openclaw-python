@@ -2,10 +2,11 @@ xp: 2
 estSeconds: 35
 concept: variable-naming-rules
 code: |
-  # Python variable names follow three rules:
-  #   - letters, digits, underscores only
-  #   - cannot start with a digit
-  #   - case-sensitive (Score and score are different)
+  # valid Python variable names: letters, digits, underscores;
+  # cannot start with a digit; case-sensitive.
+  score = 7
+  user_score = 8
+  print(score, user_score)
 prompt: |
   Cursor just wrote you four lines and only one of them is a valid Python variable name.
   Which one will Python accept?

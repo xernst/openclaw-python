@@ -1,6 +1,12 @@
 xp: 2
 estSeconds: 45
 concept: copy-vs-alias
+code: |
+  users = ["maya", "marcus"]
+  backup = users          # second name for the same list, not a copy
+  users.append("priya")
+  print(users)            # ["maya", "marcus", "priya"]
+  print(backup)           # also ["maya", "marcus", "priya"] — surprise.
 prompt: |
   Cursor wrote four lines, each meant to "copy" a list called `users`. Three
   of them produce an independent copy. One only creates a second name for the

@@ -2,11 +2,9 @@ xp: 2
 estSeconds: 40
 concept: import-syntax
 code: |
-  # Three ways AI imports things in Python:
-  #
-  #   import math              -> use as math.pi, math.sqrt(...)
-  #   from math import sqrt    -> use as sqrt(...) (no math. prefix)
-  #   import math as m         -> use as m.pi, m.sqrt(...)
+  from math import pi
+  print(pi)
+  # 3.141592653589793 — no `math.` prefix because we imported pi by name.
 prompt: |
   Cursor wants to use `pi` from the `math` module without the `math.` prefix
   every time. Which import line lets you write just `pi`?

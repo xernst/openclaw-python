@@ -1,6 +1,12 @@
 xp: 2
 estSeconds: 40
 concept: while-syntax
+code: |
+  # a while loop that actually stops:
+  n = 5
+  while n > 0:
+      print(n)
+      n -= 1
 prompt: |
   Four `while` loops. Three of them eventually stop. One runs forever.
   Which one is the infinite loop?

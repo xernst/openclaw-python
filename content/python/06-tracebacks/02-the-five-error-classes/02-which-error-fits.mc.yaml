@@ -1,6 +1,12 @@
 xp: 2
 estSeconds: 45
 concept: error-class-matching
+code: |
+  # Run this and watch Python complain about adding an int to a str.
+  age = 30
+  name = "alex"
+  total = age + name
+  print(total)
 prompt: |
   Cursor wrote a script and the traceback ends with this line:
 

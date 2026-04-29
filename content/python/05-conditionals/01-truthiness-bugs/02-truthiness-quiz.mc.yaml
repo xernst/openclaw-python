@@ -2,13 +2,11 @@ xp: 2
 estSeconds: 40
 concept: truthiness
 code: |
-  # Python treats some non-True values as "falsy":
-  #   - 0
-  #   - "" (empty string)
-  #   - [] (empty list)
-  #   - {} (empty dict)
-  #   - None
-  # Everything else is "truthy".
+  x = []
+  if x:
+      print("truthy")
+  else:
+      print("falsy")
 prompt: |
   Cursor wrote `if x:` and the branch did not fire. Which value of `x` would
   *skip* the `if` block?

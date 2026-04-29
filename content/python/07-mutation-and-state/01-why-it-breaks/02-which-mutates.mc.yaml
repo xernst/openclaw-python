@@ -2,8 +2,12 @@ xp: 2
 estSeconds: 40
 concept: mutating-vs-non-mutating
 code: |
-  # `.append`, `.pop`, `.sort`, `.reverse` — all change the list in place.
-  # `+`, `sorted(...)`, slicing `[:]` — all create a new list and leave the original alone.
+  pets = ["luna", "moose"]
+  pets.append("biscuit")          # mutates pets
+  print(pets)
+  pets_sorted = sorted(pets)      # leaves pets alone
+  print(pets_sorted)
+  print(pets)                     # still has "biscuit"
 prompt: |
   Cursor wrote four lines. Three of them leave `pets` unchanged. Which one
   *mutates* the original list?

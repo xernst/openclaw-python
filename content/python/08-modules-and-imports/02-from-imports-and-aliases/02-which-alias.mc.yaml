@@ -1,6 +1,10 @@
 xp: 2
 estSeconds: 40
 concept: alias-syntax
+code: |
+  import math as m
+  print(m.pi)
+  print(m.sqrt(16))
 prompt: |
   Cursor offered four ways to import `numpy` as `np`. Only one is the
   standard, working syntax. Which one?
