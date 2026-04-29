@@ -120,11 +120,11 @@ This course makes you the person who catches those. The goal isn't memorizing sy
 
 ## Web app curriculum (currently shipped)
 
-**18 chapters · 38 lessons · ~410 step-typed micro-screens.** The interactive web app covers:
+**22 chapters · 44 lessons · ~450 step-typed micro-screens.** The interactive web app covers:
 
 | # | Chapter | Lessons | Focus |
 |---|---|---|---|
-| 1 | variables | 1 | naming, assignment, the rebind move |
+| 1 | variables | 3 | naming + rebind, the four types on sight, print/repr/f-strings |
 | 2 | functions | 3 | def/return, args+defaults, closures+decorators |
 | 3 | lists & dicts | 3 | the bones of an API response, comprehensions, nested data |
 | 4 | loops | 3 | predict-the-output, while/break, enumerate+zip |
@@ -142,8 +142,12 @@ This course makes you the person who catches those. The goal isn't memorizing sy
 | **16** | **agent loops** | **1** | **stop_reason, tool_use, the request → tool → respond cycle** |
 | **17** | **git + GitHub** | **1** | **the three states, gh CLI, the AI-builder git workflow** |
 | **18** | **secrets** | **1** | **.env, os.getenv, .gitignore, leaked-key recovery** |
+| **19** | **prompting** | **1** | **the four-part prompt that actually works on Cursor + Claude Code** |
+| **20** | **agent traces** | **1** | **reading what the agent left behind — turns, tool calls, stop reasons** |
+| **21** | **evals** | **1** | **assertions on AI output, not vibes — pytest-style eval suites** |
+| **22** | **capstone** | **1** | **build a small CLI agent end-to-end (12-step walkthrough)** |
 
-Chapters 13–18 are the wedge for AI-first builders — the part of the course that no other Python school is teaching in 2026. Each lesson has 9 steps in the canonical sequence: `read → mc → read → predict → fill → fix → fix → write → checkpoint`.
+Chapters 13–22 are the AI-first-builder wedge — the part of the course no other Python school is teaching in 2026. Each lesson has 9 steps (12 for the capstone) in the canonical sequence: `read → mc → read → predict → fill → fix → fix → write → checkpoint`.
 
 ## Stack
 
