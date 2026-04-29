@@ -1,0 +1,14 @@
+slug: reading-and-writing
+title: "open() — and the with-block AI keeps forgetting"
+estMinutes: 7
+prerequisites: []
+order:
+  - 01-intro.read.md
+  - 02-which-mode.mc.yaml
+  - 03-with-block.read.md
+  - 04-predict-the-readlines.predict.yaml
+  - 05-fill-the-mode.fill.yaml
+  - 06-fix-the-no-with.fix.yaml
+  - 07-fix-the-wrong-mode.fix.yaml
+  - 08-write-log-line.write.yaml
+  - 09-checkpoint.checkpoint.yaml

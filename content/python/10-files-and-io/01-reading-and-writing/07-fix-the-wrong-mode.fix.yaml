@@ -1,0 +1,36 @@
+xp: 4
+estSeconds: 75
+concept: write-vs-append-bug
+prompt: |
+  This script logs two events to the same file. AI used `"w"` for both
+  writes, so the second `open` wipes the first line. Fix the mode on
+  line 5 so both lines end up in the file. The output should be:
+
+  ```
+  started
+  done
+  ```
+brokenCode: |
+  with open("/tmp/run.log", "w") as f:
+      f.write("started\n")
+
+  # this overwrites instead of appending
+  with open("/tmp/run.log", "w") as f:
+      f.write("done\n")
+
+  with open("/tmp/run.log") as f:
+      print(f.read().strip())
+bugLines:
+  - 5
+grader:
+  kind: stdout-equality
+  expected: |
+    started
+    done
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "The first write should stay — it's the second one that needs a different mode."
+  - level: 2
+    body: "Change line 5's mode from `\"w\"` to `\"a\"`. Append instead of overwrite."
+revealAfter: 4

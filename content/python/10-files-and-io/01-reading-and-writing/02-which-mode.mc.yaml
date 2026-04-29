@@ -1,0 +1,33 @@
+xp: 2
+estSeconds: 40
+concept: file-modes
+code: |
+  # cheat sheet:
+  # "r"  -> read (default; file must exist)
+  # "w"  -> write (creates new, OVERWRITES existing)
+  # "a"  -> append (creates new, adds to end of existing)
+  # "x"  -> exclusive create (fails if file exists)
+  with open("/tmp/demo.txt", "w") as f:
+      f.write("first\n")
+  with open("/tmp/demo.txt", "a") as f:
+      f.write("second\n")
+  with open("/tmp/demo.txt") as f:
+      print(f.read())
+prompt: |
+  You ran an LLM agent overnight and it appended one log line per minute to
+  `runs.log`. The next morning, you want to keep the existing log and add
+  a new line. Which mode does Cursor reach for?
+options:
+  - id: a
+    label: "`\"r\"` — read"
+    explain: "Read mode doesn't write. The file would never get a new line."
+  - id: b
+    label: "`\"w\"` — write"
+    explain: "Write mode wipes the file first. You'd lose every prior log line."
+  - id: c
+    label: "`\"a\"` — append"
+  - id: d
+    label: "`\"x\"` — exclusive create"
+    explain: "`\"x\"` fails if the file already exists. The log already exists."
+answerIds:
+  - c

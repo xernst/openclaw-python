@@ -1,0 +1,36 @@
+xp: 5
+estSeconds: 100
+concept: write-with-block
+prompt: |
+  Write a small script that:
+
+  1. Writes the string `"line one\nline two\n"` to `/tmp/notes.txt` using
+     a `with` block in write mode.
+  2. Reads the file back with another `with` block and prints its contents
+     stripped of trailing whitespace.
+
+  Expected output:
+  ```
+  line one
+  line two
+  ```
+starter: |
+  # 1) write the file with a with-block
+  # 2) read and print
+grader:
+  kind: stdout-equality
+  expected: |
+    line one
+    line two
+  normalize: collapse-trailing-newline
+solution: |
+  with open("/tmp/notes.txt", "w") as f:
+      f.write("line one\nline two\n")
+
+  with open("/tmp/notes.txt") as f:
+      print(f.read().strip())
+hint:
+  - level: 1
+    body: "Two `with` blocks. First one opens with `\"w\"` and calls `.write(...)`. Second one defaults to read and calls `.read()`."
+  - level: 2
+    body: "Use `print(f.read().strip())` so the trailing newline doesn't cause an extra blank line."

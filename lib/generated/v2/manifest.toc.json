@@ -1,6 +1,6 @@
 {
   "version": "0.1.0",
-  "generatedAt": "2026-04-29T16:14:50.616Z",
+  "generatedAt": "2026-04-29T16:16:20.790Z",
   "chapters": [
     {
       "number": 1,
@@ -79,6 +79,15 @@
       "slug": "error-handling",
       "title": "Error handling — when AI's code crashes mid-flight",
       "blurb": "AI loves a happy path. The moment a file isn't there or an API blinks, the script blows up. `try/except` is how you keep the program alive long enough to log what went wrong.",
+      "lessonCount": 1,
+      "stepCount": 9,
+      "xpTotal": 32
+    },
+    {
+      "number": 10,
+      "slug": "files-and-io",
+      "title": "Files and I/O — moving data in and out",
+      "blurb": "Reading a CSV, writing a log, parsing a JSON dump. The first thing AI does in any real project is touch a file. Learn the few patterns it reaches for and the one it forgets.",
       "lessonCount": 1,
       "stepCount": 9,
       "xpTotal": 32

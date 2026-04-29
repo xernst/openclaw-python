@@ -1,0 +1,25 @@
+xp: 3
+estSeconds: 50
+concept: file-mode-string
+prompt: |
+  Cursor wrote a logging helper. The intent is to **append** a line to the
+  existing log file (not overwrite it). Fill in the mode string on line 2.
+
+  Mode: ___
+code: |
+  def log_event(message):
+      with open("/tmp/events.log", "___") as f:
+          f.write(message + "\n")
+
+  log_event("started")
+  log_event("done")
+blanks:
+  - id: mode
+    accept:
+      - a
+    caseSensitive: true
+hint:
+  - level: 1
+    body: "We don't want to overwrite — we want to add to the end of the file each call."
+  - level: 2
+    body: "The append mode is `\"a\"`. One letter."

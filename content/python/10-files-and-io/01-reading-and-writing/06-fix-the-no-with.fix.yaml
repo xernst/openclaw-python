@@ -1,0 +1,28 @@
+xp: 4
+estSeconds: 80
+concept: with-block-required
+prompt: |
+  Claude wrote this without a `with` block, so the file handle leaks if the
+  read raises. Rewrite the body using `with open(...) as f:` so the file
+  closes automatically. The script should still print `pyloft`.
+brokenCode: |
+  with open("/tmp/name.txt", "w") as f:
+      f.write("pyloft")
+
+  f = open("/tmp/name.txt")
+  contents = f.read()
+  print(contents)
+bugLines:
+  - 4
+  - 5
+  - 6
+grader:
+  kind: stdout-equality
+  expected: "pyloft"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "Replace lines 4-6 with a single `with` block that opens the file, reads it, and prints inside the block."
+  - level: 2
+    body: "`with open(\"/tmp/name.txt\") as f:` then indented `print(f.read())`."
+revealAfter: 4

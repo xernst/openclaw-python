@@ -1,0 +1,39 @@
+xp: 8
+estSeconds: 140
+concept: files-and-json-checkpoint
+prompt: |
+  Last drill — the JSON pattern AI uses on every config file.
+
+  1. Import `json`.
+  2. Write a dict `{"app": "pyloft", "users": 1}` to `/tmp/config.json` using
+     `json.dump(data, f)` inside a `with` block.
+  3. Read it back with `json.load(f)`.
+  4. Print the value of the `"app"` key.
+
+  Expected output:
+  ```
+  pyloft
+  ```
+starter: |
+  import json
+
+  data = {"app": "pyloft", "users": 1}
+  # write data to /tmp/config.json with json.dump
+  # then read it back with json.load and print data["app"]
+grader:
+  kind: stdout-equality
+  expected: "pyloft"
+  normalize: collapse-trailing-newline
+solution: |
+  import json
+
+  data = {"app": "pyloft", "users": 1}
+
+  with open("/tmp/config.json", "w") as f:
+      json.dump(data, f)
+
+  with open("/tmp/config.json") as f:
+      loaded = json.load(f)
+
+  print(loaded["app"])
+passThreshold: 0.66

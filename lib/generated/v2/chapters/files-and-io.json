@@ -1,0 +1,260 @@
+{
+  "number": 10,
+  "slug": "files-and-io",
+  "title": "Files and I/O — moving data in and out",
+  "blurb": "Reading a CSV, writing a log, parsing a JSON dump. The first thing AI does in any real project is touch a file. Learn the few patterns it reaches for and the one it forgets.",
+  "lessons": [
+    {
+      "slug": "reading-and-writing",
+      "title": "open() — and the with-block AI keeps forgetting",
+      "estMinutes": 7,
+      "prerequisites": [],
+      "steps": [
+        {
+          "type": "read",
+          "id": "files-and-io/reading-and-writing/s01-01-intro",
+          "xp": 1,
+          "hint": [],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 35,
+          "concept": "file-io-introduction",
+          "body": "# `open()` — the first thing AI does in any real script\n\nPull data from a CSV. Write a log. Cache an API response. Parse a config.\nEvery one of these starts with `open()`.\n\nThe shape AI reaches for almost every time:\n\n```python\nwith open(path, mode) as f:\n    f.read()    # or f.write(text), or f.readlines()\n```\n\n`mode` is one short string: `\"r\"` to read, `\"w\"` to write (and overwrite),\n`\"a\"` to append. Default is read.\n\nRun the editor. We write a file, then read it back. Pyodide gives us a\nreal virtual filesystem, so `/tmp/note.txt` works exactly like it would on\nyour machine.",
+          "cta": "Got it",
+          "code": "with open(\"/tmp/note.txt\", \"w\") as f:\n    f.write(\"hello from python\\n\")\n\nwith open(\"/tmp/note.txt\") as f:\n    print(f.read())\n",
+          "runnable": true
+        },
+        {
+          "type": "mc",
+          "id": "files-and-io/reading-and-writing/s02-02-which-mode",
+          "xp": 2,
+          "hint": [],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 40,
+          "concept": "file-modes",
+          "prompt": "You ran an LLM agent overnight and it appended one log line per minute to\n`runs.log`. The next morning, you want to keep the existing log and add\na new line. Which mode does Cursor reach for?\n",
+          "options": [
+            {
+              "id": "a",
+              "label": "`\"r\"` — read",
+              "explain": "Read mode doesn't write. The file would never get a new line."
+            },
+            {
+              "id": "b",
+              "label": "`\"w\"` — write",
+              "explain": "Write mode wipes the file first. You'd lose every prior log line."
+            },
+            {
+              "id": "c",
+              "label": "`\"a\"` — append"
+            },
+            {
+              "id": "d",
+              "label": "`\"x\"` — exclusive create",
+              "explain": "`\"x\"` fails if the file already exists. The log already exists."
+            }
+          ],
+          "answerIds": [
+            "c"
+          ],
+          "shuffle": false,
+          "code": "# cheat sheet:\n# \"r\"  -> read (default; file must exist)\n# \"w\"  -> write (creates new, OVERWRITES existing)\n# \"a\"  -> append (creates new, adds to end of existing)\n# \"x\"  -> exclusive create (fails if file exists)\nwith open(\"/tmp/demo.txt\", \"w\") as f:\n    f.write(\"first\\n\")\nwith open(\"/tmp/demo.txt\", \"a\") as f:\n    f.write(\"second\\n\")\nwith open(\"/tmp/demo.txt\") as f:\n    print(f.read())\n",
+          "runnable": true
+        },
+        {
+          "type": "read",
+          "id": "files-and-io/reading-and-writing/s03-03-with-block",
+          "xp": 2,
+          "hint": [],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 50,
+          "concept": "with-statement-cleanup",
+          "body": "# `with` — the line AI sometimes leaves out\n\nYou can open a file the long way:\n\n```python\nf = open(\"/tmp/data.txt\")\ncontents = f.read()\nf.close()\n```\n\nBut if anything between `open` and `close` raises, the file stays open and\nthe OS holds the handle. On a long-running script, that leaks.\n\nThe `with` statement guarantees the file is closed when the block exits —\nexception or no. AI usually writes it correctly. The bug shows up when\nsomeone copies a snippet without the `with` and pastes it into a function.\n\nRun the editor. Two `with` blocks: one writes, one reads line by line.\nNotice `for line in f:` — files are iterables.",
+          "cta": "Got it",
+          "code": "# the with-block closes the file for you when the block ends —\n# even if the code inside raises an exception.\nwith open(\"/tmp/users.txt\", \"w\") as f:\n    f.write(\"maya\\n\")\n    f.write(\"marcus\\n\")\n\nwith open(\"/tmp/users.txt\") as f:\n    for line in f:\n        print(line.strip())\n",
+          "runnable": true
+        },
+        {
+          "type": "predict",
+          "id": "files-and-io/reading-and-writing/s04-04-predict-the-readlines",
+          "xp": 3,
+          "hint": [
+            {
+              "level": 1,
+              "body": "`readlines()` returns a list, one element per line. Each element keeps its trailing newline until you `.strip()` it.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Three lines were written, so `len(lines)` is `3`. `lines[0]` is `\"apple\\n\"`, and `.strip()` makes it `\"apple\"`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 65,
+          "concept": "readlines-iteration",
+          "code": "with open(\"/tmp/items.txt\", \"w\") as f:\n    f.write(\"apple\\nbread\\nsteak\\n\")\n\nwith open(\"/tmp/items.txt\") as f:\n    lines = f.readlines()\n\nprint(len(lines))\nprint(lines[0].strip())\n",
+          "prompt": "Read the editor. We write three items to a file, read all the lines into\na list, then print the count and the first item (stripped). What does\nit print? (Two lines, in order.)\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "3\napple\n",
+            "normalize": "collapse-trailing-newline"
+          }
+        },
+        {
+          "type": "fill",
+          "id": "files-and-io/reading-and-writing/s05-05-fill-the-mode",
+          "xp": 3,
+          "hint": [
+            {
+              "level": 1,
+              "body": "We don't want to overwrite — we want to add to the end of the file each call.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "The append mode is `\"a\"`. One letter.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 50,
+          "concept": "file-mode-string",
+          "prompt": "Cursor wrote a logging helper. The intent is to **append** a line to the\nexisting log file (not overwrite it). Fill in the mode string on line 2.\n\nMode: ___\n",
+          "code": "def log_event(message):\n    with open(\"/tmp/events.log\", \"___\") as f:\n        f.write(message + \"\\n\")\n\nlog_event(\"started\")\nlog_event(\"done\")\n",
+          "blanks": [
+            {
+              "id": "mode",
+              "accept": [
+                "a"
+              ],
+              "caseSensitive": true,
+              "normalize": "trim"
+            }
+          ]
+        },
+        {
+          "type": "fix",
+          "id": "files-and-io/reading-and-writing/s06-06-fix-the-no-with",
+          "xp": 4,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Replace lines 4-6 with a single `with` block that opens the file, reads it, and prints inside the block.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "`with open(\"/tmp/name.txt\") as f:` then indented `print(f.read())`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 80,
+          "concept": "with-block-required",
+          "brokenCode": "with open(\"/tmp/name.txt\", \"w\") as f:\n    f.write(\"pyloft\")\n\nf = open(\"/tmp/name.txt\")\ncontents = f.read()\nprint(contents)\n",
+          "prompt": "Claude wrote this without a `with` block, so the file handle leaks if the\nread raises. Rewrite the body using `with open(...) as f:` so the file\ncloses automatically. The script should still print `pyloft`.\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "pyloft",
+            "normalize": "collapse-trailing-newline"
+          },
+          "bugLines": [
+            4,
+            5,
+            6
+          ],
+          "revealAfter": 4
+        },
+        {
+          "type": "fix",
+          "id": "files-and-io/reading-and-writing/s07-07-fix-the-wrong-mode",
+          "xp": 4,
+          "hint": [
+            {
+              "level": 1,
+              "body": "The first write should stay — it's the second one that needs a different mode.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Change line 5's mode from `\"w\"` to `\"a\"`. Append instead of overwrite.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 75,
+          "concept": "write-vs-append-bug",
+          "brokenCode": "with open(\"/tmp/run.log\", \"w\") as f:\n    f.write(\"started\\n\")\n\n# this overwrites instead of appending\nwith open(\"/tmp/run.log\", \"w\") as f:\n    f.write(\"done\\n\")\n\nwith open(\"/tmp/run.log\") as f:\n    print(f.read().strip())\n",
+          "prompt": "This script logs two events to the same file. AI used `\"w\"` for both\nwrites, so the second `open` wipes the first line. Fix the mode on\nline 5 so both lines end up in the file. The output should be:\n\n```\nstarted\ndone\n```\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "started\ndone\n",
+            "normalize": "collapse-trailing-newline"
+          },
+          "bugLines": [
+            5
+          ],
+          "revealAfter": 4
+        },
+        {
+          "type": "write",
+          "id": "files-and-io/reading-and-writing/s08-08-write-log-line",
+          "xp": 5,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Two `with` blocks. First one opens with `\"w\"` and calls `.write(...)`. Second one defaults to read and calls `.read()`.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Use `print(f.read().strip())` so the trailing newline doesn't cause an extra blank line.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 100,
+          "concept": "write-with-block",
+          "prompt": "Write a small script that:\n\n1. Writes the string `\"line one\\nline two\\n\"` to `/tmp/notes.txt` using\n   a `with` block in write mode.\n2. Reads the file back with another `with` block and prints its contents\n   stripped of trailing whitespace.\n\nExpected output:\n```\nline one\nline two\n```\n",
+          "starter": "# 1) write the file with a with-block\n# 2) read and print\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "line one\nline two\n",
+            "normalize": "collapse-trailing-newline"
+          },
+          "solution": "with open(\"/tmp/notes.txt\", \"w\") as f:\n    f.write(\"line one\\nline two\\n\")\n\nwith open(\"/tmp/notes.txt\") as f:\n    print(f.read().strip())\n",
+          "hiddenTests": []
+        },
+        {
+          "type": "checkpoint",
+          "id": "files-and-io/reading-and-writing/s09-09-checkpoint",
+          "xp": 8,
+          "hint": [],
+          "personalize": false,
+          "phase": "check",
+          "estSeconds": 140,
+          "concept": "files-and-json-checkpoint",
+          "prompt": "Last drill — the JSON pattern AI uses on every config file.\n\n1. Import `json`.\n2. Write a dict `{\"app\": \"pyloft\", \"users\": 1}` to `/tmp/config.json` using\n   `json.dump(data, f)` inside a `with` block.\n3. Read it back with `json.load(f)`.\n4. Print the value of the `\"app\"` key.\n\nExpected output:\n```\npyloft\n```\n",
+          "starter": "import json\n\ndata = {\"app\": \"pyloft\", \"users\": 1}\n# write data to /tmp/config.json with json.dump\n# then read it back with json.load and print data[\"app\"]\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "pyloft",
+            "normalize": "collapse-trailing-newline"
+          },
+          "solution": "import json\n\ndata = {\"app\": \"pyloft\", \"users\": 1}\n\nwith open(\"/tmp/config.json\", \"w\") as f:\n    json.dump(data, f)\n\nwith open(\"/tmp/config.json\") as f:\n    loaded = json.load(f)\n\nprint(loaded[\"app\"])\n",
+          "passThreshold": 0.66
+        }
+      ],
+      "xpTotal": 32
+    }
+  ],
+  "xpTotal": 32
+}

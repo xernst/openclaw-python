@@ -1,0 +1,27 @@
+xp: 3
+estSeconds: 65
+concept: readlines-iteration
+code: |
+  with open("/tmp/items.txt", "w") as f:
+      f.write("apple\nbread\nsteak\n")
+
+  with open("/tmp/items.txt") as f:
+      lines = f.readlines()
+
+  print(len(lines))
+  print(lines[0].strip())
+prompt: |
+  Read the editor. We write three items to a file, read all the lines into
+  a list, then print the count and the first item (stripped). What does
+  it print? (Two lines, in order.)
+grader:
+  kind: stdout-equality
+  expected: |
+    3
+    apple
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "`readlines()` returns a list, one element per line. Each element keeps its trailing newline until you `.strip()` it."
+  - level: 2
+    body: "Three lines were written, so `len(lines)` is `3`. `lines[0]` is `\"apple\\n\"`, and `.strip()` makes it `\"apple\"`."
