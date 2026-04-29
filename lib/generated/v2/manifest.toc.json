@@ -1,15 +1,15 @@
 {
   "version": "0.1.0",
-  "generatedAt": "2026-04-29T18:35:36.631Z",
+  "generatedAt": "2026-04-29T18:59:00.656Z",
   "chapters": [
     {
       "number": 1,
       "slug": "variables",
       "title": "Variables — what AI reaches for first",
       "blurb": "When AI writes Python, the first thing it does is name things. Learn to read those names on sight, and to write a few yourself.",
-      "lessonCount": 1,
-      "stepCount": 8,
-      "xpTotal": 26
+      "lessonCount": 3,
+      "stepCount": 26,
+      "xpTotal": 88
     },
     {
       "number": 2,
@@ -163,6 +163,42 @@
       "lessonCount": 1,
       "stepCount": 9,
       "xpTotal": 32
+    },
+    {
+      "number": 19,
+      "slug": "prompting",
+      "title": "Prompting Cursor and Claude Code effectively",
+      "blurb": "The difference between a one-shot AI session and a four-hour debugging spiral is almost always the first prompt. Learn the structure that gets you usable code.",
+      "lessonCount": 1,
+      "stepCount": 9,
+      "xpTotal": 31
+    },
+    {
+      "number": 20,
+      "slug": "agent-traces",
+      "title": "Reading agent traces and telemetry",
+      "blurb": "When an agent fails, the trace tells you exactly where. Learn to read tool calls, tool results, and stop reasons — the JSON breadcrumbs every agent leaves behind.",
+      "lessonCount": 1,
+      "stepCount": 9,
+      "xpTotal": 31
+    },
+    {
+      "number": 21,
+      "slug": "evals",
+      "title": "Eval-driven AI development",
+      "blurb": "If you can't test it, you can't ship it. Learn the simple-but-strict eval patterns that separate AI features that work from ones that just feel like they do.",
+      "lessonCount": 1,
+      "stepCount": 9,
+      "xpTotal": 31
+    },
+    {
+      "number": 22,
+      "slug": "capstone",
+      "title": "Capstone — a small CLI agent",
+      "blurb": "Wire it all together. Read a prompt, call an LLM, run tools, loop until done, log every turn. The agent is small; the patterns scale to whatever you build next.",
+      "lessonCount": 1,
+      "stepCount": 12,
+      "xpTotal": 45
     }
   ]
 }

@@ -1,0 +1,269 @@
+{
+  "number": 21,
+  "slug": "evals",
+  "title": "Eval-driven AI development",
+  "blurb": "If you can't test it, you can't ship it. Learn the simple-but-strict eval patterns that separate AI features that work from ones that just feel like they do.",
+  "lessons": [
+    {
+      "slug": "writing-evals",
+      "title": "Assertions on AI output, not vibes",
+      "estMinutes": 9,
+      "prerequisites": [],
+      "steps": [
+        {
+          "type": "read",
+          "id": "evals/writing-evals/s01-01-intro",
+          "xp": 1,
+          "hint": [],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 110,
+          "concept": "eval-mindset",
+          "body": "# The bar: tests that fail when AI gets worse\n\nEvery team that ships AI features and lives long enough to ship version\ntwo has the same realization: *\"the demo worked, prod doesn't, and we\ncan't tell what changed.\"* The fix is not better prompts. It's\n**evals** — small, repeatable tests that exercise the AI on known\ninputs and check the output against known answers.\n\nRun the editor on the right. That's the eval pattern in 20 lines: a\nlist of cases, a function that produces the answer (in real life,\ncalling Claude or GPT — here, a stub), and a comparison. If the answer\nmatches expectations, the case passes. Done. *That's an eval.*\n\nYou can write your first eval in five minutes. You should write it\n*before* you ship the feature, and run it *every time you change the\nprompt.* Without evals, \"did this prompt change make things better?\"\nbecomes a vibe check. With evals, it becomes a number.\n\n## Why this matters more for AI than for normal code\n\nA regular function returns the same thing every time. If `add(2, 3)`\nreturns `5` once, it returns `5` forever. So you write the test once\nand forget it.\n\nAI is different in two ways that matter:\n\n1. **The output is non-deterministic.** Same input, slightly different\n   output, run after run. Sometimes the difference is harmless\n   (\"Hello!\" vs \"Hi!\"). Sometimes it's a regression that ships to\n   users.\n2. **The \"correct\" answer is fuzzy.** What does \"extract the email\"\n   even mean for the input `\"contact info: maya at example.com\"`? You\n   need to think about what counts as a pass *before* you write the\n   eval, not after.\n\nBoth problems are solved by writing the eval *before* the prompt and\ntreating the eval as the spec.\n\n## The mental model\n\nEvals are unit tests, but for behaviors instead of branches. The shape\nis the same as any other test:\n\n```py\ndef test_extract_email_simple():\n    assert fake_extract(\"ping me at sam@example.com\") == \"sam@example.com\"\n```\n\n`assert` is the whole game. If the comparison is true, the test\npasses. If it's false, Python raises `AssertionError` and pytest\nreports a failure. There's no special framework you need to install.\n\n## The four eval patterns you'll write 90% of the time\n\nWe'll cover each in detail in the next read step, but here's the menu:\n\n1. **Exact match.** `actual == expected`. Use when the output should be\n   one specific thing — an extracted entity, a structured value, a\n   yes-or-no answer.\n2. **Contains.** `expected in actual`. Use when the output is longer\n   prose but must include a specific phrase.\n3. **JSON-schema-validates.** Use when the AI is producing structured\n   output and you care about *shape* more than exact text.\n4. **LLM-as-judge.** Use sparingly, for vibe-checks where rules don't\n   work. Slow, expensive, can lie. Avoid until you've exhausted the\n   first three.\n\n## Where AI specifically gets evals wrong\n\nTwo failure modes you'll see when you ask Cursor to \"write some evals\nfor this\":\n\n1. **It generates evals from the same prompt.** It writes test cases\n   by asking the same model what the answers should be. That's not an\n   eval — that's a tautology. The expected values must come from\n   *humans* (or a known-good source).\n2. **It writes overly-strict assertions.** AI tends to write\n   `actual == \"Hello, Sam!\"` when what you want is `\"sam\" in\n   actual.lower()`. Strict equality on natural language fails the first\n   time the model paraphrases.\n\nBoth of these will burn you in the first hour of writing evals.\nWe'll fix one of them in step 7.\n\n## What's in this lesson\n\nEight more steps. By the end you'll have a working eval suite for a\ntoy AI feature, you'll know which assertion to reach for in which\nsituation, and you'll have a regression eval — the one that prevents\nyesterday's bug from coming back tomorrow.",
+          "cta": "Got it",
+          "code": "# the canonical eval shape — input, expected, actual, pass/fail.\ncases = [\n    {\"name\": \"extract_email_simple\",\n     \"input\": \"ping me at sam@example.com\",\n     \"expected\": \"sam@example.com\"},\n    {\"name\": \"extract_email_with_punct\",\n     \"input\": \"(maya@example.com)\",\n     \"expected\": \"maya@example.com\"},\n]\n\n# in real life this would call an LLM. here it's a stub.\ndef fake_extract(text):\n    import re\n    m = re.search(r\"[\\w.+-]+@[\\w-]+\\.[\\w.-]+\", text)\n    return m.group(0) if m else None\n\npassed = 0\nfor c in cases:\n    actual = fake_extract(c[\"input\"])\n    ok = actual == c[\"expected\"]\n    passed += ok\n    print(f\"{c['name']}: {'PASS' if ok else 'FAIL'}\")\nprint(f\"{passed}/{len(cases)}\")\n",
+          "runnable": true
+        },
+        {
+          "type": "mc",
+          "id": "evals/writing-evals/s02-02-which-eval-passes",
+          "xp": 2,
+          "hint": [
+            {
+              "level": 1,
+              "body": "`actual` is a full sentence. Which check is True for any sentence that contains the word `Paris`?",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "`\"Paris\" in actual` is the substring check — it passes whenever the answer is somewhere in the output. That's the most robust pattern for free-form AI output.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 50,
+          "concept": "assertion-styles",
+          "prompt": "Cursor wrote three evals against the same string output. Two are\nFalse, one is True. Which assertion *passes*?\n",
+          "options": [
+            {
+              "id": "a",
+              "label": "`e1` — exact equality with `\"Paris\"`",
+              "explain": "False — `actual` is the full sentence, not just the word `Paris`."
+            },
+            {
+              "id": "b",
+              "label": "`e2` — `\"Paris\" in actual`"
+            },
+            {
+              "id": "c",
+              "label": "`e3` — `actual.startswith(\"Paris\")`",
+              "explain": "False — the sentence starts with `The`, not `Paris`."
+            },
+            {
+              "id": "d",
+              "label": "None of them pass.",
+              "explain": "One of them passes. Look at the substring check."
+            }
+          ],
+          "answerIds": [
+            "b"
+          ],
+          "shuffle": false,
+          "code": "actual = \"The capital of France is Paris.\"\n\n# three candidate evals, each checking a different way.\ne1 = actual == \"Paris\"\ne2 = \"Paris\" in actual\ne3 = actual.startswith(\"Paris\")\n\nprint(e1, e2, e3)\n",
+          "runnable": true
+        },
+        {
+          "type": "read",
+          "id": "evals/writing-evals/s03-03-eval-patterns",
+          "xp": 1,
+          "hint": [],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 130,
+          "concept": "eval-patterns",
+          "body": "# Pick the right assertion for the job\n\nRun the editor on the right. Four eval functions, four patterns, four\nTrue outputs. Each one is the right tool for a different shape of AI\noutput. Knowing which to reach for is half the eval skill.\n\n## Pattern 1: exact match\n\n```py\nassert actual == expected\n```\n\nUse when the output is a single, well-defined value. Examples:\n\n- Extracting a known field — *\"what's the user's email?\"*\n- Classifying into a fixed set — *\"is this email spam? yes/no\"*\n- Numeric answers — *\"how many items are in stock?\"*\n\nThe trap: don't use exact match on free-form prose. The first time the\nmodel says \"Yes.\" instead of \"yes\" you'll get a false failure and stop\ntrusting the suite.\n\n## Pattern 2: contains (substring check)\n\n```py\nassert expected.lower() in actual.lower()\n```\n\nUse when the answer is the right *content* but the surrounding prose\nis the model's choice. Examples:\n\n- *\"explain why the order failed.\"* — Pass if the explanation contains\n  `\"out of stock\"`.\n- *\"does the user want to cancel?\"* — Pass if the response contains\n  `\"yes\"` or `\"cancel\"`.\n- *\"summarize the meeting.\"* — Pass if the summary contains all three\n  required topics.\n\nAlways lowercase both sides (or use case-insensitive comparison\notherwise). AI is inconsistent about capitalization and you don't want\nyour suite to flake on that.\n\n## Pattern 3: JSON shape check\n\n```py\ndef eval_shape(actual_str, required_keys):\n    data = json.loads(actual_str)\n    return all(k in data for k in required_keys)\n```\n\nUse when the output is supposed to be *structured* — JSON, key-value\npairs, a parsed schema. You care that the right *fields* exist, not\nthe exact values.\n\nThe killer move here: *parse first.* If the JSON doesn't parse, the\neval already failed. That alone catches the most common AI structured\noutput bug — the model wraps the JSON in code fences (`` ```json ... ```\n``) and breaks every downstream consumer.\n\nFor real production use, swap the manual key check for `pydantic`\nvalidation. The principle is the same: you're checking *shape*, not\n*content*.\n\n## Pattern 4: regex\n\n```py\nassert re.search(r\"order \\d+\", actual) is not None\n```\n\nA middle ground when \"contains\" is too loose and \"exact\" is too\nstrict. Use for outputs with a known *pattern* but variable content:\n\n- Order IDs (`r\"\\b\\d{6}\\b\"`).\n- Email addresses (`r\"[\\w.+-]+@[\\w-]+\\.[\\w.-]+\"`).\n- Currency (`r\"\\$\\d+\\.\\d{2}\"`).\n\nDon't reach for regex first. Most AI evals don't need it. But when you\ndo, it's the difference between a brittle eval and a robust one.\n\n## When to use LLM-as-judge\n\nYou'll see this pattern: ask another model to judge whether the first\nmodel's output is good. It works for things rules can't capture\n(\"does this customer email sound polite?\") but it has three problems:\n\n- **Slow.** Doubles the latency of your eval suite.\n- **Expensive.** Doubles the cost.\n- **Can lie.** A judge can be confidently wrong, and you have no\n  ground truth to catch it.\n\nUse it sparingly, only after the rule-based patterns have run out of\nrunway. And when you do, write the judge's prompt as carefully as you\nwrite any other.\n\n## When to run evals\n\nThe discipline is more important than the test count.\n\n- **Every prompt change.** If you're tweaking the system prompt, run\n  the suite before and after. The diff in pass rate IS the result of\n  your change.\n- **Every model upgrade.** Switching from `claude-haiku-4-5` to\n  `claude-sonnet-4-6`? Run the suite. You will be surprised at least\n  half the time.\n- **Pre-deploy.** CI runs the suite. If it falls below the pass-rate\n  threshold, the deploy blocks.\n- **After every prod incident.** Add a new case for the exact bad\n  input that caused the bug. That's a *regression eval.* It catches\n  yesterday's bug forever.\n\n## Where AI specifically gets eval suites wrong\n\nCursor will write you eval cases that *all pass* on the first run.\nThat's a bad smell — it usually means the cases were generated by the\nsame model whose output they're checking. A useful eval suite has\nsome cases the model fails on. Those are the ones that actually drive\nimprovement.",
+          "cta": "Got it",
+          "code": "# four eval patterns, in order from strict to loose.\nimport json\n\n# pattern 1: exact match\ndef eval_exact(actual, expected):\n    return actual == expected\n\n# pattern 2: substring\ndef eval_contains(actual, expected_substring):\n    return expected_substring.lower() in actual.lower()\n\n# pattern 3: shape check on JSON\ndef eval_shape(actual_str, required_keys):\n    try:\n        data = json.loads(actual_str)\n    except json.JSONDecodeError:\n        return False\n    return all(k in data for k in required_keys)\n\n# pattern 4: regex (still rule-based, just more flexible)\nimport re\ndef eval_regex(actual, pattern):\n    return re.search(pattern, actual) is not None\n\nprint(eval_exact(\"yes\", \"yes\"))\nprint(eval_contains(\"The answer is 42.\", \"42\"))\nprint(eval_shape('{\"name\":\"maya\",\"score\":7}', [\"name\", \"score\"]))\nprint(eval_regex(\"order 1234\", r\"order \\d+\"))\n",
+          "runnable": true
+        },
+        {
+          "type": "predict",
+          "id": "evals/writing-evals/s04-04-predict-the-pass-rate",
+          "xp": 3,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Lowercase both sides, then check substring. Cases 1, 2, and 4 all contain `paris` after lowercasing. Case 3 has `lyon`.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Three pass, one fails. Output is `3/4`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 70,
+          "concept": "pass-rate-counting",
+          "code": "cases = [\n    {\"actual\": \"Paris\",                \"expected\": \"Paris\"},\n    {\"actual\": \"The capital is Paris.\",\"expected\": \"Paris\"},\n    {\"actual\": \"Lyon\",                 \"expected\": \"Paris\"},\n    {\"actual\": \"PARIS\",                \"expected\": \"Paris\"},\n]\n\npassed = 0\nfor c in cases:\n    if c[\"expected\"].lower() in c[\"actual\"].lower():\n        passed += 1\n\nprint(f\"{passed}/{len(cases)}\")\n",
+          "prompt": "Read the eval loop on the right. It uses the case-insensitive\n*contains* check. How many of the four cases pass?\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "3/4",
+            "normalize": "collapse-trailing-newline"
+          }
+        },
+        {
+          "type": "fill",
+          "id": "evals/writing-evals/s05-05-fill-the-assertion",
+          "xp": 3,
+          "hint": [
+            {
+              "level": 1,
+              "body": "It's the Python keyword that raises `AssertionError` when the expression is False.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "It's `assert`. The line becomes `assert actual == \"sam@example.com\"`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 60,
+          "concept": "assert-keyword",
+          "prompt": "Cursor wrote a pytest-style eval, but the assertion line is missing\nthe keyword that turns a comparison into a passing or failing test.\nFill in the keyword.\n\nKeyword: ___\n",
+          "code": "def fake_extract(text):\n    return \"sam@example.com\"\n\ndef test_extract_email():\n    actual = fake_extract(\"ping me at sam@example.com\")\n    ___ actual == \"sam@example.com\"\n\ntest_extract_email()\nprint(\"ok\")\n",
+          "blanks": [
+            {
+              "id": "keyword",
+              "accept": [
+                "assert"
+              ],
+              "caseSensitive": true,
+              "normalize": "trim"
+            }
+          ]
+        },
+        {
+          "type": "fix",
+          "id": "evals/writing-evals/s06-06-fix-the-flaky-eval",
+          "xp": 4,
+          "hint": [
+            {
+              "level": 1,
+              "body": "AI output capitalization is unreliable. Lowercase both sides before comparing.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Change line 4 to `ok = actual.lower() == expected.lower()`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 90,
+          "concept": "case-insensitive-eval",
+          "brokenCode": "expected = \"yes\"\nactual = \"YES\"\n\nok = actual == expected\nprint(\"pass\" if ok else \"fail\")\n",
+          "prompt": "Claude wrote a yes/no classifier eval. The `actual` answer is `\"YES\"`\nbut the eval expects `\"yes\"` and fails. The fix is to make the\ncomparison case-insensitive. Change line 4 so the script prints\n`pass`.\n\nExpected output:\n```\npass\n```\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "pass",
+            "normalize": "collapse-trailing-newline"
+          },
+          "bugLines": [
+            4
+          ],
+          "revealAfter": 4
+        },
+        {
+          "type": "fix",
+          "id": "evals/writing-evals/s07-07-fix-the-overstrict-eval",
+          "xp": 4,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Exact equality is too strict for prose. Use `in` for a substring check.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Change line 4 to `ok = expected in actual`. That checks whether `Paris` appears anywhere in the sentence.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 95,
+          "concept": "substring-eval",
+          "brokenCode": "expected = \"Paris\"\nactual = \"The capital of France is Paris.\"\n\nok = actual == expected\nprint(\"pass\" if ok else \"fail\")\n",
+          "prompt": "Cursor wrote an eval that checks whether the model mentioned `Paris`\nsomewhere in its answer. It used exact equality, which fails because\nthe model returned a full sentence. Switch the check to a *contains*\ncomparison so it passes.\n\nExpected output:\n```\npass\n```\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "pass",
+            "normalize": "collapse-trailing-newline"
+          },
+          "bugLines": [
+            4
+          ],
+          "revealAfter": 4
+        },
+        {
+          "type": "write",
+          "id": "evals/writing-evals/s08-08-write-the-suite",
+          "xp": 5,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Loop over cases, call `classify` on each `input`, compare to `expected` (case-insensitive), count passes.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Initialize `passed = 0`. In the loop, increment when `actual.lower() == c[\"expected\"].lower()`. Return `(passed, len(cases))`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 140,
+          "concept": "build-eval-suite",
+          "prompt": "Build a small eval runner. The starter has a list of cases (each with\n`name`, `input`, and `expected`) and a stub `classify(text)` that\nreturns `\"yes\"` or `\"no\"` based on whether the text contains\n`\"cancel\"`. Write a function `run_suite(cases)` that:\n\n- Calls `classify(case[\"input\"])` for each case.\n- Compares the lowercased actual to the lowercased expected.\n- Returns a tuple `(passed, total)`.\n\nThen call `run_suite(cases)` and print the result as\n`passed/total`.\n\nExpected output:\n```\n3/3\n```\n",
+          "starter": "cases = [\n    {\"name\": \"explicit_cancel\",\n     \"input\": \"please cancel my order\",\n     \"expected\": \"yes\"},\n    {\"name\": \"no_intent\",\n     \"input\": \"what's the status of my order\",\n     \"expected\": \"no\"},\n    {\"name\": \"shouty_cancel\",\n     \"input\": \"CANCEL THIS NOW\",\n     \"expected\": \"yes\"},\n]\n\ndef classify(text):\n    return \"yes\" if \"cancel\" in text.lower() else \"no\"\n\n# define run_suite(cases) below\n\npassed, total = run_suite(cases)\nprint(f\"{passed}/{total}\")\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "3/3",
+            "normalize": "collapse-trailing-newline"
+          },
+          "solution": "cases = [\n    {\"name\": \"explicit_cancel\",\n     \"input\": \"please cancel my order\",\n     \"expected\": \"yes\"},\n    {\"name\": \"no_intent\",\n     \"input\": \"what's the status of my order\",\n     \"expected\": \"no\"},\n    {\"name\": \"shouty_cancel\",\n     \"input\": \"CANCEL THIS NOW\",\n     \"expected\": \"yes\"},\n]\n\ndef classify(text):\n    return \"yes\" if \"cancel\" in text.lower() else \"no\"\n\ndef run_suite(cases):\n    passed = 0\n    for c in cases:\n        actual = classify(c[\"input\"])\n        if actual.lower() == c[\"expected\"].lower():\n            passed += 1\n    return passed, len(cases)\n\npassed, total = run_suite(cases)\nprint(f\"{passed}/{total}\")\n",
+          "hiddenTests": []
+        },
+        {
+          "type": "checkpoint",
+          "id": "evals/writing-evals/s09-09-checkpoint",
+          "xp": 8,
+          "hint": [],
+          "personalize": false,
+          "phase": "check",
+          "estSeconds": 130,
+          "concept": "regression-eval",
+          "prompt": "Last one. The starter has a `regression_cases` list and a stub\nclassifier that has a known bug — it returns `\"no\"` for the input\n`\"cancel my account\"`, which should be `\"yes\"`. Add the missing case\nto `regression_cases` so it would catch this exact bug. Run the suite\nand confirm the output is `2/3` (two pass, one — the new regression\ncase — fails).\n\nAdd one entry: input `\"cancel my account\"`, expected `\"yes\"`, name\n`\"account_cancel\"`.\n\nExpected output:\n```\n2/3\n```\n",
+          "starter": "def classify(text):\n    # buggy: misses \"account\" cancel intent\n    if \"order\" in text.lower() and \"cancel\" in text.lower():\n        return \"yes\"\n    return \"no\"\n\nregression_cases = [\n    {\"name\": \"explicit_cancel\",\n     \"input\": \"please cancel my order\",\n     \"expected\": \"yes\"},\n    {\"name\": \"no_intent\",\n     \"input\": \"what's the status of my order\",\n     \"expected\": \"no\"},\n    # add the regression case here\n]\n\ndef run_suite(cases):\n    passed = 0\n    for c in cases:\n        if classify(c[\"input\"]).lower() == c[\"expected\"].lower():\n            passed += 1\n    return passed, len(cases)\n\np, t = run_suite(regression_cases)\nprint(f\"{p}/{t}\")\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "2/3",
+            "normalize": "collapse-trailing-newline"
+          },
+          "solution": "def classify(text):\n    if \"order\" in text.lower() and \"cancel\" in text.lower():\n        return \"yes\"\n    return \"no\"\n\nregression_cases = [\n    {\"name\": \"explicit_cancel\",\n     \"input\": \"please cancel my order\",\n     \"expected\": \"yes\"},\n    {\"name\": \"no_intent\",\n     \"input\": \"what's the status of my order\",\n     \"expected\": \"no\"},\n    {\"name\": \"account_cancel\",\n     \"input\": \"cancel my account\",\n     \"expected\": \"yes\"},\n]\n\ndef run_suite(cases):\n    passed = 0\n    for c in cases:\n        if classify(c[\"input\"]).lower() == c[\"expected\"].lower():\n            passed += 1\n    return passed, len(cases)\n\np, t = run_suite(regression_cases)\nprint(f\"{p}/{t}\")\n",
+          "passThreshold": 0.66
+        }
+      ],
+      "xpTotal": 31
+    }
+  ],
+  "xpTotal": 31
+}

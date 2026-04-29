@@ -1,0 +1,272 @@
+{
+  "number": 19,
+  "slug": "prompting",
+  "title": "Prompting Cursor and Claude Code effectively",
+  "blurb": "The difference between a one-shot AI session and a four-hour debugging spiral is almost always the first prompt. Learn the structure that gets you usable code.",
+  "lessons": [
+    {
+      "slug": "the-prompt-craft",
+      "title": "The four-part prompt that actually works",
+      "estMinutes": 9,
+      "prerequisites": [],
+      "steps": [
+        {
+          "type": "read",
+          "id": "prompting/the-prompt-craft/s01-01-intro",
+          "xp": 1,
+          "hint": [],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 110,
+          "concept": "prompt-structure",
+          "body": "# The prompt is the spec\n\nWatch what happens when you ask Cursor *\"add an orders endpoint\"* with\nnothing else. It picks a router file at random. It invents a database\nhelper that doesn't exist. It adds three error cases you didn't ask for\nand skips the one that matters. You spend twenty minutes reading code\nthat fights your codebase.\n\nNow watch what happens when you ask the same question with four\nsentences of structure. Cursor lands a diff in one shot. You read it,\nmaybe tweak two lines, and ship.\n\nThe difference is not the model. The difference is the prompt. And the\nprompt has *exactly four parts*. Run the editor on the right and read\nthem out loud.\n\n## Part 1: context\n\n*What file am I in. What stack. What constraints exist already.*\n\n```\nI'm editing app/api/orders.py. It uses fastapi and a postgres pool.\n```\n\nThis is the part most people skip, and it's the part that does the most\nwork. Without it, the model is guessing what kind of project you're in,\nand a guess takes ten generated tokens to wrong-foot you for the rest\nof the session.\n\nIn Cursor, the file you have open IS context — the editor sends it\nautomatically. In Claude Code, what's in the conversation IS context.\nEither way, **make the relevant file or pattern visible before you ask\nthe question.** Paste a snippet, open the file, or add it with `@`.\n\n## Part 2: goal\n\n*The single concrete thing I want.*\n\n```\nAdd a GET /orders/{id} endpoint that returns one order.\n```\n\nOne sentence. One outcome. If you find yourself writing \"and also\" or\n\"while we're at it,\" stop. That's two prompts pretending to be one.\nSend them separately. The model handles one well-scoped task per turn\nmuch better than two half-scoped ones.\n\n## Part 3: constraints\n\n*What you must use. What you must not do. What edge cases matter.*\n\n```\nUse the existing get_pool() helper. Return 404 if missing.\n```\n\nThis is where you save yourself the rewrite. Every constraint you state\nup front is a wrong path the model never goes down. \"Don't add new\ndependencies.\" \"Match the style of the existing endpoints.\" \"No\ntry/except for happy-path errors — let them bubble.\" Each line is a\nfence.\n\n## Part 4: format\n\n*How I want the answer back.*\n\n```\nShow me the diff only. No explanation.\n```\n\nThis is the most overlooked part. AI tools default to *explaining* what\nthey did, which is helpful when you're learning and noise when you're\nshipping. Tell it: \"diff only,\" \"code only,\" \"list of file paths,\" \"two\nsentences max.\" The format constraint is free token savings on every\nturn.\n\n## What the four parts do together\n\nWhen you read AI-generated code that's wrong, almost every time you can\ntrace the wrongness back to a missing piece:\n\n- **Wrong stack assumed?** Missing context.\n- **Did six things you didn't ask for?** Missing goal scope.\n- **Used a banned library?** Missing constraint.\n- **Wall of unwanted commentary?** Missing format.\n\nGet all four in. The model has nothing to invent.\n\n## What this lesson covers\n\nEight more steps. By the end you'll be able to look at a vague prompt\nand rewrite it on the spot, you'll know when a long-running session has\ngone toxic, and you'll have one tool — the *show me your plan first*\nprefix — that turns every prompt into a checkable two-step.",
+          "cta": "Got it",
+          "code": "# this is a Python dict, but read it like a prompt template.\nprompt_parts = {\n    \"context\": \"I'm editing app/api/orders.py. It uses fastapi and a postgres pool.\",\n    \"goal\": \"Add a GET /orders/{id} endpoint that returns one order.\",\n    \"constraints\": \"Use the existing get_pool() helper. Return 404 if missing.\",\n    \"format\": \"Show me the diff only. No explanation.\",\n}\n\nfor part, value in prompt_parts.items():\n    print(f\"{part}: {value}\")\n",
+          "runnable": true
+        },
+        {
+          "type": "mc",
+          "id": "prompting/the-prompt-craft/s02-02-which-prompt-is-better",
+          "xp": 2,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Look for the four parts: file/stack mention, single concrete goal, named constraints, format spec.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "`prompt_b` names the file, the goal, two constraints (use existing schemas, return 422), and the format (diff only).",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 50,
+          "concept": "prompt-quality",
+          "prompt": "Cursor will accept both prompts. One has a high chance of landing a\nusable diff in one shot; the other will need three or four follow-ups.\nWhich prompt has the **four-part structure** (context, goal, constraint,\nformat)?\n",
+          "options": [
+            {
+              "id": "a",
+              "label": "`prompt_a`",
+              "explain": "It's a goal in vague terms — no context, no constraints, no format. The model has to guess everything."
+            },
+            {
+              "id": "b",
+              "label": "`prompt_b`"
+            },
+            {
+              "id": "c",
+              "label": "Both equally — they say the same thing in different lengths.",
+              "explain": "They don't say the same thing. `prompt_b` carries four pieces of structure that `prompt_a` is missing."
+            },
+            {
+              "id": "d",
+              "label": "Neither — both are too short to work.",
+              "explain": "Length is not the metric. Structure is. `prompt_b` is well-scoped despite being a single paragraph."
+            }
+          ],
+          "answerIds": [
+            "b"
+          ],
+          "shuffle": false,
+          "code": "# two prompt strings — same goal, very different odds of success.\nprompt_a = \"make the orders endpoint better\"\nprompt_b = (\n    \"In app/api/orders.py: add input validation to the POST handler. \"\n    \"Use pydantic models that already exist in app/schemas/orders.py. \"\n    \"Return 422 for invalid bodies. Show the diff only.\"\n)\nprint(len(prompt_a))\nprint(len(prompt_b))\n",
+          "runnable": true
+        },
+        {
+          "type": "read",
+          "id": "prompting/the-prompt-craft/s03-03-context-rot",
+          "xp": 1,
+          "hint": [],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 120,
+          "concept": "context-management",
+          "body": "# Long context windows still rot\n\nModern models advertise million-token windows. You can read all of\n*Hamlet* and have room left over. So why does AI start making weird\ndecisions four hours into a long Cursor session — using a deprecated\nhelper you removed two hours ago, mixing up `User` and `UserProfile`,\nintroducing a bug you already fixed?\n\nRun the editor on the right. That session log is a toy version of what\nCursor or Claude Code is carrying around — a growing pile of turns,\neach one full of tokens, each turn pulling the model's attention in a\nslightly different direction.\n\nThe window doesn't *truncate* — that part works. But the model's\nattention does *dilute*. By turn 6, the model has to pull signal out of\na soup that includes a deleted helper from turn 1, a stack trace from\nturn 3, and three different refactor attempts from turn 5. Even a model\nwith a million-token window has to *choose* what to weight, and choices\nget noisy when the inputs do.\n\n## The two failure modes\n\nLong sessions decay in two distinct ways. Knowing which one you're in\ntells you what to do.\n\n**Mode 1: stale context.** The model is using something that's no\nlonger true. You renamed `Order` to `OrderRecord` an hour ago. The\nmodel still calls it `Order`. The fix isn't a better prompt — it's a\nfresh session with the *current* file pasted in.\n\n**Mode 2: drift.** The model started solving the right problem and\nslowly slid sideways. You asked for a bug fix, it fixed the bug and\nalso rewrote three unrelated functions. The fix here is the *plan-first\nprefix* (next paragraph) before the next prompt.\n\n## The plan-first prefix\n\nThis is the single highest-ROI prompt move you'll learn this lesson:\n\n```\nBefore writing any code, write a 5-line plan for what you'll change\nand which files. Wait for me to approve. Then implement.\n```\n\nDrop that into any non-trivial request and three things happen:\n\n1. The model articulates its intent in a form you can read in 20\n   seconds, before any code gets written.\n2. You catch wrong assumptions cheaply (you say \"no, don't touch X\" and\n   it adapts before generating).\n3. When the diff lands, you can compare it against the plan — drift\n   becomes visible.\n\nUse the prefix any time the change touches more than one file or\ninvolves logic you can't fit on one screen.\n\n## When to start fresh\n\nThree signals you should kill the session and open a new one:\n\n1. **The model references a file or symbol that no longer exists.**\n   Pure stale context. New session, paste the current file, restate the\n   goal.\n2. **It's hallucinating function signatures.** Especially common with\n   library upgrades. The model is averaging across versions in its\n   training data. New session with the current `requirements.txt` or\n   `package.json` pasted in.\n3. **You've said \"no, that's wrong\" twice in a row.** The session has a\n   wrong working theory baked in. Anything you say now fights that\n   theory. Start over.\n\n## What about Claude Code's `/clear`?\n\nSame idea, lower friction. `/clear` keeps your tool permissions and\ncontext settings but drops the conversation buffer. Use it freely.\nYou're not losing progress — the *files* are the progress. The chat is\na means.\n\n## How AI specifically gets this wrong\n\nWhen AI suggests \"let me continue where we left off\" after a long gap,\nthat's a tell. The model has no memory between sessions; it only sees\nwhat's in *this* turn. If \"where we left off\" isn't visible in the\ncurrent conversation or the current files, it's making something up.\nDon't reward that. Restate the goal as if from scratch.",
+          "cta": "Got it",
+          "code": "# a tiny stand-in for a session log. each entry is one turn.\nsession = [\n    {\"turn\": 1, \"kind\": \"feature\", \"tokens\": 800},\n    {\"turn\": 2, \"kind\": \"feature\", \"tokens\": 1100},\n    {\"turn\": 3, \"kind\": \"debug\",   \"tokens\": 2400},\n    {\"turn\": 4, \"kind\": \"debug\",   \"tokens\": 3100},\n    {\"turn\": 5, \"kind\": \"refactor\",\"tokens\": 4200},\n    {\"turn\": 6, \"kind\": \"feature\", \"tokens\": 5800},\n]\n\ntotal = sum(t[\"tokens\"] for t in session)\nprint(f\"turns: {len(session)} | total tokens: {total}\")\nprint(\"kinds in window:\", sorted({t[\"kind\"] for t in session}))\n",
+          "runnable": true
+        },
+        {
+          "type": "predict",
+          "id": "prompting/the-prompt-craft/s04-04-predict-the-output",
+          "xp": 3,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Count the keys in the dict: `context`, `goal`, `format`. That's three.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "The dict is missing `constraint`. The score is `3 / 4`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 70,
+          "concept": "prompt-scoring",
+          "code": "# a toy prompt-scorer: 1 point per part present in the prompt.\nparts = [\"context\", \"goal\", \"constraint\", \"format\"]\n\ndef score(prompt):\n    return sum(1 for p in parts if p in prompt)\n\nprompt = {\n    \"context\": \"fastapi route file\",\n    \"goal\":    \"add a delete handler\",\n    \"format\":  \"diff only\",\n}\n\nprint(f\"score: {score(prompt)} / 4\")\n",
+          "prompt": "Read the editor. The toy `score` function counts how many of the four\nprompt parts are present. The `prompt` dict on the right is missing one\nof them. What does this print?\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "score: 3 / 4",
+            "normalize": "collapse-trailing-newline"
+          }
+        },
+        {
+          "type": "fill",
+          "id": "prompting/the-prompt-craft/s05-05-fill-the-constraint",
+          "xp": 3,
+          "hint": [
+            {
+              "level": 1,
+              "body": "The four-part prompt names what you must use, what you must not do, and what edge cases matter. That part has a name.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "It's `constraints` (or `constraint`). The full set is context / goal / constraints / format.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 60,
+          "concept": "prompt-constraint-key",
+          "prompt": "AI is reading a prompt template represented as a dict. The four keys\nare `context`, `goal`, `___`, and `format`. Fill in the missing key —\nthe one that holds the limits and rules the model must respect.\n\nKey name: ___\n",
+          "code": "prompt_template = {\n    \"context\": \"...\",\n    \"goal\": \"...\",\n    \"___\": \"...\",\n    \"format\": \"...\",\n}\nprint(list(prompt_template.keys()))\n",
+          "blanks": [
+            {
+              "id": "key",
+              "accept": [
+                "constraints",
+                "constraint"
+              ],
+              "caseSensitive": true,
+              "normalize": "trim"
+            }
+          ]
+        },
+        {
+          "type": "fix",
+          "id": "prompting/the-prompt-craft/s06-06-fix-the-vague-prompt",
+          "xp": 4,
+          "hint": [
+            {
+              "level": 1,
+              "body": "The dict only has two keys. You need at least three. Add `constraints` and `format` with any string values.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Add `\"constraints\": \"use existing pool helper\"` and `\"format\": \"diff only\"` to the dict.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 90,
+          "concept": "prompt-rewrite",
+          "brokenCode": "parts = [\"context\", \"goal\", \"constraints\", \"format\"]\n\ndef validate(prompt):\n    hits = sum(1 for p in parts if p in prompt)\n    return \"ok\" if hits >= 3 else \"needs work\"\n\nprompt = {\n    \"context\": \"fastapi route file\",\n    \"goal\":    \"add a delete handler\",\n}\n\nprint(validate(prompt))\n",
+          "prompt": "The toy `validate` function checks that a prompt has at least three\nof the four parts before it gets sent to the model. The current\n`prompt` only has two parts and `validate` rejects it. Add the two\nmissing keys (`constraints` and `format`) so the script prints exactly\n`ok`.\n\nExpected output:\n```\nok\n```\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "ok",
+            "normalize": "collapse-trailing-newline"
+          },
+          "bugLines": [
+            9,
+            10
+          ],
+          "revealAfter": 5
+        },
+        {
+          "type": "fix",
+          "id": "prompting/the-prompt-craft/s07-07-fix-the-bloated-context",
+          "xp": 4,
+          "hint": [
+            {
+              "level": 1,
+              "body": "The total is 7600 tokens. Removing turns 1 and 2 (800 + 1100 = 1900) brings it to 5700 — under the limit.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Delete the first two dict entries from the `session` list. Keep turns 3 through 6.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 90,
+          "concept": "context-pruning",
+          "brokenCode": "session = [\n    {\"turn\": 1, \"tokens\": 800},\n    {\"turn\": 2, \"tokens\": 1100},\n    {\"turn\": 3, \"tokens\": 2400},\n    {\"turn\": 4, \"tokens\": 1300},\n    {\"turn\": 5, \"tokens\": 900},\n    {\"turn\": 6, \"tokens\": 1100},\n]\n\ndef context_health(turns):\n    total = sum(t[\"tokens\"] for t in turns)\n    return \"healthy\" if total <= 6000 else \"rotting\"\n\nprint(context_health(session))\n",
+          "prompt": "The toy `context_health` function rejects a session when the total\ntoken count is over 6000. The session log has six turns and is over\nthe limit. Drop the two oldest turns (turns 1 and 2) so the script\nprints exactly `healthy`.\n\nExpected output:\n```\nhealthy\n```\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "healthy",
+            "normalize": "collapse-trailing-newline"
+          },
+          "bugLines": [
+            2,
+            3
+          ],
+          "revealAfter": 5
+        },
+        {
+          "type": "write",
+          "id": "prompting/the-prompt-craft/s08-08-write-the-prompt",
+          "xp": 5,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Build the string with f-strings and `\\n` between the parts. Then `print` the return value.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Concatenate four f-strings (`f\"context: {context}\\n\"` ...) and return them. Then call `build_prompt(...)` with the four positional args and print the result.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 130,
+          "concept": "build-the-prompt",
+          "prompt": "Build a function `build_prompt(context, goal, constraints, format)`\nthat returns a single string with each part on its own line, prefixed\nby the part name and a colon. Then call it with these four arguments\nand print the result:\n\n- context: `\"fastapi route file\"`\n- goal: `\"add delete handler\"`\n- constraints: `\"use existing pool\"`\n- format: `\"diff only\"`\n\nExpected output:\n```\ncontext: fastapi route file\ngoal: add delete handler\nconstraints: use existing pool\nformat: diff only\n```\n",
+          "starter": "# define build_prompt below, then print the result\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "context: fastapi route file\ngoal: add delete handler\nconstraints: use existing pool\nformat: diff only\n",
+            "normalize": "collapse-trailing-newline"
+          },
+          "solution": "def build_prompt(context, goal, constraints, format):\n    return (\n        f\"context: {context}\\n\"\n        f\"goal: {goal}\\n\"\n        f\"constraints: {constraints}\\n\"\n        f\"format: {format}\"\n    )\n\nprint(build_prompt(\n    \"fastapi route file\",\n    \"add delete handler\",\n    \"use existing pool\",\n    \"diff only\",\n))\n",
+          "hiddenTests": []
+        },
+        {
+          "type": "checkpoint",
+          "id": "prompting/the-prompt-craft/s09-09-checkpoint",
+          "xp": 8,
+          "hint": [],
+          "personalize": false,
+          "phase": "check",
+          "estSeconds": 130,
+          "concept": "prompting-recap",
+          "prompt": "Last one. The starter has a tiny `audit` function that flags a prompt\nas `weak`, `ok`, or `strong` based on how many of the four parts it\nhas. The prompt dict currently scores `weak`. Add the two missing keys\nso it scores exactly `strong`.\n\nExpected output:\n```\nstrong\n```\n",
+          "starter": "parts = [\"context\", \"goal\", \"constraints\", \"format\"]\n\ndef audit(prompt):\n    hits = sum(1 for p in parts if p in prompt)\n    if hits == 4:\n        return \"strong\"\n    if hits >= 2:\n        return \"ok\"\n    return \"weak\"\n\nprompt = {\n    \"context\": \"fastapi route file\",\n    # add the missing keys here:\n}\n\nprint(audit(prompt))\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "strong",
+            "normalize": "collapse-trailing-newline"
+          },
+          "solution": "parts = [\"context\", \"goal\", \"constraints\", \"format\"]\n\ndef audit(prompt):\n    hits = sum(1 for p in parts if p in prompt)\n    if hits == 4:\n        return \"strong\"\n    if hits >= 2:\n        return \"ok\"\n    return \"weak\"\n\nprompt = {\n    \"context\": \"fastapi route file\",\n    \"goal\": \"add delete handler\",\n    \"constraints\": \"use existing pool\",\n    \"format\": \"diff only\",\n}\n\nprint(audit(prompt))\n",
+          "passThreshold": 0.66
+        }
+      ],
+      "xpTotal": 31
+    }
+  ],
+  "xpTotal": 31
+}

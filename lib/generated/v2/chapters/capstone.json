@@ -1,0 +1,345 @@
+{
+  "number": 22,
+  "slug": "capstone",
+  "title": "Capstone — a small CLI agent",
+  "blurb": "Wire it all together. Read a prompt, call an LLM, run tools, loop until done, log every turn. The agent is small; the patterns scale to whatever you build next.",
+  "lessons": [
+    {
+      "slug": "build-a-cli-agent",
+      "title": "Wire it all together — a CLI agent in 12 steps",
+      "estMinutes": 14,
+      "prerequisites": [],
+      "steps": [
+        {
+          "type": "read",
+          "id": "capstone/build-a-cli-agent/s01-01-intro",
+          "xp": 1,
+          "hint": [],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 120,
+          "concept": "agent-architecture",
+          "body": "# What you're about to build\n\nTwelve steps. By the end you will have a working agent — a small Python\nscript that takes a user prompt, talks to a (stubbed) LLM, runs tools\nwhen the LLM asks, loops until the LLM is satisfied, and logs every\nturn to disk. It uses every concept from the chapters before it.\n\nRun the editor on the right. That's the agent in five lines of plain\nEnglish. The rest of this lesson is just turning each line into Python\nthat actually runs.\n\n## The five things every agent does\n\n1. **Receive a prompt.** The user types something at the CLI. In\n   production, this could come from a Slack message, a webhook, or\n   another script.\n2. **Send it to an LLM along with the available tools.** This is the\n   call to `messages.create` (Anthropic) or `responses.create`\n   (OpenAI). You include a list of *tool definitions* — `read_file`,\n   `write_file`, `run_shell` — that the model can invoke.\n3. **Read the response.** The LLM returns either:\n   - **Text** (\"here's the answer\") — agent done.\n   - **A tool_use block** (\"I want you to run `read_file` with\n     `path=app/main.py`\") — agent runs the tool and continues.\n4. **Run the tool.** Find the named tool in your local tool registry,\n   call it with the arguments, get a result. Append the result to the\n   message history.\n5. **Loop.** Send the updated history back to the LLM. Repeat until the\n   LLM stops asking for tools.\n\nThat's it. *The whole pattern.* Production agents add safeguards\n(timeouts, max-turns, sandboxing, retries), but the core is this loop.\n\n## Why this is the capstone\n\nThree reasons every concept from earlier in the course matters here:\n\n- **Variables, types, dicts (ch01-03):** every message and tool call\n  is a dict. Reading one wrong is the bug.\n- **Functions (ch02):** the tools are just Python functions with a\n  schema attached.\n- **Conditionals (ch05):** the *\"is this stop_reason `tool_use` or\n  `end_turn`?\"* branch is the heart of the loop.\n- **Error handling (ch09):** the tool call might fail. The agent must\n  not crash; it must report the failure back to the LLM so the model\n  can recover.\n- **Files and IO (ch10):** every turn gets logged to a `.jsonl` file\n  for later replay and debugging.\n- **HTTP, LLM APIs, MCP, agent loops (ch12-16):** the wire format we'll\n  use is the one those chapters laid out.\n\n## What's stubbed and why\n\nThis lesson runs in Pyodide. There are no network calls. So:\n\n- The LLM call is stubbed by `fake_llm(messages, tools)`. It returns\n  hardcoded responses that pretend to be a real model.\n- The tools (`read_file`, `write_file`) are stubbed too — they read\n  from and write to a Python dict that simulates a tiny filesystem.\n\nThe *agent loop itself is real.* If you swap `fake_llm` for a real\nAnthropic client and the file stubs for `pathlib`, the script works\nunchanged. That's deliberate — the loop is the lesson.\n\n## The mental model that ties it together\n\nThe agent is just a `while` loop with three branches:\n\n```\nwhile True:\n    response = llm(messages, tools)\n    if response is text:\n        print(response); break\n    if response is tool_use:\n        result = run_tool(response.name, response.input)\n        messages.append(tool_use)\n        messages.append(result)\n        continue\n    if response is something else:\n        log_and_bail(); break\n```\n\nThree conditions. Two paths through the body. One break out. If you\ncan read this loop, you can read every agent framework ever written —\nLangChain, LlamaIndex, Mastra, Bedrock Agents, your own. They all wrap\nthis same loop in different fancy clothes.\n\n## What you'll have at the end\n\nA 60-line file that:\n- Takes a hardcoded prompt.\n- Calls a stubbed LLM with a stubbed tool registry.\n- Runs the loop, exits when done.\n- Logs every turn as JSON to a list (or in real life, to disk).\n- Prints the final answer.\n\nYou'll be able to extend it: add a new tool, swap in a real LLM, add\nretries, add a max-turns guard. That's exactly how production agents\nget built.",
+          "cta": "Got it",
+          "code": "# the agent we're building, in pseudocode-as-Python comments.\nAGENT = \"\"\"\n1. read the user's prompt\n2. send it to the LLM with the tool definitions\n3. if the LLM returns text → print and exit\n4. if the LLM returns a tool_use → run the tool, append result, goto 2\n5. log every turn to agent.jsonl\n\"\"\"\nprint(AGENT)\n",
+          "runnable": true
+        },
+        {
+          "type": "mc",
+          "id": "capstone/build-a-cli-agent/s02-02-which-piece-is-missing",
+          "xp": 2,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Scan the dict for the only `False`.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "It's `stop_condition`. An agent without one will spin or terminate prematurely. Usually checks `stop_reason == \"end_turn\"` or a max-turns guard.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 55,
+          "concept": "agent-architecture-pieces",
+          "prompt": "Cursor scaffolded an agent and asked you to review it. Three of the\nfour core pieces are in place; one is missing. Without that piece,\nthe agent runs forever or stops at the wrong moment. Which piece is\nmissing?\n",
+          "options": [
+            {
+              "id": "a",
+              "label": "The LLM call",
+              "explain": "It's listed as `True` in the dict — already in place."
+            },
+            {
+              "id": "b",
+              "label": "The tool registry",
+              "explain": "Also `True`. The agent knows which tools exist."
+            },
+            {
+              "id": "c",
+              "label": "The loop",
+              "explain": "Also `True`. The skeleton has a `while`."
+            },
+            {
+              "id": "d",
+              "label": "The stop condition"
+            }
+          ],
+          "answerIds": [
+            "d"
+          ],
+          "shuffle": false,
+          "code": "# the four core ingredients of a working agent.\ningredients = {\n    \"llm_call\": True,\n    \"tool_registry\": True,\n    \"loop\": True,\n    \"stop_condition\": False,   # missing\n}\n\nfor k, v in ingredients.items():\n    print(f\"{k}: {'ok' if v else 'missing'}\")\n",
+          "runnable": true
+        },
+        {
+          "type": "read",
+          "id": "capstone/build-a-cli-agent/s03-03-the-tool-loop",
+          "xp": 1,
+          "hint": [],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 130,
+          "concept": "agent-loop-mechanics",
+          "body": "# The loop, end to end\n\nRun the editor on the right. The output should be exactly one line:\n\n```\nyour todos: write tests\n```\n\nThat single line came out of *two* calls to the (fake) LLM and *one*\ntool execution. Look at the loop body and trace what happened:\n\n- **Turn 0** — `messages` has the user's question. `fake_llm` returns\n  a `tool_use` block asking for `read_file(\"todo.txt\")`. We run the\n  tool, get `\"write tests\"`, and append two messages: the assistant's\n  tool_use block, and a tool_result message containing the file's\n  contents.\n- **Turn 1** — `messages` now has three entries. `fake_llm` sees the\n  tool result and returns text. We print it and break.\n\nThat's *the entire pattern.* Now let's slow it down.\n\n## The three things you append on every tool round-trip\n\nThis is the part everyone gets wrong the first time. When the LLM\nreturns a `tool_use`, your message history grows by *exactly two\nmessages*:\n\n1. **The assistant message** containing the `tool_use` block. (This is\n   the LLM saying *\"I want to call X.\"*)\n2. **A user message** with role `\"user\"` and a `tool_result` content\n   block. (This is *your code* saying *\"here's what X returned.\"*)\n\nIf you forget to append the assistant message, the next LLM call won't\nknow what tool it asked for, and it'll loop. If you forget to append\nthe tool_result, the LLM will think the tool was never run and ask\nagain. Both are very common bugs.\n\n## Why the tool_result has role `\"user\"`\n\nThis trips up everyone. The tool result is *not* an assistant message\n— it's wrapped in a *user* message. The mental model is: *the user is\nthe entity providing inputs to the model. Tool results are inputs.\nTherefore tool_results live in user-role messages.*\n\nAnthropic and OpenAI agree on this. Their formats differ in details,\nbut both wrap tool outputs in the role you'd think of as \"input.\"\n\n## The stop reasons you'll branch on\n\nThree of the four stop reasons from chapter 20 matter here:\n\n- `tool_use` → run the tool, append, loop.\n- `end_turn` → take the final text, print, exit.\n- `max_tokens` → log it, exit, alert. *Don't* keep looping; the output\n  is truncated.\n\nAnything else (`pause_turn`, `refusal`, `error`) is a programming\nchoice. Pragmatic default: log and exit. Production agents recover\nselectively.\n\n## The max-turns guard\n\nLook at the `for turn in range(3)` line. That `3` is a *guardrail.* In\nproduction it would be 10 or 20. Without it, a misbehaving model could\nkeep returning `tool_use` forever and your agent would chew through\nyour API budget in minutes. Always cap turns. Always.\n\n## The shape of the message history\n\nAfter two LLM calls and one tool call, `messages` looks like this:\n\n```py\n[\n  {\"role\": \"user\",      \"content\": \"what's on my todo list?\"},\n  {\"role\": \"assistant\", \"content\": [{\"type\": \"tool_use\", ...}]},\n  {\"role\": \"user\",      \"content\": [{\"type\": \"tool_result\", ...}]},\n]\n```\n\nThree messages. The whole conversation is a list of dicts. You can\nserialize this list to JSON, read it back, replay it offline. That's\nwhy agent debugging *is* trace reading — the trace is just the message\nhistory with timestamps.\n\n## Where AI specifically gets this wrong\n\nThe single most common bug in AI-generated agent code: forgetting to\nappend the assistant's `tool_use` block before sending the next call.\nCursor sometimes writes:\n\n```py\nresult = run_tool(...)\nmessages.append({\"role\": \"user\", \"content\": [tool_result(...)]})\n# bug: missed the assistant's tool_use message\n```\n\nThe model on the next turn has no memory of asking for the tool. It\nasks again. You get a tool loop. The fix is *one extra append.* Watch\nfor this pattern when you read agent code.",
+          "cta": "Got it",
+          "code": "# one full tool-use round-trip with hardcoded responses.\n\ndef fake_llm(messages):\n    # the model wants to call read_file once, then answer.\n    if len(messages) == 1:\n        return {\n            \"stop_reason\": \"tool_use\",\n            \"content\": [{\n                \"type\": \"tool_use\", \"id\": \"tu_1\",\n                \"name\": \"read_file\",\n                \"input\": {\"path\": \"todo.txt\"},\n            }],\n        }\n    return {\n        \"stop_reason\": \"end_turn\",\n        \"content\": [{\"type\": \"text\", \"text\": \"your todos: write tests\"}],\n    }\n\ndef read_file(path):\n    return \"write tests\"\n\nmessages = [{\"role\": \"user\", \"content\": \"what's on my todo list?\"}]\n\nfor turn in range(3):\n    response = fake_llm(messages)\n    if response[\"stop_reason\"] == \"end_turn\":\n        print(response[\"content\"][0][\"text\"])\n        break\n    block = response[\"content\"][0]\n    result = read_file(block[\"input\"][\"path\"])\n    messages.append({\"role\": \"assistant\", \"content\": response[\"content\"]})\n    messages.append({\"role\": \"user\", \"content\": [\n        {\"type\": \"tool_result\", \"tool_use_id\": block[\"id\"], \"content\": result},\n    ]})\n",
+          "runnable": true
+        },
+        {
+          "type": "predict",
+          "id": "capstone/build-a-cli-agent/s04-04-predict-the-final-answer",
+          "xp": 3,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Trace the two turns. Turn 1: tool_use, run tool, append. Turn 2: end_turn, print the text.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "On turn 2 the loop hits the `end_turn` branch and prints `r[\"content\"][0][\"text\"]`, which is `boston: 52F and clear`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 80,
+          "concept": "agent-loop-output",
+          "code": "def fake_llm(messages):\n    if len(messages) == 1:\n        return {\n            \"stop_reason\": \"tool_use\",\n            \"content\": [{\n                \"type\": \"tool_use\", \"id\": \"tu_1\",\n                \"name\": \"get_weather\",\n                \"input\": {\"city\": \"boston\"},\n            }],\n        }\n    return {\n        \"stop_reason\": \"end_turn\",\n        \"content\": [{\"type\": \"text\", \"text\": \"boston: 52F and clear\"}],\n    }\n\ndef get_weather(city):\n    return f\"{city}: 52F and clear\"\n\nmessages = [{\"role\": \"user\", \"content\": \"weather in boston?\"}]\n\nfor _ in range(3):\n    r = fake_llm(messages)\n    if r[\"stop_reason\"] == \"end_turn\":\n        print(r[\"content\"][0][\"text\"])\n        break\n    blk = r[\"content\"][0]\n    result = get_weather(blk[\"input\"][\"city\"])\n    messages.append({\"role\": \"assistant\", \"content\": r[\"content\"]})\n    messages.append({\"role\": \"user\", \"content\": [\n        {\"type\": \"tool_result\", \"tool_use_id\": blk[\"id\"], \"content\": result},\n    ]})\n",
+          "prompt": "Read the agent loop on the right. The fake LLM returns a `tool_use` on\nthe first turn and an `end_turn` on the second. What gets printed?\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "boston: 52F and clear",
+            "normalize": "collapse-trailing-newline"
+          }
+        },
+        {
+          "type": "fill",
+          "id": "capstone/build-a-cli-agent/s05-05-fill-the-stop-check",
+          "xp": 3,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Two stop reasons matter inside the loop: one for tool calls, one for the final answer. You want the one that means 'finished.'",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "It's `end_turn`. The check becomes `response[\"stop_reason\"] == \"end_turn\"`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 60,
+          "concept": "end-turn-stop-reason",
+          "prompt": "Cursor wrote a loop body but the stop-condition check is missing the\nstring it should compare against. Fill in the value — the stop\nreason that means \"the LLM is done; show the answer.\"\n\nStop reason value (string, no quotes — just the word): ___\n",
+          "code": "def fake_llm():\n    return {\"stop_reason\": \"end_turn\",\n            \"content\": [{\"type\": \"text\", \"text\": \"done\"}]}\n\ndef main():\n    response = fake_llm()\n    if response[\"stop_reason\"] == \"___\":\n        print(response[\"content\"][0][\"text\"])\n\nmain()\n",
+          "blanks": [
+            {
+              "id": "stop",
+              "accept": [
+                "end_turn"
+              ],
+              "caseSensitive": true,
+              "normalize": "trim"
+            }
+          ]
+        },
+        {
+          "type": "fix",
+          "id": "capstone/build-a-cli-agent/s06-06-fix-the-tool-dispatch",
+          "xp": 4,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Check whether `name` is in the registry before calling it. Return `\"unknown tool\"` when it isn't.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Replace the body with `if name not in registry: return \"unknown tool\"` and then `return registry[name](args)`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 90,
+          "concept": "tool-registry-dispatch",
+          "brokenCode": "registry = {\n    \"read_file\": lambda args: f\"contents of {args['path']}\",\n    \"write_file\": lambda args: \"ok\",\n}\n\ndef dispatch(name, args):\n    return registry[name](args)\n\nprint(dispatch(\"send_email\", {\"to\": \"x\"}))\n",
+          "prompt": "Cursor wrote a tool dispatcher that looks up a tool by name and calls\nit. The bug is on line 6 — when the tool isn't in the registry, the\ndispatcher crashes with a `KeyError`. Fix it so an unknown tool name\nreturns the string `\"unknown tool\"` instead.\n\nExpected output:\n```\nunknown tool\n```\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "unknown tool",
+            "normalize": "collapse-trailing-newline"
+          },
+          "bugLines": [
+            7
+          ],
+          "revealAfter": 4
+        },
+        {
+          "type": "fix",
+          "id": "capstone/build-a-cli-agent/s07-07-fix-the-message-append",
+          "xp": 4,
+          "hint": [
+            {
+              "level": 1,
+              "body": "On a tool round-trip, you append two messages: the assistant's tool_use AND the user's tool_result. The first one is missing.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Before the existing append, add: `messages.append({\"role\": \"assistant\", \"content\": response[\"content\"]})`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 100,
+          "concept": "message-append-pair",
+          "brokenCode": "response = {\n    \"stop_reason\": \"tool_use\",\n    \"content\": [{\n        \"type\": \"tool_use\", \"id\": \"tu_1\",\n        \"name\": \"ping\", \"input\": {},\n    }],\n}\nblock = response[\"content\"][0]\ntool_result = \"pong\"\n\nmessages = [{\"role\": \"user\", \"content\": \"ping\"}]\n\n# missing: append the assistant's tool_use message here\nmessages.append({\"role\": \"user\", \"content\": [\n    {\"type\": \"tool_result\", \"tool_use_id\": block[\"id\"], \"content\": tool_result},\n]})\n\nprint(len(messages))\n",
+          "prompt": "Claude wrote a tool round-trip that drops the assistant's tool_use\nmessage before sending the next request. The script counts how many\nmessages should be in the history after one tool call (it should be 3:\nuser prompt, assistant tool_use, user tool_result). Right now it's 2.\nAdd the missing append on line 14 so the count is exactly 3.\n\nExpected output:\n```\n3\n```\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "3",
+            "normalize": "collapse-trailing-newline"
+          },
+          "bugLines": [
+            13
+          ],
+          "revealAfter": 5
+        },
+        {
+          "type": "read",
+          "id": "capstone/build-a-cli-agent/s08-08-the-logging-pattern",
+          "xp": 1,
+          "hint": [],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 110,
+          "concept": "jsonl-logging",
+          "body": "# Log everything, in `.jsonl`, every turn\n\nWhen the agent fails in production at 2am — and it will — the logs are\nthe only evidence you have. There's no way to reproduce the run; the\nLLM's output is non-deterministic. The trace is the truth.\n\nThe format that matters: **JSON Lines**, file extension `.jsonl`. One\nJSON object per line. No outer array, no commas, no surrounding `[ ]`.\nThat's the whole format.\n\n```\n{\"turn\": 1, \"kind\": \"user_prompt\", \"payload\": {...}}\n{\"turn\": 1, \"kind\": \"tool_use\", \"payload\": {...}}\n{\"turn\": 1, \"kind\": \"tool_result\", \"payload\": {...}}\n{\"turn\": 2, \"kind\": \"final_text\", \"payload\": {...}}\n```\n\nRun the editor on the right. The output is four JSONL lines — the\nexact shape you'd find in a production `agent.jsonl` file. Each line\nparses with `json.loads(line)` independently. You can `tail -f` it,\n`grep` it, pipe it through `jq`, replay it offline. JSON arrays can't\ndo any of that — you'd have to load the whole file before you could\nparse the first object.\n\n## What to log per turn\n\nFive kinds of entries cover almost every case:\n\n1. **`user_prompt`** — the original input.\n2. **`llm_call`** — the request you sent (messages + tools).\n   Optional, but priceless when debugging.\n3. **`tool_use`** — what the LLM asked for.\n4. **`tool_result`** — what the tool actually returned (truncate\n   if huge).\n5. **`final_text`** — the LLM's last answer.\n\nPlus one universal field on every line: a `turn` number. Lets you\ngroup log entries by turn when you read them later.\n\n## What NOT to log\n\nThis is the part that becomes a problem if you skip it:\n\n- **Secrets.** API keys, passwords, OAuth tokens. Filter them\n  *before* you write to disk. Logs leak.\n- **Personal data the user didn't intend to share.** Email contents,\n  uploaded files, chat history beyond what the user explicitly sent.\n  Production logs end up in incident replays, on-call screens, and\n  vendor dashboards. Treat them as semi-public.\n- **The model's full internal reasoning.** With models that emit\n  thinking tokens, the thoughts can be enormous. Log a hash or a\n  truncated version unless you have a real reason to keep the full\n  trace.\n\n## The logging pattern in 4 lines\n\nThe whole thing is just:\n\n```py\nimport json\ndef log_turn(turn, kind, payload):\n    with open(\"agent.jsonl\", \"a\") as f:\n        f.write(json.dumps({\"turn\": turn, \"kind\": kind, \"payload\": payload}) + \"\\n\")\n```\n\nAppend mode (`\"a\"`). One `json.dumps` per call. Trailing newline. Done.\nThat's the production-grade logger. You'll see this exact pattern in\nreal agent codebases, dressed up with timestamps and process IDs but\notherwise identical.\n\nIn Pyodide we can't write to disk, so we'll use a list-of-strings\nstand-in (`log_lines.append(json.dumps(...))`). Same data, different\nsink. Swap the list for `open(\"agent.jsonl\", \"a\")` at home and the\nagent writes real logs.\n\n## Where AI specifically gets logging wrong\n\nTwo patterns to watch for in agent code Cursor writes:\n\n1. **`json.dump` instead of `json.dumps` plus newline.** `json.dump`\n   writes directly to a file handle without a newline, so multiple\n   calls produce *one giant string* instead of one line per turn. The\n   file looks fine in a text editor and is unparseable to every\n   downstream tool.\n2. **Binary serializers for log persistence.** Cursor sometimes\n   reaches for binary serialization formats for \"structured\" data.\n   Stick with JSONL. It's human-readable, language-agnostic, and safe\n   to load — three things that matter when you're tailing logs at 2am.",
+          "cta": "Got it",
+          "code": "import json\n\n# collected log lines (in real life, written to agent.jsonl)\nlog_lines = []\n\ndef log_turn(turn_num, kind, payload):\n    entry = {\"turn\": turn_num, \"kind\": kind, \"payload\": payload}\n    log_lines.append(json.dumps(entry))\n\nlog_turn(1, \"user_prompt\", {\"text\": \"what's on my todo list?\"})\nlog_turn(1, \"tool_use\", {\"name\": \"read_file\", \"input\": {\"path\": \"todo.txt\"}})\nlog_turn(1, \"tool_result\", {\"text\": \"write tests\"})\nlog_turn(2, \"final_text\", {\"text\": \"your todos: write tests\"})\n\nfor line in log_lines:\n    print(line)\n",
+          "runnable": true
+        },
+        {
+          "type": "write",
+          "id": "capstone/build-a-cli-agent/s09-09-write-the-tool-runner",
+          "xp": 5,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Two-line function. Guard for unknown name first, then call.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "`if name not in tools: return \"unknown tool\"` then `return tools[name](args)`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 150,
+          "concept": "build-tool-registry",
+          "prompt": "Build the tool runner. The starter has a `tools` dict mapping tool\nnames to functions. Write a function `run_tool(name, args)` that:\n\n- Returns `\"unknown tool\"` if `name` is not in `tools`.\n- Otherwise calls `tools[name](args)` and returns the result.\n\nThen call `run_tool(\"read_file\", {\"path\": \"todo.txt\"})` and print\nthe result.\n\nExpected output:\n```\ncontents of todo.txt\n```\n",
+          "starter": "tools = {\n    \"read_file\": lambda args: f\"contents of {args['path']}\",\n    \"write_file\": lambda args: \"wrote file\",\n}\n\n# define run_tool below\n\nprint(run_tool(\"read_file\", {\"path\": \"todo.txt\"}))\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "contents of todo.txt",
+            "normalize": "collapse-trailing-newline"
+          },
+          "solution": "tools = {\n    \"read_file\": lambda args: f\"contents of {args['path']}\",\n    \"write_file\": lambda args: \"wrote file\",\n}\n\ndef run_tool(name, args):\n    if name not in tools:\n        return \"unknown tool\"\n    return tools[name](args)\n\nprint(run_tool(\"read_file\", {\"path\": \"todo.txt\"}))\n",
+          "hiddenTests": []
+        },
+        {
+          "type": "fix",
+          "id": "capstone/build-a-cli-agent/s10-10-fix-the-loop-exit",
+          "xp": 4,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Replace `while True` with a `while turn < 3` so the loop bails after three turns regardless of stop_reason.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Change line 14 to `while turn < 3:`. The print at the bottom will report `bailed after 3 turns`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 100,
+          "concept": "max-turns-guard",
+          "brokenCode": "def fake_llm():\n    # always asks for another tool — simulates a runaway model\n    return {\n        \"stop_reason\": \"tool_use\",\n        \"content\": [{\"type\": \"tool_use\", \"id\": \"tu\",\n                     \"name\": \"noop\", \"input\": {}}],\n    }\n\ndef run_tool(name, args):\n    return \"ok\"\n\nturn = 0\nmessages = []\nwhile True:\n    response = fake_llm()\n    if response[\"stop_reason\"] == \"end_turn\":\n        print(response[\"content\"][0][\"text\"])\n        break\n    block = response[\"content\"][0]\n    run_tool(block[\"name\"], block[\"input\"])\n    turn += 1\n\nprint(f\"bailed after {turn} turns\")\n",
+          "prompt": "Cursor wrote an agent loop without a max-turns guard. The fake LLM in\nthis snippet always returns `tool_use` (it never produces an\n`end_turn`), so the loop would run forever in real life. Convert the\n`while True` on line 14 into a bounded loop that stops after exactly\n3 turns and prints the turn count.\n\nExpected output:\n```\nbailed after 3 turns\n```\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "bailed after 3 turns",
+            "normalize": "collapse-trailing-newline"
+          },
+          "bugLines": [
+            14
+          ],
+          "revealAfter": 5
+        },
+        {
+          "type": "write",
+          "id": "capstone/build-a-cli-agent/s11-11-write-the-agent",
+          "xp": 7,
+          "hint": [
+            {
+              "level": 1,
+              "body": "The loop is `for _ in range(MAX_TURNS):`. Inside: call `fake_llm`, branch on stop_reason. On `end_turn`, print and break. On `tool_use`, run the tool and append both messages.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Don't forget BOTH appends on the tool path. Assistant message is `{\"role\": \"assistant\", \"content\": response[\"content\"]}`. Tool result is wrapped in a user-role message: `{\"role\": \"user\", \"content\": [{\"type\": \"tool_result\", \"tool_use_id\": block[\"id\"], \"content\": result}]}`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 200,
+          "concept": "full-agent-loop",
+          "prompt": "Build the full agent loop. The starter has:\n\n- `fake_llm(messages)` — returns hardcoded responses based on history\n  length (1 message → tool_use, 3 messages → end_turn).\n- `run_tool(name, args)` — handles tool dispatch.\n- `MAX_TURNS = 5` — the loop guardrail.\n- `messages = [...]` — initial user prompt.\n\nWrite the agent loop that:\n\n1. Runs at most `MAX_TURNS` iterations.\n2. Calls `fake_llm(messages)`.\n3. If `stop_reason == \"end_turn\"`, prints the text and breaks.\n4. If `stop_reason == \"tool_use\"`, runs the tool, then appends\n   **two** messages — the assistant's tool_use, and a user message\n   wrapping the tool_result.\n\nExpected output:\n```\ndone. todos: write tests\n```\n",
+          "starter": "def fake_llm(messages):\n    if len(messages) == 1:\n        return {\n            \"stop_reason\": \"tool_use\",\n            \"content\": [{\n                \"type\": \"tool_use\", \"id\": \"tu_1\",\n                \"name\": \"read_file\",\n                \"input\": {\"path\": \"todo.txt\"},\n            }],\n        }\n    return {\n        \"stop_reason\": \"end_turn\",\n        \"content\": [{\"type\": \"text\", \"text\": \"done. todos: write tests\"}],\n    }\n\ndef run_tool(name, args):\n    if name == \"read_file\":\n        return \"write tests\"\n    return \"unknown tool\"\n\nMAX_TURNS = 5\nmessages = [{\"role\": \"user\", \"content\": \"what's on my todo?\"}]\n\n# write the agent loop below\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "done. todos: write tests",
+            "normalize": "collapse-trailing-newline"
+          },
+          "solution": "def fake_llm(messages):\n    if len(messages) == 1:\n        return {\n            \"stop_reason\": \"tool_use\",\n            \"content\": [{\n                \"type\": \"tool_use\", \"id\": \"tu_1\",\n                \"name\": \"read_file\",\n                \"input\": {\"path\": \"todo.txt\"},\n            }],\n        }\n    return {\n        \"stop_reason\": \"end_turn\",\n        \"content\": [{\"type\": \"text\", \"text\": \"done. todos: write tests\"}],\n    }\n\ndef run_tool(name, args):\n    if name == \"read_file\":\n        return \"write tests\"\n    return \"unknown tool\"\n\nMAX_TURNS = 5\nmessages = [{\"role\": \"user\", \"content\": \"what's on my todo?\"}]\n\nfor _ in range(MAX_TURNS):\n    response = fake_llm(messages)\n    if response[\"stop_reason\"] == \"end_turn\":\n        print(response[\"content\"][0][\"text\"])\n        break\n    block = response[\"content\"][0]\n    result = run_tool(block[\"name\"], block[\"input\"])\n    messages.append({\"role\": \"assistant\", \"content\": response[\"content\"]})\n    messages.append({\"role\": \"user\", \"content\": [\n        {\"type\": \"tool_result\",\n         \"tool_use_id\": block[\"id\"],\n         \"content\": result},\n    ]})\n",
+          "hiddenTests": []
+        },
+        {
+          "type": "checkpoint",
+          "id": "capstone/build-a-cli-agent/s12-12-checkpoint",
+          "xp": 10,
+          "hint": [],
+          "personalize": false,
+          "phase": "check",
+          "estSeconds": 180,
+          "concept": "capstone-recap",
+          "prompt": "Last one. The starter has a complete agent — fake LLM, tool registry,\nthe loop, and a `log_lines` list for the trace. The loop is wired to\nexit after the LLM returns `end_turn`. Right now the script prints\nthe final answer but doesn't log a single thing — `log_lines` ends\nempty.\n\nAdd **two** `log_lines.append(...)` calls inside the loop so that:\n\n1. After every LLM response, you append a JSON string of\n   `{\"turn\": turn, \"stop_reason\": response[\"stop_reason\"]}`.\n2. After every successful tool call, you append a JSON string of\n   `{\"turn\": turn, \"tool\": block[\"name\"], \"result\": result}`.\n\nThen the script prints the count of log entries.\n\nExpected output:\n```\ndone. todos: write tests\nlog entries: 3\n```\n",
+          "starter": "import json\n\ndef fake_llm(messages):\n    if len(messages) == 1:\n        return {\n            \"stop_reason\": \"tool_use\",\n            \"content\": [{\n                \"type\": \"tool_use\", \"id\": \"tu_1\",\n                \"name\": \"read_file\",\n                \"input\": {\"path\": \"todo.txt\"},\n            }],\n        }\n    return {\n        \"stop_reason\": \"end_turn\",\n        \"content\": [{\"type\": \"text\", \"text\": \"done. todos: write tests\"}],\n    }\n\ndef run_tool(name, args):\n    if name == \"read_file\":\n        return \"write tests\"\n    return \"unknown tool\"\n\nMAX_TURNS = 5\nmessages = [{\"role\": \"user\", \"content\": \"what's on my todo?\"}]\nlog_lines = []\n\nfor turn in range(MAX_TURNS):\n    response = fake_llm(messages)\n    # add log_lines.append for the response here\n\n    if response[\"stop_reason\"] == \"end_turn\":\n        print(response[\"content\"][0][\"text\"])\n        break\n    block = response[\"content\"][0]\n    result = run_tool(block[\"name\"], block[\"input\"])\n    # add log_lines.append for the tool call here\n\n    messages.append({\"role\": \"assistant\", \"content\": response[\"content\"]})\n    messages.append({\"role\": \"user\", \"content\": [\n        {\"type\": \"tool_result\",\n         \"tool_use_id\": block[\"id\"],\n         \"content\": result},\n    ]})\n\nprint(f\"log entries: {len(log_lines)}\")\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "done. todos: write tests\nlog entries: 3\n",
+            "normalize": "collapse-trailing-newline"
+          },
+          "solution": "import json\n\ndef fake_llm(messages):\n    if len(messages) == 1:\n        return {\n            \"stop_reason\": \"tool_use\",\n            \"content\": [{\n                \"type\": \"tool_use\", \"id\": \"tu_1\",\n                \"name\": \"read_file\",\n                \"input\": {\"path\": \"todo.txt\"},\n            }],\n        }\n    return {\n        \"stop_reason\": \"end_turn\",\n        \"content\": [{\"type\": \"text\", \"text\": \"done. todos: write tests\"}],\n    }\n\ndef run_tool(name, args):\n    if name == \"read_file\":\n        return \"write tests\"\n    return \"unknown tool\"\n\nMAX_TURNS = 5\nmessages = [{\"role\": \"user\", \"content\": \"what's on my todo?\"}]\nlog_lines = []\n\nfor turn in range(MAX_TURNS):\n    response = fake_llm(messages)\n    log_lines.append(json.dumps(\n        {\"turn\": turn, \"stop_reason\": response[\"stop_reason\"]}\n    ))\n\n    if response[\"stop_reason\"] == \"end_turn\":\n        print(response[\"content\"][0][\"text\"])\n        break\n    block = response[\"content\"][0]\n    result = run_tool(block[\"name\"], block[\"input\"])\n    log_lines.append(json.dumps(\n        {\"turn\": turn, \"tool\": block[\"name\"], \"result\": result}\n    ))\n\n    messages.append({\"role\": \"assistant\", \"content\": response[\"content\"]})\n    messages.append({\"role\": \"user\", \"content\": [\n        {\"type\": \"tool_result\",\n         \"tool_use_id\": block[\"id\"],\n         \"content\": result},\n    ]})\n\nprint(f\"log entries: {len(log_lines)}\")\n",
+          "passThreshold": 0.66
+        }
+      ],
+      "xpTotal": 45
+    }
+  ],
+  "xpTotal": 45
+}

@@ -220,7 +220,532 @@
         }
       ],
       "xpTotal": 26
+    },
+    {
+      "slug": "types-on-sight",
+      "title": "The four types you'll see daily",
+      "estMinutes": 8,
+      "prerequisites": [
+        "01-naming-things"
+      ],
+      "steps": [
+        {
+          "type": "read",
+          "id": "variables/types-on-sight/s01-01-intro",
+          "xp": 1,
+          "hint": [],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 75,
+          "concept": "four-core-types",
+          "body": "# Four shapes, ninety percent of the code\n\nOpen any file Cursor wrote you this week. Scroll. Count what kinds of\nthings the variables hold. You'll find the same four shapes over and\nover: a number, a piece of text, a yes-or-no flag, and an absence. That's\nit. The whole language has more types than this — lists, dicts, classes,\ngenerators — but at the leaf level, where values actually sit, AI ships\nthese four constantly.\n\nIf you can name the type of every variable on a screen of Python in under\nten seconds, you can read AI code at full speed. If you can't, every\nfunction call becomes a question mark. So we're going to drill it.\n\n## The four\n\n```py\ncount = 7          # int\nname = \"maya\"      # str\nis_ready = True    # bool\nresult = None      # NoneType\n```\n\n- **int** — a whole number. No quotes, no decimal point. `7`, `-3`, `0`.\n- **str** — text. Always wrapped in quotes, single or double, doesn't\n  matter. `\"maya\"`, `'7'` (yes, that string is text, not the number).\n- **bool** — a flag. Exactly two values: `True` and `False`. Capital T,\n  capital F. Lowercase `true` is a `NameError`.\n- **NoneType** — the absence of a value. Spelled `None`. Used when a\n  function didn't find what you asked for, or hasn't run yet.\n\n## The mental model that actually works\n\nForget memorizing. Look at the right side of the `=` and ask one\nquestion: *what shape did Python just see?*\n\n- Quotes around it? **str.**\n- Just digits, no quotes, no dot? **int.**\n- The word `True` or `False` standing alone? **bool.**\n- The word `None` standing alone? **NoneType.**\n\nThat's the whole game at the leaf level. Every other variable in the\ncodebase is built out of these (a list of strs, a dict mapping str to\nint, a function returning bool-or-None).\n\n## Where AI gets sloppy with types\n\nTwo patterns show up in AI-generated Python over and over:\n\n1. **The string-vs-number mixup.** You ask for a counter and AI hands\n   back `count = \"0\"` — a *string* zero, not a *number* zero. Looks\n   identical, behaves nothing alike. The next chapter will show you the\n   exact crash this causes.\n2. **The None-vs-False confusion.** AI writes `if user:` when it should\n   have written `if user is not None:`. They look the same in a happy\n   path and diverge the moment a user object is falsy-but-present (an\n   empty list, a zero score). We'll fix one of these later in the lesson.\n\n## The `type()` builtin\n\nWhen you can't tell at a glance — and sometimes you can't, because the\nvalue comes from a function call — Python tells you directly:\n\n```py\nprint(type(count))    # <class 'int'>\nprint(type(name))     # <class 'str'>\nprint(type(is_ready)) # <class 'bool'>\nprint(type(result))   # <class 'NoneType'>\n```\n\nHit **Run** on the editor. Watch the four lines come out. That's your\nground truth: when in doubt, `print(type(thing))` and Python answers.",
+          "cta": "Got it",
+          "code": "count = 7\nname = \"maya\"\nis_ready = True\nresult = None\n\nprint(type(count))\nprint(type(name))\nprint(type(is_ready))\nprint(type(result))\n",
+          "runnable": true
+        },
+        {
+          "type": "mc",
+          "id": "variables/types-on-sight/s02-02-spot-the-type",
+          "xp": 2,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Look for the quotes. Strings always have them.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Run the code if you want — `print(type(a))` will print `<class 'str'>`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 40,
+          "concept": "type-identification",
+          "prompt": "Cursor wrote four lines. They look similar. Which variable is a **string**\n(the type Python calls `str`)?\n",
+          "options": [
+            {
+              "id": "a",
+              "label": "`a`"
+            },
+            {
+              "id": "b",
+              "label": "`b`",
+              "explain": "No quotes, just digits — that's an `int`."
+            },
+            {
+              "id": "c",
+              "label": "`c`",
+              "explain": "`True` is a `bool`, not a string. Strings need quotes."
+            },
+            {
+              "id": "d",
+              "label": "`d`",
+              "explain": "`None` is the special `NoneType` value, not a string."
+            }
+          ],
+          "answerIds": [
+            "a"
+          ],
+          "shuffle": false,
+          "code": "a = \"42\"\nb = 42\nc = True\nd = None\nprint(type(a), type(b), type(c), type(d))\n",
+          "runnable": true
+        },
+        {
+          "type": "read",
+          "id": "variables/types-on-sight/s03-03-string-plus-int",
+          "xp": 1,
+          "hint": [],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 105,
+          "concept": "type-coercion-and-traps",
+          "body": "# The single most common type bug AI writes you\n\nRun the code on the right. Read the error. We'll come back to it.\n\n```\nTypeError: can only concatenate str (not \"int\") to str\n```\n\nThis is the type bug you'll see most often in AI-generated Python, and\nthe reason is structural — Cursor pulls a value from a form, an env var,\na JSON field, or a CLI argument, and it forgets that all of those things\narrive as **strings**, not numbers. Then the next line tries to do math\non the string, and Python refuses.\n\n## What just happened\n\nLine 1: `count = \"0\"`. The `\"0\"` has quotes. It's a string. The\n*character* zero, not the *number* zero.\n\nLine 2: `count + 1`. Python sees a string on the left and a number on the\nright and stops. It will not silently guess what you meant. JavaScript\nwould. PHP would. Python won't. *That's a feature.*\n\n## The mental model\n\nPython types do not auto-convert across the divide between text and\nnumbers. A few examples of what Python will and won't do:\n\n```py\n\"7\" + \"3\"       # works → \"73\" — string concatenation\n7 + 3           # works → 10\n\"7\" + 3         # TypeError — won't mix\n\"7\" * 3         # works → \"777\" — string repetition (yes, really)\nTrue + 1        # works → 2 — bool secretly counts as int (don't lean on it)\nNone + 1        # TypeError — None has no math at all\n```\n\nIf you remember nothing else: **the boundary between `str` and `int` is a\nwall**, and AI keeps walking into it.\n\n## How to fix it\n\nTwo functions, both built into Python, both used constantly:\n\n- `int(\"7\")` → the integer `7`.\n- `str(7)` → the string `\"7\"`.\n\nPick the side you want to be on, cast the other one to match. The fixed\nversion of the broken code is:\n\n```py\ncount = \"0\"\ncount = int(count) + 1\nprint(count)\n```\n\nNow both operands are ints. Math works. The script prints `1`.\n\n## Where this hits real AI code\n\nThree places, ranked by how often you'll see them:\n\n1. **Reading from `input()` or CLI args.** Both return `str`. Cursor\n   sometimes remembers to cast, sometimes forgets. When it forgets, your\n   program crashes on the first arithmetic line.\n2. **Reading from `os.environ`.** Same deal — env vars are always\n   strings, even when they look like numbers. `os.environ[\"PORT\"]` is\n   `\"8080\"`, not `8080`.\n3. **F-strings hide it.** `f\"count: {count}\"` works whether `count` is a\n   string or an int — Python casts to str automatically inside the\n   braces. So a buggy variable can travel through ten print statements\n   undetected, and then crash on the first line that does math with it.\n\n## The None side of the same coin\n\n`None` is its own trap. AI writes:\n\n```py\nscore = lookup_user(\"maya\")    # might return None\ntotal = score + 10             # crashes if score is None\n```\n\nThe first line *might* return a real score, but if the user isn't found,\nit returns `None`. The second line then tries `None + 10` and crashes\nwith the same family of `TypeError`. We'll fix one of these in step 6.\n\n## What to take into the rest of the lesson\n\nWhen you read AI code and see a variable being used in two ways — once\nas text, once as a number — pause. That's the spot where the bug lives.\nTrace back to the assignment and ask, *what type did this start as?*\nCast at the boundary, not in the middle.",
+          "cta": "Got it",
+          "code": "count = \"0\"\ncount = count + 1\nprint(count)\n",
+          "runnable": true
+        },
+        {
+          "type": "predict",
+          "id": "variables/types-on-sight/s04-04-predict-the-error",
+          "xp": 3,
+          "hint": [
+            {
+              "level": 1,
+              "body": "`str * int` is legal in Python. It's *string repetition*, not multiplication.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "`\"30\" * 2` repeats the string `\"30\"` twice and joins them: `\"30\" + \"30\"`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 60,
+          "concept": "type-coercion-prediction",
+          "code": "age = \"30\"\nprint(age * 2)\n",
+          "prompt": "Read the code on the right. `age` is a string (note the quotes), and\nthe next line multiplies it by `2`. Python does **not** crash here.\nWhat does this print?\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "3030",
+            "normalize": "collapse-trailing-newline"
+          }
+        },
+        {
+          "type": "fill",
+          "id": "variables/types-on-sight/s05-05-fill-the-cast",
+          "xp": 3,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Two builtins do the conversion: one for int, one for str. You want the one that turns text into a number.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "It's `int(...)`. The line becomes `int(port_str) + 1`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 55,
+          "concept": "int-cast",
+          "prompt": "AI wrote a snippet that reads a port from an environment variable and\nadds one. The env var arrives as a string `\"8080\"`, but the next line\nneeds an integer. Fill in the cast that converts the string to an int.\n\nFunction name: ___\n",
+          "code": "port_str = \"8080\"\nport = ___(port_str) + 1\nprint(port)\n",
+          "blanks": [
+            {
+              "id": "cast",
+              "accept": [
+                "int"
+              ],
+              "caseSensitive": true,
+              "normalize": "trim"
+            }
+          ]
+        },
+        {
+          "type": "fix",
+          "id": "variables/types-on-sight/s06-06-fix-the-none-check",
+          "xp": 4,
+          "hint": [
+            {
+              "level": 1,
+              "body": "`if score:` is False when `score` is `0`, even though `0` is a real value. You want to check whether `score` is `None`, not whether it's truthy.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Replace `if score:` with `if score is not None:`. That's the canonical way to check for absence in Python.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 75,
+          "concept": "none-vs-falsy",
+          "brokenCode": "score = 0\nif score:\n    print(f\"score: {score}\")\nelse:\n    print(\"no score yet\")\n",
+          "prompt": "Claude wrote a snippet that should print `score: 0` when the score is\nzero. Instead it prints `no score yet`. The bug is on line 2 — it's\nchecking the wrong thing. Fix it so a score of `0` is recognized as a\nreal score.\n\nExpected output:\n```\nscore: 0\n```\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "score: 0",
+            "normalize": "collapse-trailing-newline"
+          },
+          "bugLines": [
+            2
+          ],
+          "revealAfter": 4
+        },
+        {
+          "type": "fix",
+          "id": "variables/types-on-sight/s07-07-fix-the-coercion",
+          "xp": 4,
+          "hint": [
+            {
+              "level": 1,
+              "body": "You're concatenating a string and an int. Python won't auto-convert. Cast one side so they match.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Wrap `count` in `str(...)`: `print(\"count: \" + str(count))`. An f-string would also work — but the question is about casting.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 70,
+          "concept": "type-coercion-fix",
+          "brokenCode": "count = 6\nprint(\"count: \" + count)\n",
+          "prompt": "Cursor wrote this snippet to print a label and a count. It crashes\nwith a `TypeError` on line 2. Fix it by casting the right thing so the\noutput is exactly `count: 6`.\n\nExpected output:\n```\ncount: 6\n```\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "count: 6",
+            "normalize": "collapse-trailing-newline"
+          },
+          "bugLines": [
+            2
+          ],
+          "revealAfter": 4
+        },
+        {
+          "type": "write",
+          "id": "variables/types-on-sight/s08-08-write-the-counter",
+          "xp": 5,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Three lines. Don't forget the quotes on line 1 — `raw` is a string.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "`raw = \"15\"`, then `total = int(raw) + 5`, then `print(f\"total: {total}\")`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 100,
+          "concept": "cast-and-add",
+          "prompt": "Write three lines.\nLine 1: assign the string `\"15\"` to a variable called `raw`.\nLine 2: assign `int(raw) + 5` to a variable called `total`.\nLine 3: print `total: {total}` using an f-string.\n\nExpected output:\n```\ntotal: 20\n```\n",
+          "starter": "# your code:\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "total: 20",
+            "normalize": "collapse-trailing-newline"
+          },
+          "solution": "raw = \"15\"\ntotal = int(raw) + 5\nprint(f\"total: {total}\")\n",
+          "hiddenTests": []
+        },
+        {
+          "type": "checkpoint",
+          "id": "variables/types-on-sight/s09-09-checkpoint",
+          "xp": 8,
+          "hint": [],
+          "personalize": false,
+          "phase": "check",
+          "estSeconds": 120,
+          "concept": "types-recap",
+          "prompt": "Last one. AI handed you a snippet that reads a user id from a config\nstring, doubles it, and prints a message. The config arrives as\n`\"42\"` (a string). The starter has the first three lines. Finish line 4\nso the script prints exactly `next id: 85`.\n\nHint: line 4 prints an f-string with `next_id`.\n",
+          "starter": "raw_id = \"42\"\nuser_id = int(raw_id)\nnext_id = user_id * 2 + 1\n# your code on the next line:\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "next id: 85",
+            "normalize": "collapse-trailing-newline"
+          },
+          "solution": "raw_id = \"42\"\nuser_id = int(raw_id)\nnext_id = user_id * 2 + 1\nprint(f\"next id: {next_id}\")\n",
+          "passThreshold": 0.66
+        }
+      ],
+      "xpTotal": 31
+    },
+    {
+      "slug": "print-and-fstrings",
+      "title": "print, repr, and the f-string",
+      "estMinutes": 8,
+      "prerequisites": [
+        "01-naming-things",
+        "02-types-on-sight"
+      ],
+      "steps": [
+        {
+          "type": "read",
+          "id": "variables/print-and-fstrings/s01-01-intro",
+          "xp": 1,
+          "hint": [],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 75,
+          "concept": "print-vs-repr",
+          "body": "# How AI shows you what's inside a variable\n\nEvery Python script Cursor writes you ends up doing the same thing\neventually — converting some value into a string and showing it to a\nhuman. A log line. A debug print. A message in the UI. A line in a\nreport. The plumbing between *the value in memory* and *the characters\non the screen* is exactly two functions and one syntax feature, and\nyou'll use them constantly:\n\n- `print(...)` — show this thing to a human.\n- `repr(...)` — show this thing to a *programmer* (so you can see types\n  and quote marks).\n- `f\"...\"` — drop variables straight into a string template.\n\nThat's the whole toolkit. Master these three and you'll never have to\nask AI \"why doesn't this print right?\" again.\n\n## `print` shows the friendly face\n\nRun the editor on the right. Look at the first output line:\n\n```\nmaya\n```\n\nNo quotes. No type info. Just the characters of the string. That's\n`print`. It's optimized for *humans reading a terminal*. When AI writes\n`print(user_score)`, it's saying \"show me a clean version of whatever\nthis is.\"\n\n`print` accepts any number of arguments and joins them with spaces:\n\n```py\nprint(\"score:\", 7, \"level:\", 3)   # → score: 7 level: 3\n```\n\nIt always adds a newline at the end. If you don't want one, pass\n`end=\"\"`. (You almost never need to.)\n\n## `repr` shows the honest face\n\nLook at the second output line from the editor:\n\n```\n'maya'\n```\n\nSame string, but now wrapped in quotes. That's `repr` — the\n*programmer's view*. The whole point of `repr` is to make the type and\nboundaries unambiguous. Two strings that print the same can have\ndifferent repr:\n\n```py\nprint(\"7\")        # → 7\nprint(repr(\"7\"))  # → '7'      (with quotes — it's a string)\nprint(7)          # → 7\nprint(repr(7))    # → 7        (no quotes — it's an int)\n```\n\nWhen you're debugging AI-generated code and the output looks right but\nthe math is wrong, `print(repr(x))` is the move. It will tell you\nwhether `x` is `7` or `\"7\"` — and that's almost always the bug.\n\n## The mental model\n\n- **`print(x)`** — for users.\n- **`repr(x)`** (or `print(repr(x))`) — for *you*, while debugging.\n- **`f\"...\"`** — the third tool, coming up next. It's how AI builds 90%\n  of its output strings.\n\n## Where AI gets this wrong\n\nTwo patterns to watch for:\n\n1. **Printing a `None` and pretending it's empty.** `print(None)`\n   produces the literal text `None`, not an empty line. AI sometimes\n   writes `print(maybe_value)` without checking, and your log file ends\n   up with `None` in places you expected blanks.\n2. **Concatenating with `+` instead of using f-strings.** Cursor\n   occasionally falls back to `\"score: \" + str(score)` even though\n   `f\"score: {score}\"` is shorter and harder to mess up. Both work — but\n   the f-string version doesn't crash if you forget to cast.\n\nThe f-string is the workhorse. The next read step takes it apart.",
+          "cta": "Got it",
+          "code": "name = \"maya\"\nprint(name)\nprint(repr(name))\n",
+          "runnable": true
+        },
+        {
+          "type": "mc",
+          "id": "variables/print-and-fstrings/s02-02-which-output",
+          "xp": 2,
+          "hint": [
+            {
+              "level": 1,
+              "body": "`print` strips the quotes; `repr` shows them. The value here is the string `\"7\"`, not the int `7`.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Line 2: `print` prints the bare characters `7`. Line 3: `print(repr(...))` prints `'7'` with single quotes around it.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 40,
+          "concept": "print-vs-repr-output",
+          "prompt": "Cursor wrote three lines. The first `print` shows the value, the second shows\nits `repr`. What gets printed in total, in order?\n",
+          "options": [
+            {
+              "id": "a",
+              "label": "```\n7\n7\n```\n",
+              "explain": "Close — but `repr` of a string adds quotes around it."
+            },
+            {
+              "id": "b",
+              "label": "```\n7\n'7'\n```\n"
+            },
+            {
+              "id": "c",
+              "label": "```\n'7'\n'7'\n```\n",
+              "explain": "The first line uses plain `print`, which shows no quotes."
+            },
+            {
+              "id": "d",
+              "label": "```\n\"7\"\n\"7\"\n```\n",
+              "explain": "Python's `repr` uses single quotes by default, not double."
+            }
+          ],
+          "answerIds": [
+            "b"
+          ],
+          "shuffle": false,
+          "code": "value = \"7\"\nprint(value)\nprint(repr(value))\n",
+          "runnable": true
+        },
+        {
+          "type": "read",
+          "id": "variables/print-and-fstrings/s03-03-fstring-anatomy",
+          "xp": 1,
+          "hint": [],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 110,
+          "concept": "f-string-anatomy",
+          "body": "# The f-string is the workhorse\n\nLook at any twenty lines of Python Cursor wrote you this week. Count the\nf-strings. You'll find one every three or four lines. They're how AI\nbuilds log messages, error reports, return values, prompt strings, and\nLLM inputs. They are everywhere.\n\nThe syntax is small, but it has four moving parts and AI uses all four.\nRun the editor on the right and watch all four come out. Then read on.\n\n## Part 1: the prefix `f`\n\n```py\nf\"hi, {name}\"\n```\n\nThe `f` before the opening quote is the entire feature switch. Drop the\n`f` and the curly braces stop being magic — they print as literal `{`\nand `}`. Forgetting the `f` is the single most common f-string typo\nCursor makes when it's tired:\n\n```py\nprint(f\"score: {score}\")    # → score: 87\nprint(\"score: {score}\")     # → score: {score}        ← bug\n```\n\nIf your output has literal curly braces in it, you forgot the `f`. Look\nat the start of the string.\n\n## Part 2: the curly braces\n\nAnything inside `{ }` gets *evaluated as Python* and the result gets\nsubstituted into the string. Variables work:\n\n```py\nprint(f\"{name} scored {score}\")    # → maya scored 87\n```\n\nBut it's not just variables — any expression works:\n\n```py\nprint(f\"next: {score + 1}\")        # → next: 88\nprint(f\"upper: {name.upper()}\")    # → upper: MAYA\n```\n\nThis is huge for reading AI code. When you see `f\"{user.profile.email}\"`\nthat's three attribute accesses and a method call all happening inside\nthe braces. Treat the braces as a tiny window into Python.\n\n## Part 3: the format spec (the colon trick)\n\nAfter a colon inside the braces, you can shape *how* the value renders:\n\n```py\nratio = 0.8333333\nprint(f\"win rate: {ratio:.2f}\")    # → win rate: 0.83\n```\n\nThe `:.2f` means \"format as a float with 2 decimals.\" This is the most\ncommon spec by far. Two more you'll see:\n\n- `:,` — comma thousands separator. `f\"{1000000:,}\"` → `1,000,000`\n- `:>10` — right-align in a 10-character column.\n\nYou don't have to memorize these. When you see a colon inside a brace,\nrecognize it as \"render rule here\" and look it up if you need to.\n\n## Part 4: the `=` debug shortcut (Python 3.8+)\n\nThis one is small but AI uses it constantly when it's debugging:\n\n```py\nprint(f\"{score=}\")     # → score=87\n```\n\nThe `=` after the variable name prints both the *name* and the *value*.\nIt's a shortcut for `print(f\"score={score}\")`. When you see it in\ngenerated code, that's a sign Cursor was debugging and forgot to delete\nthe line.\n\n## What this means for reading AI code\n\nWhen you're reading a generated function and you hit a complex\nf-string, walk it left to right:\n\n1. Confirm the `f` is there.\n2. For each `{ ... }`, identify *what expression* runs inside.\n3. For each `:...`, identify *how* the value renders.\n\nThree sub-skills. Same string. That's the whole pattern, repeated\nhundreds of times across any codebase.\n\n## Where AI specifically gets f-strings wrong\n\n- **Quotes inside quotes.** `f\"name: {data[\"name\"]}\"` looks fine but\n  crashes — the inner double quotes close the f-string early. Use\n  `data['name']` instead. Cursor has gotten better at this, but it still\n  trips occasionally.\n- **Nested braces.** Two literal braces in a row become one in the\n  output: `f\"{{not a variable}}\"` prints `{not a variable}`. Useful when\n  you're generating code, confusing when you're not.\n- **Expressions with side effects.** Don't put a function call that\n  *changes state* inside an f-string. AI mostly avoids this, but when it\n  doesn't, the bug is silent and weird.",
+          "cta": "Got it",
+          "code": "name = \"maya\"\nscore = 87\nratio = 0.8333333\n\nprint(f\"hi, {name}\")\nprint(f\"{name} scored {score}\")\nprint(f\"win rate: {ratio:.2f}\")\nprint(f\"next: {score + 1}\")\n",
+          "runnable": true
+        },
+        {
+          "type": "predict",
+          "id": "variables/print-and-fstrings/s04-04-predict-the-print",
+          "xp": 3,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Anything inside the curly braces is evaluated as Python before being inserted.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "`count * 2 + 1` with `count = 4` is `4 * 2 + 1` = `9`. The output is `items: 9`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 65,
+          "concept": "f-string-expression",
+          "code": "count = 4\nprint(f\"items: {count * 2 + 1}\")\n",
+          "prompt": "Read the code on the right. The f-string contains an *expression*, not\njust a variable. What does it print?\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "items: 9",
+            "normalize": "collapse-trailing-newline"
+          }
+        },
+        {
+          "type": "fill",
+          "id": "variables/print-and-fstrings/s05-05-fill-the-format",
+          "xp": 3,
+          "hint": [
+            {
+              "level": 1,
+              "body": "The format spec for a fixed-point float looks like `.Nf` where N is the number of decimals.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Use `.2f` — that's `dot, two, f`. The full brace becomes `{ratio:.2f}` and prints `0.83`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 55,
+          "concept": "f-string-format-spec",
+          "prompt": "AI wrote a snippet that prints a win rate, but the number has too many\ndecimals. Fill in the format spec inside the braces so the output is\nrounded to two decimal places.\n\nFormat spec (the part after the colon): ___\n",
+          "code": "ratio = 0.8333333\nprint(f\"win rate: {ratio:___}\")\n",
+          "blanks": [
+            {
+              "id": "spec",
+              "accept": [
+                ".2f"
+              ],
+              "caseSensitive": true,
+              "normalize": "trim"
+            }
+          ]
+        },
+        {
+          "type": "fix",
+          "id": "variables/print-and-fstrings/s06-06-fix-the-quotes",
+          "xp": 4,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Curly braces only do substitution when the string is an f-string. What's missing at the start of the string?",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Add an `f` before the opening quote: `print(f\"hello, {user}\")`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 70,
+          "concept": "f-string-prefix-bug",
+          "brokenCode": "user = \"alex\"\nprint(\"hello, {user}\")\n",
+          "prompt": "Cursor wrote this and the output isn't right — it's printing the\nliteral curly braces instead of substituting the variable. Fix it so\nthe output is exactly `hello, alex`.\n\nExpected output:\n```\nhello, alex\n```\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "hello, alex",
+            "normalize": "collapse-trailing-newline"
+          },
+          "bugLines": [
+            2
+          ],
+          "revealAfter": 4
+        },
+        {
+          "type": "fix",
+          "id": "variables/print-and-fstrings/s07-07-fix-the-brace",
+          "xp": 4,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Every opening curly brace needs a closing one. Count them.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "The closing `}` is missing after `score`. The line should read `print(f\"score: {score}\")`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 70,
+          "concept": "f-string-brace-syntax",
+          "brokenCode": "score = 42\nprint(f\"score: {score\")\n",
+          "prompt": "Claude generated this snippet and it crashes with a `SyntaxError`.\nThe variable name is right, but one of the braces is wrong. Fix the\nf-string so it prints exactly `score: 42`.\n\nExpected output:\n```\nscore: 42\n```\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "score: 42",
+            "normalize": "collapse-trailing-newline"
+          },
+          "bugLines": [
+            2
+          ],
+          "revealAfter": 4
+        },
+        {
+          "type": "write",
+          "id": "variables/print-and-fstrings/s08-08-write-the-receipt",
+          "xp": 5,
+          "hint": [
+            {
+              "level": 1,
+              "body": "The dollar sign is part of the literal string, then the brace contains an expression with a format spec.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "`print(f\"total: ${qty * price:.2f}\")`. The `$` is plain text; `{qty * price:.2f}` does the math and rounds.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 100,
+          "concept": "write-fstring-with-math",
+          "prompt": "Write three lines.\nLine 1: assign `12` to a variable called `qty`.\nLine 2: assign `3.5` to a variable called `price`.\nLine 3: print `total: $42.00` using an f-string. The total comes from\n`qty * price`, formatted to two decimal places.\n\nExpected output:\n```\ntotal: $42.00\n```\n",
+          "starter": "# your code:\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "total: $42.00",
+            "normalize": "collapse-trailing-newline"
+          },
+          "solution": "qty = 12\nprice = 3.5\nprint(f\"total: ${qty * price:.2f}\")\n",
+          "hiddenTests": []
+        },
+        {
+          "type": "checkpoint",
+          "id": "variables/print-and-fstrings/s09-09-checkpoint",
+          "xp": 8,
+          "hint": [],
+          "personalize": false,
+          "phase": "check",
+          "estSeconds": 120,
+          "concept": "print-and-fstring-recap",
+          "prompt": "Last one. AI wrote a small status report that needs one final line.\nThe starter has the variables and the first two prints. Finish line 5\nso the script prints exactly `progress: 75%`.\n\nHint: line 5 should be a `print` with an f-string that uses\n`done` and `total`. The percent sign is a literal character.\n",
+          "starter": "done = 30\ntotal = 40\nprint(f\"done: {done}\")\nprint(f\"total: {total}\")\n# your code on the next line:\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "done: 30\ntotal: 40\nprogress: 75%\n",
+            "normalize": "collapse-trailing-newline"
+          },
+          "solution": "done = 30\ntotal = 40\nprint(f\"done: {done}\")\nprint(f\"total: {total}\")\nprint(f\"progress: {done * 100 // total}%\")\n",
+          "passThreshold": 0.66
+        }
+      ],
+      "xpTotal": 31
     }
   ],
-  "xpTotal": 26
+  "xpTotal": 88
 }

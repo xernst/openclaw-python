@@ -1,0 +1,269 @@
+{
+  "number": 20,
+  "slug": "agent-traces",
+  "title": "Reading agent traces and telemetry",
+  "blurb": "When an agent fails, the trace tells you exactly where. Learn to read tool calls, tool results, and stop reasons — the JSON breadcrumbs every agent leaves behind.",
+  "lessons": [
+    {
+      "slug": "reading-the-trace",
+      "title": "What an agent leaves behind",
+      "estMinutes": 9,
+      "prerequisites": [],
+      "steps": [
+        {
+          "type": "read",
+          "id": "agent-traces/reading-the-trace/s01-01-intro",
+          "xp": 1,
+          "hint": [],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 110,
+          "concept": "agent-trace-anatomy",
+          "body": "# The trace is the only thing that doesn't lie\n\nAn agent failed in production at 2am. The user got a wrong answer. The\nlogs say the script returned cleanly. What happened?\n\nThis is the question that *only the trace* can answer. Not the final\noutput. Not the chat the user saw. The trace — the full record of every\nturn, every tool call, every tool result, every stop reason. Every\nagent framework worth using emits a structured trace, and reading them\nfluently is the difference between *fixing the bug in five minutes* and\n*shrugging and re-running it.*\n\nRun the editor on the right. That's one turn from a real trace, in the\nshape every modern agent framework speaks (Anthropic's Messages API,\nOpenAI's Responses API, every LangChain or LangGraph adapter you'll\never see — they all serialize to roughly this shape).\n\n## The four things in every turn\n\n1. **The user message** that started the turn.\n2. **The assistant message** — either text, or a tool call, or both.\n3. **The tool result** — the structured response from whatever the tool\n   ran (an API call, a shell command, a database query).\n4. **The stop reason** — *why* the assistant stopped generating. This\n   is the most important field for debugging.\n\nEvery agent loop is just this pattern, repeated until the model decides\nit's done.\n\n## Reading a trace right-to-left\n\nWhen you're debugging, read the trace from the *end* backwards. Most\nfailures look like this:\n\n- The final answer is wrong or missing.\n- The last assistant message was either short, off-topic, or never\n  came.\n- One turn back, a tool result is empty, malformed, or contains an\n  error.\n- One turn before that, the assistant called the tool with the wrong\n  arguments.\n\nThat's the chain. Fix the wrong tool call and the rest unblocks. The\ntrace makes this visible; without it you'd be guessing.\n\n## The two kinds of failure you'll see most\n\n**Failure 1: wrong tool arguments.** The model called the right tool\nbut passed the wrong shape. The result came back empty or with a\nvalidation error, the model didn't recover, and you got an unhelpful\nfinal answer. We'll fix one of these later.\n\n**Failure 2: the agent looped.** The model called the same tool with\nthe same arguments three turns in a row, ran out of patience or\nbudget, and stopped. The fix is almost always at the *first* repeated\ncall — the model didn't understand the result and kept asking again.\n\n## What's in this lesson\n\nEight more steps. By the end you'll be able to look at a JSON trace\ndump from any agent framework — Claude, OpenAI, Bedrock, vendor-locked\ninternal tools — and answer three questions:\n\n1. Did the agent finish on purpose, or did it bail?\n2. Where did it actually go wrong?\n3. What's the smallest fix that would have unblocked it?\n\nThat's trace literacy.",
+          "cta": "Got it",
+          "code": "# one turn from a real agent trace, simplified.\nturn = {\n    \"turn\": 3,\n    \"messages\": [\n        {\"role\": \"user\", \"content\": \"list my open PRs\"},\n        {\"role\": \"assistant\", \"content\": [\n            {\"type\": \"tool_use\", \"id\": \"tu_01\", \"name\": \"list_prs\",\n             \"input\": {\"state\": \"open\"}},\n        ]},\n        {\"role\": \"user\", \"content\": [\n            {\"type\": \"tool_result\", \"tool_use_id\": \"tu_01\",\n             \"content\": \"[]\"},\n        ]},\n        {\"role\": \"assistant\", \"content\": [\n            {\"type\": \"text\", \"text\": \"you have no open PRs.\"},\n        ]},\n    ],\n    \"stop_reason\": \"end_turn\",\n}\n\nprint(f\"turn {turn['turn']} | stop: {turn['stop_reason']}\")\nprint(f\"messages: {len(turn['messages'])}\")\n",
+          "runnable": true
+        },
+        {
+          "type": "mc",
+          "id": "agent-traces/reading-the-trace/s02-02-which-turn-failed",
+          "xp": 2,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Look for the row where `tool_ok` is `False`. That's the failed call.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Turn 3 has `tool_ok: False`. Turn 4 just reports the agent ending; the actual fault was upstream.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 55,
+          "concept": "trace-failure-localization",
+          "prompt": "Read the trace on the right. The agent finished in four turns. Three\nof the tool calls succeeded; one failed. Which turn is the one you'd\ninvestigate first?\n",
+          "options": [
+            {
+              "id": "a",
+              "label": "Turn 1",
+              "explain": "Turn 1 succeeded (`tool_ok` is `True`). It's not where things went wrong."
+            },
+            {
+              "id": "b",
+              "label": "Turn 2",
+              "explain": "Turn 2 also succeeded. Keep scanning."
+            },
+            {
+              "id": "c",
+              "label": "Turn 3"
+            },
+            {
+              "id": "d",
+              "label": "Turn 4",
+              "explain": "Turn 4 is `end_turn` — the agent finished. The investigation goes one turn back, where the failure happened."
+            }
+          ],
+          "answerIds": [
+            "c"
+          ],
+          "shuffle": false,
+          "code": "trace = [\n    {\"turn\": 1, \"stop_reason\": \"tool_use\",\n     \"tool_name\": \"search_repo\", \"tool_ok\": True},\n    {\"turn\": 2, \"stop_reason\": \"tool_use\",\n     \"tool_name\": \"read_file\",   \"tool_ok\": True},\n    {\"turn\": 3, \"stop_reason\": \"tool_use\",\n     \"tool_name\": \"read_file\",   \"tool_ok\": False},\n    {\"turn\": 4, \"stop_reason\": \"end_turn\",\n     \"tool_name\": None,           \"tool_ok\": None},\n]\n\nfor t in trace:\n    print(t)\n",
+          "runnable": true
+        },
+        {
+          "type": "read",
+          "id": "agent-traces/reading-the-trace/s03-03-the-stop-reasons",
+          "xp": 1,
+          "hint": [],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 130,
+          "concept": "stop-reasons",
+          "body": "# Stop reasons tell you why the agent stopped — and that's everything\n\nWhen you scan a trace, the single field that tells you the most per\ncharacter is `stop_reason`. It's a one-word verdict on what happened at\nthe end of each turn. Run the editor on the right and look at the five\nturns. The last one finished cleanly. The one before it didn't.\n\nEvery major agent framework speaks roughly the same four stop reasons.\nThe exact strings vary (`end_turn` vs `stop`, `tool_use` vs\n`function_call`), but the meanings line up.\n\n## The four stop reasons that matter\n\n### `end_turn` (a.k.a. `stop`)\n\nThe model finished its thought and is done. Final answer is in the last\ntext content of that turn. **This is the only stop reason that means\n\"trust the answer.\"**\n\n### `tool_use` (a.k.a. `function_call`, `tool_calls`)\n\nThe model wants to call a tool. There's a `tool_use` block in the\ncontent. *The agent loop runs the tool, captures the result, and\ncontinues.* If your loop sees this stop reason and stops anyway, that's\nyour bug — the loop terminated before the agent finished.\n\n### `max_tokens`\n\nThe model hit the per-turn token cap mid-sentence. The output is\ntruncated, often mid-word, sometimes mid-tool-call. **Almost always a\nsilent failure** — the partial output looks plausible but is not what\nthe model would have produced if it had room. When you see this, raise\n`max_tokens` or shorten the prompt and rerun.\n\n### `pause_turn` / `refusal` / `error`\n\nLess common, but worth recognizing. `pause_turn` means the model paused\non a long task and expects to be asked to continue. `refusal` means it\ndeclined to answer (safety, policy, etc.). `error` means an upstream\nproblem — network, rate limit, malformed request.\n\n## What this means in practice\n\nWhen you're scanning a trace dump and looking for what went wrong, do\nthis once:\n\n```py\nfor turn in trace[\"turns\"]:\n    if turn[\"stop_reason\"] != \"end_turn\" and turn[\"stop_reason\"] != \"tool_use\":\n        print(f\"turn {turn['n']}: {turn['stop_reason']}\")\n```\n\nAny turn that prints from that loop is suspect. `end_turn` and\n`tool_use` are the *normal* shapes. Everything else is a signal.\n\n## The trap with `tool_use` chains\n\nA common bug: an agent calls tools four turns in a row, all\n`tool_use`, and on turn 5 finally produces an `end_turn`. The whole\nchain is *one logical answer.* If you only look at turn 5, you'll think\nthe model did all the reasoning in one shot — but the *actual* work was\ndone across the tool calls.\n\nWhen you debug, read the entire `tool_use` chain together as one unit.\nThe final `end_turn` is just the model summarizing what the tools\nalready told it.\n\n## Where AI specifically gets traces wrong\n\nTwo patterns to watch for in agent code AI writes you:\n\n1. **Treating every turn as final.** Cursor sometimes generates loop\n   code that returns the first text content it sees, ignoring whether\n   the stop reason was `tool_use`. That code looks like it works on\n   simple prompts and silently breaks on anything tool-driven.\n2. **Not logging `stop_reason` at all.** AI scaffolds an agent and\n   prints the final `text` only. Then when something goes wrong in\n   prod, the only signal you have is \"the answer was bad.\" Log every\n   stop reason. It costs nothing and saves hours.",
+          "cta": "Got it",
+          "code": "# five turns from a session, with stop_reason values.\nturns = [\n    {\"n\": 1, \"stop_reason\": \"tool_use\"},\n    {\"n\": 2, \"stop_reason\": \"tool_use\"},\n    {\"n\": 3, \"stop_reason\": \"tool_use\"},\n    {\"n\": 4, \"stop_reason\": \"max_tokens\"},\n    {\"n\": 5, \"stop_reason\": \"end_turn\"},\n]\n\nfinished_clean = sum(1 for t in turns if t[\"stop_reason\"] == \"end_turn\")\nbailed_out    = sum(1 for t in turns if t[\"stop_reason\"] == \"max_tokens\")\n\nprint(f\"clean: {finished_clean}\")\nprint(f\"bailed: {bailed_out}\")\n",
+          "runnable": true
+        },
+        {
+          "type": "predict",
+          "id": "agent-traces/reading-the-trace/s04-04-predict-the-stop",
+          "xp": 3,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Scan the list once. Only one turn has a stop reason that isn't `tool_use` or `end_turn`.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Turn 3 has `max_tokens`. That's the only suspect. The output is `suspect turns: [3]`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 70,
+          "concept": "stop-reason-counting",
+          "code": "trace = [\n    {\"n\": 1, \"stop_reason\": \"tool_use\"},\n    {\"n\": 2, \"stop_reason\": \"tool_use\"},\n    {\"n\": 3, \"stop_reason\": \"max_tokens\"},\n    {\"n\": 4, \"stop_reason\": \"tool_use\"},\n    {\"n\": 5, \"stop_reason\": \"end_turn\"},\n]\n\nsuspect = [t[\"n\"] for t in trace\n           if t[\"stop_reason\"] not in (\"tool_use\", \"end_turn\")]\nprint(f\"suspect turns: {suspect}\")\n",
+          "prompt": "The toy filter on the right flags turns whose `stop_reason` is anything\nother than the two normal ones (`tool_use` and `end_turn`). Read the\ntrace and predict the output.\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "suspect turns: [3]",
+            "normalize": "collapse-trailing-newline"
+          }
+        },
+        {
+          "type": "fill",
+          "id": "agent-traces/reading-the-trace/s05-05-fill-the-tool-name",
+          "xp": 3,
+          "hint": [
+            {
+              "level": 1,
+              "body": "The two block types you'll see in assistant content are `text` (for plain answers) and one for tool calls.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "It's `tool_use`. The block reads as `{\"type\": \"tool_use\", \"name\": ..., \"input\": ...}`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 60,
+          "concept": "tool-use-block-shape",
+          "prompt": "Cursor wrote a stub of an assistant message that requests a tool\ncall. The block has three required keys: `type`, `name`, and `input`.\nFill in the value for `type` — the string the agent framework looks\nfor to recognize this as a tool call request.\n\nType value (string, no quotes — just the word): ___\n",
+          "code": "assistant_message = {\n    \"role\": \"assistant\",\n    \"content\": [\n        {\n            \"type\": \"___\",\n            \"id\": \"tu_01\",\n            \"name\": \"list_prs\",\n            \"input\": {\"state\": \"open\"},\n        },\n    ],\n}\nprint(assistant_message[\"content\"][0][\"type\"])\n",
+          "blanks": [
+            {
+              "id": "type",
+              "accept": [
+                "tool_use"
+              ],
+              "caseSensitive": true,
+              "normalize": "trim"
+            }
+          ]
+        },
+        {
+          "type": "fix",
+          "id": "agent-traces/reading-the-trace/s06-06-fix-the-loop",
+          "xp": 4,
+          "hint": [
+            {
+              "level": 1,
+              "body": "The bug is that the check only compares `tool` names. It should also compare `args` — different args means it's making progress, not looping.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Change line 5 to also compare args: `return all(t[\"tool\"] == last_three[0][\"tool\"] and t[\"args\"] == last_three[0][\"args\"] for t in last_three)`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 95,
+          "concept": "detect-tool-loop",
+          "brokenCode": "def is_looping(turns):\n    if len(turns) < 3:\n        return False\n    last_three = turns[-3:]\n    return all(t[\"tool\"] == last_three[0][\"tool\"] for t in last_three)\n\ntrace = [\n    {\"tool\": \"search_repo\", \"args\": {\"q\": \"auth\"}},\n    {\"tool\": \"search_repo\", \"args\": {\"q\": \"auth\"}},\n    {\"tool\": \"search_repo\", \"args\": {\"q\": \"billing\"}},\n]\n\nprint(is_looping(trace))\n",
+          "prompt": "The toy `is_looping` function should flag a session as looping when\nthe same tool is called with the same arguments three turns in a row.\nThe current implementation only checks the tool name, so it misses the\nfact that the third call has different arguments. Fix the check on\nline 4 so the function returns `False` for this trace.\n\nExpected output:\n```\nFalse\n```\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "False",
+            "normalize": "collapse-trailing-newline"
+          },
+          "bugLines": [
+            5
+          ],
+          "revealAfter": 5
+        },
+        {
+          "type": "fix",
+          "id": "agent-traces/reading-the-trace/s07-07-fix-the-arg-shape",
+          "xp": 4,
+          "hint": [
+            {
+              "level": 1,
+              "body": "The dict key on line 5 is wrong. Rename it to match the schema.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Change `\"filepath\"` to `\"path\"` so the dict reads `{\"path\": \"app/main.py\"}`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 85,
+          "concept": "tool-arg-validation",
+          "brokenCode": "tool_use = {\n    \"type\": \"tool_use\",\n    \"id\": \"tu_02\",\n    \"name\": \"read_file\",\n    \"input\": {\"filepath\": \"app/main.py\"},\n}\n\nk, v = list(tool_use[\"input\"].items())[0]\nprint(f\"{k}={v}\")\n",
+          "prompt": "The agent called `read_file` with the wrong argument key. The tool\nschema expects `path`, but the trace shows `filepath`. Fix the\n`tool_use` block on line 5 so the printed key is exactly `path` and\nthe value is `app/main.py`.\n\nExpected output:\n```\npath=app/main.py\n```\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "path=app/main.py",
+            "normalize": "collapse-trailing-newline"
+          },
+          "bugLines": [
+            5
+          ],
+          "revealAfter": 4
+        },
+        {
+          "type": "write",
+          "id": "agent-traces/reading-the-trace/s08-08-write-the-summarizer",
+          "xp": 5,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Four counts. Total length, count of `tool_use`, count of `end_turn`, and the leftover (everything else).",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Use generator expressions inside `sum(1 for ... if ...)`. Then format with an f-string using the four counts.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 140,
+          "concept": "trace-summary",
+          "prompt": "Write a function `summarize(trace)` that takes a list of turns (each\nis a dict with `n` and `stop_reason`) and returns a single string in\nthis exact form:\n\n`turns: N | tool_use: T | end_turn: E | other: O`\n\n...where `N` is the total number of turns, `T` is the count of\n`tool_use` stops, `E` is the count of `end_turn` stops, and `O` is the\ncount of everything else.\n\nThen call it on the provided `trace` and print the result.\n\nExpected output:\n```\nturns: 5 | tool_use: 3 | end_turn: 1 | other: 1\n```\n",
+          "starter": "trace = [\n    {\"n\": 1, \"stop_reason\": \"tool_use\"},\n    {\"n\": 2, \"stop_reason\": \"tool_use\"},\n    {\"n\": 3, \"stop_reason\": \"max_tokens\"},\n    {\"n\": 4, \"stop_reason\": \"tool_use\"},\n    {\"n\": 5, \"stop_reason\": \"end_turn\"},\n]\n\n# define summarize(trace) below\n\nprint(summarize(trace))\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "turns: 5 | tool_use: 3 | end_turn: 1 | other: 1",
+            "normalize": "collapse-trailing-newline"
+          },
+          "solution": "trace = [\n    {\"n\": 1, \"stop_reason\": \"tool_use\"},\n    {\"n\": 2, \"stop_reason\": \"tool_use\"},\n    {\"n\": 3, \"stop_reason\": \"max_tokens\"},\n    {\"n\": 4, \"stop_reason\": \"tool_use\"},\n    {\"n\": 5, \"stop_reason\": \"end_turn\"},\n]\n\ndef summarize(trace):\n    n = len(trace)\n    tu = sum(1 for t in trace if t[\"stop_reason\"] == \"tool_use\")\n    et = sum(1 for t in trace if t[\"stop_reason\"] == \"end_turn\")\n    other = n - tu - et\n    return f\"turns: {n} | tool_use: {tu} | end_turn: {et} | other: {other}\"\n\nprint(summarize(trace))\n",
+          "hiddenTests": []
+        },
+        {
+          "type": "checkpoint",
+          "id": "agent-traces/reading-the-trace/s09-09-checkpoint",
+          "xp": 8,
+          "hint": [],
+          "personalize": false,
+          "phase": "check",
+          "estSeconds": 130,
+          "concept": "trace-recap",
+          "prompt": "Last one. The starter has a trace and a partial `find_first_bad_turn`\nfunction. The function should return the `n` value of the first turn\nwhose `stop_reason` is NOT `tool_use` and NOT `end_turn`. Right now it\nreturns `None`. Finish the body so it returns the right turn number.\n\nExpected output:\n```\n3\n```\n",
+          "starter": "trace = [\n    {\"n\": 1, \"stop_reason\": \"tool_use\"},\n    {\"n\": 2, \"stop_reason\": \"tool_use\"},\n    {\"n\": 3, \"stop_reason\": \"max_tokens\"},\n    {\"n\": 4, \"stop_reason\": \"tool_use\"},\n    {\"n\": 5, \"stop_reason\": \"end_turn\"},\n]\n\ndef find_first_bad_turn(trace):\n    # finish me\n    return None\n\nprint(find_first_bad_turn(trace))\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "3",
+            "normalize": "collapse-trailing-newline"
+          },
+          "solution": "trace = [\n    {\"n\": 1, \"stop_reason\": \"tool_use\"},\n    {\"n\": 2, \"stop_reason\": \"tool_use\"},\n    {\"n\": 3, \"stop_reason\": \"max_tokens\"},\n    {\"n\": 4, \"stop_reason\": \"tool_use\"},\n    {\"n\": 5, \"stop_reason\": \"end_turn\"},\n]\n\ndef find_first_bad_turn(trace):\n    for t in trace:\n        if t[\"stop_reason\"] not in (\"tool_use\", \"end_turn\"):\n            return t[\"n\"]\n    return None\n\nprint(find_first_bad_turn(trace))\n",
+          "passThreshold": 0.66
+        }
+      ],
+      "xpTotal": 31
+    }
+  ],
+  "xpTotal": 31
+}
