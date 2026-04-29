@@ -1,0 +1,14 @@
+slug: while-and-break
+title: "while, break, and the infinite loop AI ships"
+estMinutes: 7
+prerequisites: []
+order:
+  - 01-intro.read.md
+  - 02-which-while-shape.mc.yaml
+  - 03-break-and-continue.read.md
+  - 04-predict-the-while.predict.yaml
+  - 05-fill-the-condition.fill.yaml
+  - 06-fix-the-infinite-loop.fix.yaml
+  - 07-fix-the-break.fix.yaml
+  - 08-write-countdown.write.yaml
+  - 09-checkpoint.checkpoint.yaml

@@ -1,0 +1,46 @@
+xp: 8
+estSeconds: 130
+concept: while-break-recap
+prompt: |
+  Last one. Cursor wrote a "find the first match" loop that walks through a
+  list of usernames and stops as soon as it finds one starting with `"a"`.
+
+  Two things are broken: the loop variable never advances (so it'll loop
+  forever on the first name), and the `break` is missing — even if the loop
+  did advance, it would scan past the first match.
+
+  Fix both bugs so the script prints `found: alex`.
+starter: |
+  names = ["sam", "alex", "jordan", "ari"]
+  i = 0
+  found = None
+
+  while i < len(names):
+      if names[i].startswith("a"):
+          found = names[i]
+          # missing: stop the loop here
+      # missing: advance i
+
+  print(f"found: {found}")
+grader:
+  kind: stdout-equality
+  expected: "found: alex"
+  normalize: collapse-trailing-newline
+solution: |
+  names = ["sam", "alex", "jordan", "ari"]
+  i = 0
+  found = None
+
+  while i < len(names):
+      if names[i].startswith("a"):
+          found = names[i]
+          break
+      i += 1
+
+  print(f"found: {found}")
+passThreshold: 0.66
+hint:
+  - level: 1
+    body: "Inside the `if`, you need a `break`. Outside the `if` but still inside the `while`, you need `i += 1`. Both fixes."
+  - level: 2
+    body: "Replace the first `# missing` with `break`. Replace the second with `i += 1`. The `break` belongs inside the `if`, the increment belongs after it."

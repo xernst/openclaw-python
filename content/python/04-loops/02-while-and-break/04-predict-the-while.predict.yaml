@@ -1,0 +1,25 @@
+xp: 3
+estSeconds: 60
+concept: while-with-break
+code: |
+  total = 0
+  n = 1
+  while n <= 100:
+      total += n
+      if total > 10:
+          break
+      n += 1
+
+  print(total)
+prompt: |
+  This loop adds `1, 2, 3, ...` to `total` and stops as soon as `total`
+  exceeds `10`. What does it print?
+grader:
+  kind: stdout-equality
+  expected: "15"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "Track `total` step by step: 1, then 3, then 6, then 10, then 15. The check happens *after* adding."
+  - level: 2
+    body: "After adding `5`, total is `15`. That's `> 10`, so `break` fires. Final value is `15`."

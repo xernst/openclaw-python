@@ -1,0 +1,32 @@
+xp: 4
+estSeconds: 80
+concept: missing-decrement
+prompt: |
+  Claude wrote this and Pyodide will hang if you run it. The loop is supposed
+  to count down from `5` to `1`, but the body never changes `count`, so the
+  condition `count > 0` stays `True` forever.
+
+  Add the missing line so the loop actually stops, and the script prints
+  `5`, `4`, `3`, `2`, `1` each on its own line.
+brokenCode: |
+  count = 5
+  while count > 0:
+      print(count)
+      # missing: a line that decreases count
+bugLines:
+  - 4
+grader:
+  kind: stdout-equality
+  expected: |
+    5
+    4
+    3
+    2
+    1
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "The condition is `count > 0`. The body has to make `count` smaller each pass or it loops forever."
+  - level: 2
+    body: "Replace the comment on line 4 with `count -= 1`. That's the line AI forgets to write about a third of the time."
+revealAfter: 4

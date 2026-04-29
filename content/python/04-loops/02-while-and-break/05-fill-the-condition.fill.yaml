@@ -1,0 +1,22 @@
+xp: 3
+estSeconds: 55
+concept: while-keyword
+prompt: |
+  Cursor wrote a loop that should run as long as `attempts` is less than `3`.
+  The loop keyword is missing. Fill it in.
+  ```python
+  attempts = 0
+  ___ attempts < 3:
+      print(f"attempt {attempts + 1}")
+      attempts += 1
+  ```
+blanks:
+  - id: keyword
+    accept:
+      - while
+    caseSensitive: true
+hint:
+  - level: 1
+    body: "There's exactly one Python keyword that loops based on a condition (not a collection)."
+  - level: 2
+    body: "It's `while`. The shape is `while <condition>:` followed by an indented body."

@@ -1,0 +1,25 @@
+xp: 2
+estSeconds: 40
+concept: while-syntax
+prompt: |
+  Four `while` loops. Three of them eventually stop. One runs forever.
+  Which one is the infinite loop?
+options:
+  - id: a
+    label: "`n = 5`<br>`while n > 0:`<br>&nbsp;&nbsp;&nbsp;&nbsp;`print(n)`<br>&nbsp;&nbsp;&nbsp;&nbsp;`n -= 1`"
+    explain: "`n` shrinks by 1 each pass. After 5 iterations, `n` is `0` and the condition fails. Stops."
+  - id: b
+    label: "`n = 0`<br>`while n < 3:`<br>&nbsp;&nbsp;&nbsp;&nbsp;`print(n)`<br>&nbsp;&nbsp;&nbsp;&nbsp;`n += 1`"
+    explain: "`n` grows from 0 to 3, then the condition fails. Stops."
+  - id: c
+    label: "`n = 5`<br>`while n > 0:`<br>&nbsp;&nbsp;&nbsp;&nbsp;`print(n)`"
+  - id: d
+    label: "`n = 10`<br>`while n != 0:`<br>&nbsp;&nbsp;&nbsp;&nbsp;`n -= 2`"
+    explain: "`n` shrinks by 2 each pass — 10, 8, 6, 4, 2, 0. The condition flips when `n` hits zero. Stops."
+answerIds:
+  - c
+hint:
+  - level: 1
+    body: "A `while` loop stops only when the body changes whatever the condition is testing. One option never touches the variable in its condition."
+  - level: 2
+    body: "Option C never decrements `n`. The condition `n > 0` stays `True` forever — that's the infinite loop AI ships when it forgets the `n -= 1` line."

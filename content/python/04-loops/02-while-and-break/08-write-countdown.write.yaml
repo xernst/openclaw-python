@@ -1,0 +1,39 @@
+xp: 5
+estSeconds: 100
+concept: write-while-loop
+prompt: |
+  Write a `while` loop that starts with the number `10` and counts down by 2,
+  printing each value on its own line, until the value is no longer positive.
+
+  Expected output:
+  ```
+  10
+  8
+  6
+  4
+  2
+  ```
+starter: |
+  n = 10
+
+  # while loop below:
+
+grader:
+  kind: stdout-equality
+  expected: |
+    10
+    8
+    6
+    4
+    2
+  normalize: collapse-trailing-newline
+solution: |
+  n = 10
+  while n > 0:
+      print(n)
+      n -= 2
+hint:
+  - level: 1
+    body: "Two lines inside the loop: a `print(n)` and a line that decreases `n` by 2. Condition is `n > 0`."
+  - level: 2
+    body: "`while n > 0:` then `print(n)` and `n -= 2` indented under it. The loop stops when `n` reaches `0`."
