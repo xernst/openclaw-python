@@ -1,0 +1,44 @@
+xp: 8
+estSeconds: 150
+concept: print-debugging-checkpoint
+prompt: |
+  Final drill. The function `safe_divide` has a subtle bug — when `b`
+  is `0` it returns `None` instead of the string `"undefined"`. Add
+  print-tracing **and** fix the bug so the output is exactly:
+
+  ```
+  trace: a=10, b=2
+  5.0
+  trace: a=10, b=0
+  undefined
+  ```
+
+  The `trace:` line goes at the start of the function on each call.
+  The bug fix goes inside the function body.
+starter: |
+  def safe_divide(a, b):
+      # add a print here that shows a and b
+      if b == 0:
+          return None      # <- bug: should return "undefined"
+      return a / b
+
+  print(safe_divide(10, 2))
+  print(safe_divide(10, 0))
+grader:
+  kind: stdout-equality
+  expected: |
+    trace: a=10, b=2
+    5.0
+    trace: a=10, b=0
+    undefined
+  normalize: collapse-trailing-newline
+solution: |
+  def safe_divide(a, b):
+      print(f"trace: a={a}, b={b}")
+      if b == 0:
+          return "undefined"
+      return a / b
+
+  print(safe_divide(10, 2))
+  print(safe_divide(10, 0))
+passThreshold: 0.66

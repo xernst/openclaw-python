@@ -1,0 +1,27 @@
+xp: 3
+estSeconds: 75
+concept: read-the-trace-output
+code: |
+  def running_total(items):
+      total = 0
+      for item in items:
+          total += item
+          print(f"after {item}: total={total}")
+      return total
+
+  running_total([3, 4, 5])
+prompt: |
+  Read the editor. The function adds prints inside the loop so you can
+  watch `total` grow. What does this print? (Three lines, in order.)
+grader:
+  kind: stdout-equality
+  expected: |
+    after 3: total=3
+    after 4: total=7
+    after 5: total=12
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "Each iteration prints the item it just added and the running total. Start at 0, add 3, 4, 5 in order."
+  - level: 2
+    body: "Line 1: `after 3: total=3`. Line 2: `after 4: total=7`. Line 3: `after 5: total=12`."

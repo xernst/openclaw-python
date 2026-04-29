@@ -508,7 +508,256 @@
         }
       ],
       "xpTotal": 32
+    },
+    {
+      "slug": "print-debugging",
+      "title": "print and breakpoint — finding the bad value before AI does",
+      "estMinutes": 7,
+      "prerequisites": [],
+      "steps": [
+        {
+          "type": "read",
+          "id": "tracebacks/print-debugging/s01-01-intro",
+          "xp": 1,
+          "hint": [],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 90,
+          "concept": "print-debugging-introduction",
+          "body": "# `print` is the first debugger you'll ever use\n\nHere's a scene that's about to play out fifty times this year:\n\nCursor writes you a function. You run it. The output is wrong — not\ncrash-wrong, not traceback-wrong, just *wrong-number-on-the-screen*\nwrong. The total is 47 when it should be 50. The list comes back empty\nwhen it shouldn't. The score is `None` when something should be there.\n\nThere's no error to read. The code runs. It just lies.\n\nThis is where AI usually does something annoying. It guesses. It\nsuggests \"maybe try `try/except` around it\" or \"let me rewrite the\nfunction.\" Both of those make the symptom go away without ever pinning\ndown where the bug is. You end up with code that's mostly right,\nsilently wrong, and now wrapped in error-handling that makes the next\nbug even harder to find.\n\nThere's a simpler move. Print.\n\n## Why print beats every other tool when you're starting\n\nReal debuggers — `pdb`, IDE breakpoints, the works — are great. They're\nalso a layer of indirection between you and the bug. When you're new,\nthat layer costs more than it saves. Print is direct: *show me the\nvalue of this name, right here, right now, while the program runs.*\n\nThe pattern has three steps:\n\n1. **Pick a name** that *should* hold a known value.\n2. **Print it** with a label so you know which line wrote it.\n3. **Run again.** Read the output. Compare what you saw to what you\n   expected.\n\nThat's it. Bug almost always falls out of step 3 — the printed value\neither matches your mental model (so the bug is later) or it doesn't\n(so the bug is earlier). Either way, you've cut the search space in\nhalf. Two more rounds and you've found it.\n\n## What the editor on the right is doing\n\nThe function `total` adds up a list of numbers. Three prints trace it:\n\n- The first shows what the function received as input.\n- The second fires inside the loop, once per item.\n- The third shows the final value before `return`.\n\nRun it. The output is intentionally noisy — that's the whole point.\nEach line tells you *what was true* at that moment. If something\nbreaks later, this is the trail you read backward to find where it\nwent wrong.\n\n## Where AI specifically gets this wrong\n\nCursor's instinct, when a value comes out wrong, is to add five prints\nsprinkled randomly through the function. You'll see prints inside\nprints, nested f-strings, prints of variables that aren't even the\nsuspect. It's spray-and-pray.\n\nThe trick is restraint. You almost never need more than two prints to\nfind a bug. One at the input, one near the suspect line. If those two\ndon't crack it, *then* add a third. We'll drill that habit through the\nrest of this lesson.",
+          "cta": "Got it",
+          "code": "def total(items):\n    print(\"debug: items =\", items)\n    result = 0\n    for item in items:\n        print(\"debug: adding\", item)\n        result += item\n    print(\"debug: final =\", result)\n    return result\n\nprint(total([5, 12, 3]))\n",
+          "runnable": true
+        },
+        {
+          "type": "mc",
+          "id": "tracebacks/print-debugging/s02-02-which-print-helps",
+          "xp": 2,
+          "hint": [],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 50,
+          "concept": "useful-print-debug",
+          "prompt": "AI shipped this and the output is `0.0` instead of `150.0`. You only\nget to add **one** `print` statement to find the bug. Which one tells\nyou the most?\n",
+          "options": [
+            {
+              "id": "a",
+              "label": "`print(\"running discount\")` at the top",
+              "explain": "Tells you the function ran, but nothing about the values. The bug is somewhere in the math, not whether it's reached."
+            },
+            {
+              "id": "b",
+              "label": "`print(\"price:\", price, \"percent:\", percent)` at the top"
+            },
+            {
+              "id": "c",
+              "label": "`print(\"done\")` at the bottom",
+              "explain": "Confirms it returned, but you already know it returned `0.0`. Doesn't show *why*."
+            },
+            {
+              "id": "d",
+              "label": "`print(price)` and nothing else",
+              "explain": "Closer, but printing `price` alone, without a label, is hard to read in a noisy trace and hides `percent`."
+            }
+          ],
+          "answerIds": [
+            "b"
+          ],
+          "shuffle": false,
+          "code": "def discount(price, percent):\n    # which `print` would tell you what's wrong if the math looks off?\n    result = price * (1 - percent / 100)\n    return result\n\nprint(discount(200, 25))\n",
+          "runnable": true
+        },
+        {
+          "type": "read",
+          "id": "tracebacks/print-debugging/s03-03-breakpoint-explained",
+          "xp": 2,
+          "hint": [],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 60,
+          "concept": "breakpoint-overview",
+          "body": "# `breakpoint()` is `print` with a real cockpit\n\n`print` is fine for \"what's the value here?\". When you need to *poke\naround* — inspect any variable, run a quick expression, walk forward\none line at a time — Python ships a one-line built-in:\n\n```python\nbreakpoint()\n```\n\nDrop that line wherever you want execution to pause. On a normal Python\nmachine, you land in `pdb`, the built-in debugger. From there:\n\n- `p variable` prints a value\n- `n` runs the next line\n- `c` continues until the next `breakpoint()` (or the end)\n- `q` quits\n\nIt's how senior engineers actually debug. AI sometimes drops a\n`breakpoint()` for you mid-script — leave it in, run it, and pdb opens.\n\n> **Browser note:** Pyodide can't open an interactive `pdb` session, so\n> we don't run `breakpoint()` in this editor. The commented line in the\n> code shows where it would go on your machine.",
+          "cta": "Got it",
+          "code": "# we can't drop into an interactive debugger in the browser, so the\n# editor below DOES NOT call breakpoint(). on a real machine, the\n# commented call below would pause execution and let you inspect.\ndef total(items):\n    result = 0\n    for item in items:\n        # breakpoint()   # <- on your machine, this would pause here\n        result += item\n    return result\n\nprint(total([5, 12, 3]))\n",
+          "runnable": true
+        },
+        {
+          "type": "predict",
+          "id": "tracebacks/print-debugging/s04-04-predict-the-print-trace",
+          "xp": 3,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Each iteration prints the item it just added and the running total. Start at 0, add 3, 4, 5 in order.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Line 1: `after 3: total=3`. Line 2: `after 4: total=7`. Line 3: `after 5: total=12`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 75,
+          "concept": "read-the-trace-output",
+          "code": "def running_total(items):\n    total = 0\n    for item in items:\n        total += item\n        print(f\"after {item}: total={total}\")\n    return total\n\nrunning_total([3, 4, 5])\n",
+          "prompt": "Read the editor. The function adds prints inside the loop so you can\nwatch `total` grow. What does this print? (Three lines, in order.)\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "after 3: total=3\nafter 4: total=7\nafter 5: total=12\n",
+            "normalize": "collapse-trailing-newline"
+          }
+        },
+        {
+          "type": "fill",
+          "id": "tracebacks/print-debugging/s05-05-fill-the-print",
+          "xp": 3,
+          "hint": [
+            {
+              "level": 1,
+              "body": "It's the simplest debugging tool Python ships with. Five letters.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "It's `print`. `print(f\"after {item}: result={result}\")`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 55,
+          "concept": "print-with-label",
+          "prompt": "Cursor wrote a function that's giving the wrong total. You want to\ntrace the value of `result` on each iteration. Fill in the built-in\non line 5 that prints to the console.\n\nBuilt-in: ___\n",
+          "code": "def add_all(items):\n    result = 0\n    for item in items:\n        result += item\n        ___(f\"after {item}: result={result}\")\n    return result\n\nadd_all([1, 2, 3])\n",
+          "blanks": [
+            {
+              "id": "keyword",
+              "accept": [
+                "print"
+              ],
+              "caseSensitive": true,
+              "normalize": "trim"
+            }
+          ]
+        },
+        {
+          "type": "fix",
+          "id": "tracebacks/print-debugging/s06-06-fix-the-silent-bug",
+          "xp": 4,
+          "hint": [
+            {
+              "level": 1,
+              "body": "`result + item` computes a value but doesn't store it anywhere. To accumulate, you have to assign back to `result`.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Change line 4 to `result += item` (or `result = result + item`).",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 90,
+          "concept": "print-finds-silent-bug",
+          "brokenCode": "def add_all(items):\n    result = 0\n    for item in items:\n        result + item   # <- this line evaluates to a value and throws it away\n    return result\n\nprint(add_all([5, 7, 3]))\n",
+          "prompt": "AI shipped this and the output is `0` instead of `15`. There's no\ntraceback — the function silently returns the wrong value. The bug is\non line 4: the loop body never updates `result`. Fix line 4 so the\nscript prints `15`.\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "15",
+            "normalize": "collapse-trailing-newline"
+          },
+          "bugLines": [
+            4
+          ],
+          "revealAfter": 4
+        },
+        {
+          "type": "fix",
+          "id": "tracebacks/print-debugging/s07-07-fix-the-print-placement",
+          "xp": 4,
+          "hint": [
+            {
+              "level": 1,
+              "body": "The `print(f\"step: {s}\")` line needs to be indented to live inside the loop body.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Move line 5 *inside* the `for` block (indent it to match `pass`). Replace `pass` with the print, or keep `pass` above and indent the print to the same level.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 85,
+          "concept": "print-placement",
+          "brokenCode": "def run(steps):\n    for s in steps:\n        # do nothing for now\n        pass\n    print(f\"step: {s}\")\n    print(\"done\")\n\nrun([1, 2, 3])\n",
+          "prompt": "Claude added a debug print, but it's *outside* the loop, so it only\nfires once at the end. Move the `print` line **inside** the loop so\nevery iteration prints, then the output should be:\n\n```\nstep: 1\nstep: 2\nstep: 3\ndone\n```\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "step: 1\nstep: 2\nstep: 3\ndone\n",
+            "normalize": "collapse-trailing-newline"
+          },
+          "bugLines": [
+            5
+          ],
+          "revealAfter": 4
+        },
+        {
+          "type": "write",
+          "id": "tracebacks/print-debugging/s08-08-write-trace-the-loop",
+          "xp": 5,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Initialize `best = items[0]`. Loop with `for item in items:`, update `best` if `item > best`, then print the trace line.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "The trace print goes at the bottom of the loop body, after the `if`, so `best` is up-to-date when it prints.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 110,
+          "concept": "instrument-with-print",
+          "prompt": "Write a function `find_max(items)` that returns the largest number in\na list. **Inside the loop**, print each item and the current best so\nfar in the format `seen X, best Y`. Then call it on `[3, 7, 2, 9, 4]`\nand print the result.\n\nExpected output:\n```\nseen 3, best 3\nseen 7, best 7\nseen 2, best 7\nseen 9, best 9\nseen 4, best 9\n9\n```\n",
+          "starter": "# define find_max(items) with print-tracing inside the loop\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "seen 3, best 3\nseen 7, best 7\nseen 2, best 7\nseen 9, best 9\nseen 4, best 9\n9\n",
+            "normalize": "collapse-trailing-newline"
+          },
+          "solution": "def find_max(items):\n    best = items[0]\n    for item in items:\n        if item > best:\n            best = item\n        print(f\"seen {item}, best {best}\")\n    return best\n\nprint(find_max([3, 7, 2, 9, 4]))\n",
+          "hiddenTests": []
+        },
+        {
+          "type": "checkpoint",
+          "id": "tracebacks/print-debugging/s09-09-checkpoint",
+          "xp": 8,
+          "hint": [],
+          "personalize": false,
+          "phase": "check",
+          "estSeconds": 150,
+          "concept": "print-debugging-checkpoint",
+          "prompt": "Final drill. The function `safe_divide` has a subtle bug — when `b`\nis `0` it returns `None` instead of the string `\"undefined\"`. Add\nprint-tracing **and** fix the bug so the output is exactly:\n\n```\ntrace: a=10, b=2\n5.0\ntrace: a=10, b=0\nundefined\n```\n\nThe `trace:` line goes at the start of the function on each call.\nThe bug fix goes inside the function body.\n",
+          "starter": "def safe_divide(a, b):\n    # add a print here that shows a and b\n    if b == 0:\n        return None      # <- bug: should return \"undefined\"\n    return a / b\n\nprint(safe_divide(10, 2))\nprint(safe_divide(10, 0))\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "trace: a=10, b=2\n5.0\ntrace: a=10, b=0\nundefined\n",
+            "normalize": "collapse-trailing-newline"
+          },
+          "solution": "def safe_divide(a, b):\n    print(f\"trace: a={a}, b={b}\")\n    if b == 0:\n        return \"undefined\"\n    return a / b\n\nprint(safe_divide(10, 2))\nprint(safe_divide(10, 0))\n",
+          "passThreshold": 0.66
+        }
+      ],
+      "xpTotal": 32
     }
   ],
-  "xpTotal": 59
+  "xpTotal": 91
 }

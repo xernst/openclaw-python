@@ -1,0 +1,28 @@
+xp: 4
+estSeconds: 90
+concept: print-finds-silent-bug
+prompt: |
+  AI shipped this and the output is `0` instead of `15`. There's no
+  traceback — the function silently returns the wrong value. The bug is
+  on line 4: the loop body never updates `result`. Fix line 4 so the
+  script prints `15`.
+brokenCode: |
+  def add_all(items):
+      result = 0
+      for item in items:
+          result + item   # <- this line evaluates to a value and throws it away
+      return result
+
+  print(add_all([5, 7, 3]))
+bugLines:
+  - 4
+grader:
+  kind: stdout-equality
+  expected: "15"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "`result + item` computes a value but doesn't store it anywhere. To accumulate, you have to assign back to `result`."
+  - level: 2
+    body: "Change line 4 to `result += item` (or `result = result + item`)."
+revealAfter: 4

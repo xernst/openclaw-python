@@ -5,3 +5,4 @@ blurb: "When Python crashes, it tells you exactly what happened and where. Most 
 lessons:
   - 01-reading-the-stack
   - 02-the-five-error-classes
+  - 03-print-debugging

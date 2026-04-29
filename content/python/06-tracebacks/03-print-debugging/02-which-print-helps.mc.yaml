@@ -1,0 +1,28 @@
+xp: 2
+estSeconds: 50
+concept: useful-print-debug
+code: |
+  def discount(price, percent):
+      # which `print` would tell you what's wrong if the math looks off?
+      result = price * (1 - percent / 100)
+      return result
+
+  print(discount(200, 25))
+prompt: |
+  AI shipped this and the output is `0.0` instead of `150.0`. You only
+  get to add **one** `print` statement to find the bug. Which one tells
+  you the most?
+options:
+  - id: a
+    label: "`print(\"running discount\")` at the top"
+    explain: "Tells you the function ran, but nothing about the values. The bug is somewhere in the math, not whether it's reached."
+  - id: b
+    label: "`print(\"price:\", price, \"percent:\", percent)` at the top"
+  - id: c
+    label: "`print(\"done\")` at the bottom"
+    explain: "Confirms it returned, but you already know it returned `0.0`. Doesn't show *why*."
+  - id: d
+    label: "`print(price)` and nothing else"
+    explain: "Closer, but printing `price` alone, without a label, is hard to read in a noisy trace and hides `percent`."
+answerIds:
+  - b

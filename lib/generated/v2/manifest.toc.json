@@ -1,6 +1,6 @@
 {
   "version": "0.1.0",
-  "generatedAt": "2026-04-29T16:24:08.174Z",
+  "generatedAt": "2026-04-29T16:26:10.408Z",
   "chapters": [
     {
       "number": 1,
@@ -52,9 +52,9 @@
       "slug": "tracebacks",
       "title": "Tracebacks — Cursor wrote this and crashed",
       "blurb": "When Python crashes, it tells you exactly what happened and where. Most non-engineers panic at the wall of text. You're going to learn to read it.",
-      "lessonCount": 2,
-      "stepCount": 17,
-      "xpTotal": 59
+      "lessonCount": 3,
+      "stepCount": 26,
+      "xpTotal": 91
     },
     {
       "number": 7,

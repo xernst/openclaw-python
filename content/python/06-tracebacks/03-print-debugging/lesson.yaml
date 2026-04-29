@@ -1,0 +1,14 @@
+slug: print-debugging
+title: "print and breakpoint — finding the bad value before AI does"
+estMinutes: 7
+prerequisites: []
+order:
+  - 01-intro.read.md
+  - 02-which-print-helps.mc.yaml
+  - 03-breakpoint-explained.read.md
+  - 04-predict-the-print-trace.predict.yaml
+  - 05-fill-the-print.fill.yaml
+  - 06-fix-the-silent-bug.fix.yaml
+  - 07-fix-the-print-placement.fix.yaml
+  - 08-write-trace-the-loop.write.yaml
+  - 09-checkpoint.checkpoint.yaml

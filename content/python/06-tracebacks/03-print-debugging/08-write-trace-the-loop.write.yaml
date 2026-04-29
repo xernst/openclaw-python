@@ -1,0 +1,45 @@
+xp: 5
+estSeconds: 110
+concept: instrument-with-print
+prompt: |
+  Write a function `find_max(items)` that returns the largest number in
+  a list. **Inside the loop**, print each item and the current best so
+  far in the format `seen X, best Y`. Then call it on `[3, 7, 2, 9, 4]`
+  and print the result.
+
+  Expected output:
+  ```
+  seen 3, best 3
+  seen 7, best 7
+  seen 2, best 7
+  seen 9, best 9
+  seen 4, best 9
+  9
+  ```
+starter: |
+  # define find_max(items) with print-tracing inside the loop
+grader:
+  kind: stdout-equality
+  expected: |
+    seen 3, best 3
+    seen 7, best 7
+    seen 2, best 7
+    seen 9, best 9
+    seen 4, best 9
+    9
+  normalize: collapse-trailing-newline
+solution: |
+  def find_max(items):
+      best = items[0]
+      for item in items:
+          if item > best:
+              best = item
+          print(f"seen {item}, best {best}")
+      return best
+
+  print(find_max([3, 7, 2, 9, 4]))
+hint:
+  - level: 1
+    body: "Initialize `best = items[0]`. Loop with `for item in items:`, update `best` if `item > best`, then print the trace line."
+  - level: 2
+    body: "The trace print goes at the bottom of the loop body, after the `if`, so `best` is up-to-date when it prints."

@@ -1,0 +1,28 @@
+xp: 3
+estSeconds: 55
+concept: print-with-label
+prompt: |
+  Cursor wrote a function that's giving the wrong total. You want to
+  trace the value of `result` on each iteration. Fill in the built-in
+  on line 5 that prints to the console.
+
+  Built-in: ___
+code: |
+  def add_all(items):
+      result = 0
+      for item in items:
+          result += item
+          ___(f"after {item}: result={result}")
+      return result
+
+  add_all([1, 2, 3])
+blanks:
+  - id: keyword
+    accept:
+      - print
+    caseSensitive: true
+hint:
+  - level: 1
+    body: "It's the simplest debugging tool Python ships with. Five letters."
+  - level: 2
+    body: "It's `print`. `print(f\"after {item}: result={result}\")`."

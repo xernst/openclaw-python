@@ -1,0 +1,39 @@
+xp: 4
+estSeconds: 85
+concept: print-placement
+prompt: |
+  Claude added a debug print, but it's *outside* the loop, so it only
+  fires once at the end. Move the `print` line **inside** the loop so
+  every iteration prints, then the output should be:
+
+  ```
+  step: 1
+  step: 2
+  step: 3
+  done
+  ```
+brokenCode: |
+  def run(steps):
+      for s in steps:
+          # do nothing for now
+          pass
+      print(f"step: {s}")
+      print("done")
+
+  run([1, 2, 3])
+bugLines:
+  - 5
+grader:
+  kind: stdout-equality
+  expected: |
+    step: 1
+    step: 2
+    step: 3
+    done
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "The `print(f\"step: {s}\")` line needs to be indented to live inside the loop body."
+  - level: 2
+    body: "Move line 5 *inside* the `for` block (indent it to match `pass`). Replace `pass` with the print, or keep `pass` above and indent the print to the same level."
+revealAfter: 4
