@@ -1,0 +1,6 @@
+number: 14
+slug: structured-output
+title: "Structured output — making the model return JSON"
+blurb: "Free-form text breaks every pipeline. Learn the schema-first pattern AI uses to get reliable JSON back, validate it with Pydantic, and catch the model's lies before they hit prod."
+lessons:
+  - 01-getting-json-back

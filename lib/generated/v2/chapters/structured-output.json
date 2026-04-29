@@ -1,0 +1,259 @@
+{
+  "number": 14,
+  "slug": "structured-output",
+  "title": "Structured output — making the model return JSON",
+  "blurb": "Free-form text breaks every pipeline. Learn the schema-first pattern AI uses to get reliable JSON back, validate it with Pydantic, and catch the model's lies before they hit prod.",
+  "lessons": [
+    {
+      "slug": "getting-json-back",
+      "title": "Schemas, Pydantic, and validation — making the model return real data",
+      "estMinutes": 8,
+      "prerequisites": [],
+      "steps": [
+        {
+          "type": "read",
+          "id": "structured-output/getting-json-back/s01-01-intro",
+          "xp": 1,
+          "hint": [],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 80,
+          "concept": "structured-output-pattern",
+          "body": "# Free-form text is not data\n\nThe first time you ask Claude to \"extract the user's email from this\nsupport ticket,\" it returns *exactly* what you wanted: `maya@pyloft.dev`.\nThe second time, it returns `Sure! The email is maya@pyloft.dev.`. The\nthird time, `The email address you're looking for is maya@pyloft.dev`.\n\nThree different shapes. Your downstream code expected a string. Now it\neither has to regex-extract the email out of natural language every\ntime, or fail.\n\nThis is why every production AI feature — without exception — uses\n**structured output**: you tell the model *exactly* what JSON shape\nto return, and you validate the response when it comes back.\n\nThe pattern AI ships every time:\n\n```python\nimport anthropic\nfrom pydantic import BaseModel\n\nclass Ticket(BaseModel):\n    email: str\n    severity: int          # 1-5\n    summary: str\n\nclient = anthropic.Anthropic()\nresponse = client.messages.create(\n    model=\"claude-sonnet-4-6\",\n    max_tokens=512,\n    messages=[{\"role\": \"user\", \"content\": \"Extract from: <ticket text>\"}],\n)\n\nraw = response.content[0].text\nticket = Ticket.model_validate_json(raw)   # parse + validate in one call\nprint(ticket.email)\n```\n\nThree pieces. The schema (the `BaseModel` class), the prompt (asking for\nJSON), and the validation step (`model_validate_json`). All three matter.\nSkip the schema and you're back to regex-on-natural-language. Skip the\nvalidation and you'll find out about the model's hallucinated field at\n3am from a NoneType error in production.\n\n> **Browser note:** Pydantic isn't bundled with Pyodide. We'll use plain\n> `dict` validation here — same logic, just spelled out — so you can\n> read and write the pattern. Switching to `BaseModel` later is a\n> two-line change.\n\n## Where AI specifically gets this wrong\n\n- **Trusting the model on first try.** Models lie. They drop required\n  fields, return strings where you wanted ints, and invent enum values\n  you never defined. Validate every response.\n- **Forgetting `response_format` / tool use.** On OpenAI you set\n  `response_format={\"type\": \"json_object\"}`. On Anthropic you typically\n  use a tool definition. Without one, the model wraps its JSON in prose.\n- **Catching `ValidationError` too broadly.** When Pydantic rejects a\n  response, you usually want to retry with the error message back to\n  the model — not silently fall through.\n\nRun the editor. We extract a name and validate the shape by hand.",
+          "cta": "Got it",
+          "code": "# what a real LLM call WOULD return when you ask for JSON.\n# we work with the parsed dict directly — Pydantic isn't pre-loaded\n# in the browser, so we'll demonstrate the validation logic by hand.\nraw_text_from_model = '{\"name\": \"maya\", \"role\": \"pm\", \"years_exp\": 6}'\n\nimport json\ndata = json.loads(raw_text_from_model)\n\n# naive shape check — the kind Pydantic does for you in one line\nassert isinstance(data[\"name\"], str)\nassert isinstance(data[\"years_exp\"], int)\nassert data[\"years_exp\"] >= 0\n\nprint(f\"{data['name']} ({data['role']}) — {data['years_exp']}y exp\")\n",
+          "runnable": true
+        },
+        {
+          "type": "mc",
+          "id": "structured-output/getting-json-back/s02-02-why-validate",
+          "xp": 2,
+          "hint": [],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 50,
+          "concept": "structured-output-validation",
+          "prompt": "Cursor wires up a ticket-extraction prompt. Why is calling\n`Ticket.model_validate_json(raw)` (or doing your own type check)\non every response non-negotiable in production?\n",
+          "options": [
+            {
+              "id": "a",
+              "label": "Pydantic is faster than json.loads",
+              "explain": "Speed isn't the point — `model_validate_json` does parse the JSON for you, but the value is the validation, not the parser."
+            },
+            {
+              "id": "b",
+              "label": "It catches the model returning wrong types or missing fields before they break downstream code"
+            },
+            {
+              "id": "c",
+              "label": "It encrypts the response over the wire",
+              "explain": "Validation has nothing to do with encryption. TLS handles transport security."
+            },
+            {
+              "id": "d",
+              "label": "It makes the API call cheaper",
+              "explain": "Cost is set by token count, not by whether you validate the response. Validation runs locally."
+            }
+          ],
+          "answerIds": [
+            "b"
+          ],
+          "shuffle": false,
+          "code": "# the model returned this. it LOOKS fine. it isn't.\nmodel_output = {\n    \"email\": \"maya@pyloft.dev\",\n    \"severity\": \"high\",        # we wanted an int 1-5\n    \"summary\": \"login broken\",\n}\n\nexpected_int = isinstance(model_output[\"severity\"], int)\nprint(f\"severity is int? {expected_int}\")\n",
+          "runnable": true
+        },
+        {
+          "type": "read",
+          "id": "structured-output/getting-json-back/s03-03-pydantic-models",
+          "xp": 2,
+          "hint": [],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 75,
+          "concept": "pydantic-basemodel-shape",
+          "body": "# Pydantic models — the schema is the contract\n\nA Pydantic model is just a Python class where every attribute has a type\nhint. That class is *the contract* between your prompt and your\ndownstream code:\n\n```python\nfrom pydantic import BaseModel\n\nclass Ticket(BaseModel):\n    email: str\n    severity: int\n    summary: str\n```\n\nThree things this gives you that AI relies on:\n\n1. **JSON schema for free.** `Ticket.model_json_schema()` returns the\n   exact schema you can pass to the model in a tool definition or\n   `response_format`. The model now knows what shape you expect.\n2. **One-line parse + validate.** `Ticket.model_validate_json(raw)`\n   parses the JSON string, type-checks every field, raises\n   `ValidationError` if anything is off. No manual `isinstance` checks.\n3. **Real Python objects.** After validation you write `ticket.email`,\n   not `ticket[\"email\"]`. Your IDE autocompletes the field names and\n   catches typos at edit time.\n\n## Three field-type idioms you'll see constantly\n\n```python\nfrom typing import Literal\nfrom pydantic import BaseModel, Field\n\nclass Issue(BaseModel):\n    title: str\n    severity: Literal[\"low\", \"medium\", \"high\"]   # enum\n    score: int = Field(ge=0, le=10)              # bounded int\n    tags: list[str] = []                         # default empty list\n```\n\n`Literal[...]` for enums (the model is forced to pick one of three\nstrings). `Field(ge=..., le=...)` for numeric bounds. Default values\nmake a field optional. AI uses all three on every real schema.\n\nRun the editor. We mimic Pydantic with a plain dict + assertions —\nidentical logic, just lower-level — so you can see what\n`model_validate_json` does for you in one call.",
+          "cta": "Got it",
+          "code": "# in real code with pydantic installed:\n#\n#     from pydantic import BaseModel\n#\n#     class Ticket(BaseModel):\n#         email: str\n#         severity: int\n#         summary: str\n#\n#     ticket = Ticket.model_validate_json(raw_text)\n#\n# we'll mimic that with a plain function and dict so it runs here.\n\ndef validate_ticket(data):\n    assert isinstance(data[\"email\"], str), \"email must be str\"\n    assert isinstance(data[\"severity\"], int), \"severity must be int\"\n    assert isinstance(data[\"summary\"], str), \"summary must be str\"\n    return data\n\ngood = {\"email\": \"maya@pyloft.dev\", \"severity\": 2, \"summary\": \"slow\"}\nticket = validate_ticket(good)\nprint(ticket[\"email\"])\nprint(ticket[\"severity\"])\n",
+          "runnable": true
+        },
+        {
+          "type": "predict",
+          "id": "structured-output/getting-json-back/s04-04-predict-the-validated",
+          "xp": 3,
+          "hint": [
+            {
+              "level": 1,
+              "body": "The f-string interpolates `name`, `score`, and `len(tags)`. Read each value off `data`.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "`marcus`, `8`, and `2` (two items in the tags list). Output: `marcus: score 8, 2 tags`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 75,
+          "concept": "validate-then-access",
+          "code": "import json\n\nraw = '{\"name\": \"marcus\", \"score\": 8, \"tags\": [\"urgent\", \"auth\"]}'\ndata = json.loads(raw)\n\n# mimic Pydantic's model_validate_json\nassert isinstance(data[\"name\"], str)\nassert isinstance(data[\"score\"], int)\nassert 0 <= data[\"score\"] <= 10\nassert isinstance(data[\"tags\"], list)\n\nprint(f\"{data['name']}: score {data['score']}, {len(data['tags'])} tags\")\n",
+          "prompt": "Read the editor. The raw JSON passes every validation check. What\ndoes the print line output?\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "marcus: score 8, 2 tags",
+            "normalize": "collapse-trailing-newline"
+          }
+        },
+        {
+          "type": "fill",
+          "id": "structured-output/getting-json-back/s05-05-fill-the-field-type",
+          "xp": 3,
+          "hint": [
+            {
+              "level": 1,
+              "body": "A whole number in Python — the type that `12` is an instance of.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "`int`. In a real Pydantic model the line would be `match_count: int`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 60,
+          "concept": "pydantic-field-type-hints",
+          "prompt": "Cursor is sketching a schema for a model that returns a count of\nmatched items. The count must be a whole number. Fill in the type\nhint on line 4.\n\nType: ___\n",
+          "code": "# in real code: class Result(BaseModel): match_count: ___\n# here we'll mimic it with a validator function.\n\ndef validate_result(data):\n    assert isinstance(data[\"match_count\"], ___), \"match_count must be int\"\n    return data\n\ngood = {\"match_count\": 12}\nprint(validate_result(good)[\"match_count\"])\n",
+          "blanks": [
+            {
+              "id": "keyword",
+              "accept": [
+                "int"
+              ],
+              "caseSensitive": true,
+              "normalize": "trim"
+            }
+          ]
+        },
+        {
+          "type": "fix",
+          "id": "structured-output/getting-json-back/s06-06-fix-the-required-field",
+          "xp": 4,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Wrap the access in a guard. Check `if \"email\" not in data:` first, print the message, then `import sys; sys.exit()` or just don't fall through.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Replace lines 8-9 with: `if \"email\" not in data:` then `print(\"missing email\")` then `else:` block with the assertion + print.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 90,
+          "concept": "missing-required-field",
+          "brokenCode": "data = {\n    # the model \"forgot\" email\n    \"severity\": 3,\n    \"summary\": \"login broken\",\n}\n\n# this line crashes with KeyError because data[\"email\"] doesn't exist\nassert isinstance(data[\"email\"], str)\nprint(data[\"email\"])\n",
+          "prompt": "The model returned a response missing the required `email` field.\nIn real code, `Ticket.model_validate_json(raw)` would raise\n`ValidationError`. Here, the assertion on line 8 raises `KeyError`\nbefore the assertion can run. Fix the script so it prints the string\n`missing email` instead of crashing.\n\nUse `if \"email\" not in data` to check first; if missing, print\n`missing email` and exit. Otherwise, continue.\n\nExpected output:\n```\nmissing email\n```\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "missing email",
+            "normalize": "collapse-trailing-newline"
+          },
+          "bugLines": [
+            8,
+            9
+          ],
+          "revealAfter": 5
+        },
+        {
+          "type": "fix",
+          "id": "structured-output/getting-json-back/s07-07-fix-the-type-mismatch",
+          "xp": 4,
+          "hint": [
+            {
+              "level": 1,
+              "body": "`data[\"severity\"]` is the string `\"5\"`. To turn it into an integer, wrap it in the right built-in.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Change line 4 to `severity = int(data[\"severity\"])`. Pydantic does this for you when you set the field as `int` — it tries to coerce.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 90,
+          "concept": "model-returned-wrong-type",
+          "brokenCode": "data = {\"email\": \"maya@pyloft.dev\", \"severity\": \"5\", \"summary\": \"slow\"}\n\n# the model lied about the type — coerce before validating\nseverity = data[\"severity\"]\n\nassert isinstance(severity, int), \"severity must be int\"\nprint(f\"severity: {severity}\")\n",
+          "prompt": "The model returned `\"5\"` (a string) for `severity` instead of `5` (an\nint). The `assert isinstance(...)` check on line 6 fails. Fix line 4\nso the script coerces severity to an int before validating.\n\nExpected output:\n```\nseverity: 5\n```\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "severity: 5",
+            "normalize": "collapse-trailing-newline"
+          },
+          "bugLines": [
+            4
+          ],
+          "revealAfter": 4
+        },
+        {
+          "type": "write",
+          "id": "structured-output/getting-json-back/s08-08-write-parse-extraction",
+          "xp": 5,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Three steps: `json.loads(raw)`, then two guards (one per field), then return the dict.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Each guard is `if \"key\" not in data or not isinstance(data[\"key\"], <type>): return \"invalid\"`. After both pass, `return data`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 130,
+          "concept": "parse-and-validate-llm-output",
+          "prompt": "Build the parse-and-validate step. Write a function `extract_user(raw)`\nthat takes a JSON string the model returned, parses it with\n`json.loads`, validates that:\n\n- `name` is present and a `str`\n- `age` is present and an `int`\n\nIf the JSON is missing a field or has the wrong type, return the\nstring `\"invalid\"`. Otherwise return the parsed dict.\n\nThen the script will call it on a good response and print the name.\n\nExpected output:\n```\npriya\n```\n",
+          "starter": "import json\n\ngood_raw = '{\"name\": \"priya\", \"age\": 31}'\n\n# define extract_user(raw) below\n\nresult = extract_user(good_raw)\nprint(result[\"name\"])\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "priya",
+            "normalize": "collapse-trailing-newline"
+          },
+          "solution": "import json\n\ngood_raw = '{\"name\": \"priya\", \"age\": 31}'\n\ndef extract_user(raw):\n    data = json.loads(raw)\n    if \"name\" not in data or not isinstance(data[\"name\"], str):\n        return \"invalid\"\n    if \"age\" not in data or not isinstance(data[\"age\"], int):\n        return \"invalid\"\n    return data\n\nresult = extract_user(good_raw)\nprint(result[\"name\"])\n",
+          "hiddenTests": []
+        },
+        {
+          "type": "checkpoint",
+          "id": "structured-output/getting-json-back/s09-09-checkpoint",
+          "xp": 8,
+          "hint": [],
+          "personalize": false,
+          "phase": "check",
+          "estSeconds": 170,
+          "concept": "structured-output-checkpoint",
+          "prompt": "Final drill. Write `safe_extract(raw)` that parses a JSON string the\nmodel returned and validates a `Ticket` shape:\n\n- `email` must be a non-empty `str`\n- `severity` must be an `int` between 1 and 5 inclusive\n\nIf any check fails, return the dict `{\"ok\": False, \"error\": \"<reason>\"}`\nwhere `<reason>` is one of `\"bad json\"`, `\"missing email\"`,\n`\"bad severity\"`. On success, return `{\"ok\": True, \"data\": <parsed dict>}`.\n\nThen the script will run it on three inputs and print the result of\neach. Expected output:\n\n```\nok=True email=maya@pyloft.dev\nok=False error=missing email\nok=False error=bad severity\n```\n",
+          "starter": "import json\n\ngood = '{\"email\": \"maya@pyloft.dev\", \"severity\": 3}'\nno_email = '{\"severity\": 3}'\nbad_severity = '{\"email\": \"maya@pyloft.dev\", \"severity\": 9}'\n\n# define safe_extract(raw) below\n\nfor raw in [good, no_email, bad_severity]:\n    result = safe_extract(raw)\n    if result[\"ok\"]:\n        print(f\"ok=True email={result['data']['email']}\")\n    else:\n        print(f\"ok=False error={result['error']}\")\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "ok=True email=maya@pyloft.dev\nok=False error=missing email\nok=False error=bad severity\n",
+            "normalize": "collapse-trailing-newline"
+          },
+          "solution": "import json\n\ngood = '{\"email\": \"maya@pyloft.dev\", \"severity\": 3}'\nno_email = '{\"severity\": 3}'\nbad_severity = '{\"email\": \"maya@pyloft.dev\", \"severity\": 9}'\n\ndef safe_extract(raw):\n    try:\n        data = json.loads(raw)\n    except json.JSONDecodeError:\n        return {\"ok\": False, \"error\": \"bad json\"}\n    if \"email\" not in data or not isinstance(data[\"email\"], str) or not data[\"email\"]:\n        return {\"ok\": False, \"error\": \"missing email\"}\n    sev = data.get(\"severity\")\n    if not isinstance(sev, int) or sev < 1 or sev > 5:\n        return {\"ok\": False, \"error\": \"bad severity\"}\n    return {\"ok\": True, \"data\": data}\n\nfor raw in [good, no_email, bad_severity]:\n    result = safe_extract(raw)\n    if result[\"ok\"]:\n        print(f\"ok=True email={result['data']['email']}\")\n    else:\n        print(f\"ok=False error={result['error']}\")\n",
+          "passThreshold": 0.66
+        }
+      ],
+      "xpTotal": 32
+    }
+  ],
+  "xpTotal": 32
+}

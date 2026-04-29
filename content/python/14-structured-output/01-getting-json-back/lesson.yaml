@@ -1,0 +1,14 @@
+slug: getting-json-back
+title: "Schemas, Pydantic, and validation — making the model return real data"
+estMinutes: 8
+prerequisites: []
+order:
+  - 01-intro.read.md
+  - 02-why-validate.mc.yaml
+  - 03-pydantic-models.read.md
+  - 04-predict-the-validated.predict.yaml
+  - 05-fill-the-field-type.fill.yaml
+  - 06-fix-the-required-field.fix.yaml
+  - 07-fix-the-type-mismatch.fix.yaml
+  - 08-write-parse-extraction.write.yaml
+  - 09-checkpoint.checkpoint.yaml

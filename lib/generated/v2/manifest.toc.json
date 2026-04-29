@@ -1,6 +1,6 @@
 {
   "version": "0.1.0",
-  "generatedAt": "2026-04-29T18:21:36.152Z",
+  "generatedAt": "2026-04-29T18:24:14.239Z",
   "chapters": [
     {
       "number": 1,
@@ -115,6 +115,15 @@
       "slug": "llm-apis",
       "title": "LLM APIs — talking to Claude and OpenAI",
       "blurb": "Every AI feature you ship eventually calls a model API. Learn the messages pattern, how to read the response, and the four lines AI writes every single time.",
+      "lessonCount": 1,
+      "stepCount": 9,
+      "xpTotal": 32
+    },
+    {
+      "number": 14,
+      "slug": "structured-output",
+      "title": "Structured output — making the model return JSON",
+      "blurb": "Free-form text breaks every pipeline. Learn the schema-first pattern AI uses to get reliable JSON back, validate it with Pydantic, and catch the model's lies before they hit prod.",
       "lessonCount": 1,
       "stepCount": 9,
       "xpTotal": 32

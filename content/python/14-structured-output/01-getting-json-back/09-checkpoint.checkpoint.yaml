@@ -1,0 +1,70 @@
+xp: 8
+estSeconds: 170
+concept: structured-output-checkpoint
+prompt: |
+  Final drill. Write `safe_extract(raw)` that parses a JSON string the
+  model returned and validates a `Ticket` shape:
+
+  - `email` must be a non-empty `str`
+  - `severity` must be an `int` between 1 and 5 inclusive
+
+  If any check fails, return the dict `{"ok": False, "error": "<reason>"}`
+  where `<reason>` is one of `"bad json"`, `"missing email"`,
+  `"bad severity"`. On success, return `{"ok": True, "data": <parsed dict>}`.
+
+  Then the script will run it on three inputs and print the result of
+  each. Expected output:
+
+  ```
+  ok=True email=maya@pyloft.dev
+  ok=False error=missing email
+  ok=False error=bad severity
+  ```
+starter: |
+  import json
+
+  good = '{"email": "maya@pyloft.dev", "severity": 3}'
+  no_email = '{"severity": 3}'
+  bad_severity = '{"email": "maya@pyloft.dev", "severity": 9}'
+
+  # define safe_extract(raw) below
+
+  for raw in [good, no_email, bad_severity]:
+      result = safe_extract(raw)
+      if result["ok"]:
+          print(f"ok=True email={result['data']['email']}")
+      else:
+          print(f"ok=False error={result['error']}")
+grader:
+  kind: stdout-equality
+  expected: |
+    ok=True email=maya@pyloft.dev
+    ok=False error=missing email
+    ok=False error=bad severity
+  normalize: collapse-trailing-newline
+solution: |
+  import json
+
+  good = '{"email": "maya@pyloft.dev", "severity": 3}'
+  no_email = '{"severity": 3}'
+  bad_severity = '{"email": "maya@pyloft.dev", "severity": 9}'
+
+  def safe_extract(raw):
+      try:
+          data = json.loads(raw)
+      except json.JSONDecodeError:
+          return {"ok": False, "error": "bad json"}
+      if "email" not in data or not isinstance(data["email"], str) or not data["email"]:
+          return {"ok": False, "error": "missing email"}
+      sev = data.get("severity")
+      if not isinstance(sev, int) or sev < 1 or sev > 5:
+          return {"ok": False, "error": "bad severity"}
+      return {"ok": True, "data": data}
+
+  for raw in [good, no_email, bad_severity]:
+      result = safe_extract(raw)
+      if result["ok"]:
+          print(f"ok=True email={result['data']['email']}")
+      else:
+          print(f"ok=False error={result['error']}")
+passThreshold: 0.66

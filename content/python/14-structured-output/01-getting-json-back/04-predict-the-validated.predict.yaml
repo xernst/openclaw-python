@@ -1,0 +1,28 @@
+xp: 3
+estSeconds: 75
+concept: validate-then-access
+code: |
+  import json
+
+  raw = '{"name": "marcus", "score": 8, "tags": ["urgent", "auth"]}'
+  data = json.loads(raw)
+
+  # mimic Pydantic's model_validate_json
+  assert isinstance(data["name"], str)
+  assert isinstance(data["score"], int)
+  assert 0 <= data["score"] <= 10
+  assert isinstance(data["tags"], list)
+
+  print(f"{data['name']}: score {data['score']}, {len(data['tags'])} tags")
+prompt: |
+  Read the editor. The raw JSON passes every validation check. What
+  does the print line output?
+grader:
+  kind: stdout-equality
+  expected: "marcus: score 8, 2 tags"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: 'The f-string interpolates `name`, `score`, and `len(tags)`. Read each value off `data`.'
+  - level: 2
+    body: '`marcus`, `8`, and `2` (two items in the tags list). Output: `marcus: score 8, 2 tags`.'

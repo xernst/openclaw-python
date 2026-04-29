@@ -1,0 +1,32 @@
+xp: 4
+estSeconds: 90
+concept: model-returned-wrong-type
+prompt: |
+  The model returned `"5"` (a string) for `severity` instead of `5` (an
+  int). The `assert isinstance(...)` check on line 6 fails. Fix line 4
+  so the script coerces severity to an int before validating.
+
+  Expected output:
+  ```
+  severity: 5
+  ```
+brokenCode: |
+  data = {"email": "maya@pyloft.dev", "severity": "5", "summary": "slow"}
+
+  # the model lied about the type — coerce before validating
+  severity = data["severity"]
+
+  assert isinstance(severity, int), "severity must be int"
+  print(f"severity: {severity}")
+bugLines:
+  - 4
+grader:
+  kind: stdout-equality
+  expected: "severity: 5"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: '`data["severity"]` is the string `"5"`. To turn it into an integer, wrap it in the right built-in.'
+  - level: 2
+    body: 'Change line 4 to `severity = int(data["severity"])`. Pydantic does this for you when you set the field as `int` — it tries to coerce.'
+revealAfter: 4

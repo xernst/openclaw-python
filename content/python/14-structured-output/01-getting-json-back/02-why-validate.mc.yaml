@@ -1,0 +1,31 @@
+xp: 2
+estSeconds: 50
+concept: structured-output-validation
+code: |
+  # the model returned this. it LOOKS fine. it isn't.
+  model_output = {
+      "email": "maya@pyloft.dev",
+      "severity": "high",        # we wanted an int 1-5
+      "summary": "login broken",
+  }
+
+  expected_int = isinstance(model_output["severity"], int)
+  print(f"severity is int? {expected_int}")
+prompt: |
+  Cursor wires up a ticket-extraction prompt. Why is calling
+  `Ticket.model_validate_json(raw)` (or doing your own type check)
+  on every response non-negotiable in production?
+options:
+  - id: a
+    label: "Pydantic is faster than json.loads"
+    explain: "Speed isn't the point — `model_validate_json` does parse the JSON for you, but the value is the validation, not the parser."
+  - id: b
+    label: "It catches the model returning wrong types or missing fields before they break downstream code"
+  - id: c
+    label: "It encrypts the response over the wire"
+    explain: "Validation has nothing to do with encryption. TLS handles transport security."
+  - id: d
+    label: "It makes the API call cheaper"
+    explain: "Cost is set by token count, not by whether you validate the response. Validation runs locally."
+answerIds:
+  - b

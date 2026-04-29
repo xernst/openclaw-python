@@ -1,0 +1,29 @@
+xp: 3
+estSeconds: 60
+concept: pydantic-field-type-hints
+prompt: |
+  Cursor is sketching a schema for a model that returns a count of
+  matched items. The count must be a whole number. Fill in the type
+  hint on line 4.
+
+  Type: ___
+code: |
+  # in real code: class Result(BaseModel): match_count: ___
+  # here we'll mimic it with a validator function.
+
+  def validate_result(data):
+      assert isinstance(data["match_count"], ___), "match_count must be int"
+      return data
+
+  good = {"match_count": 12}
+  print(validate_result(good)["match_count"])
+blanks:
+  - id: keyword
+    accept:
+      - int
+    caseSensitive: true
+hint:
+  - level: 1
+    body: 'A whole number in Python — the type that `12` is an instance of.'
+  - level: 2
+    body: '`int`. In a real Pydantic model the line would be `match_count: int`.'

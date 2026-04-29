@@ -1,0 +1,53 @@
+xp: 5
+estSeconds: 130
+concept: parse-and-validate-llm-output
+prompt: |
+  Build the parse-and-validate step. Write a function `extract_user(raw)`
+  that takes a JSON string the model returned, parses it with
+  `json.loads`, validates that:
+
+  - `name` is present and a `str`
+  - `age` is present and an `int`
+
+  If the JSON is missing a field or has the wrong type, return the
+  string `"invalid"`. Otherwise return the parsed dict.
+
+  Then the script will call it on a good response and print the name.
+
+  Expected output:
+  ```
+  priya
+  ```
+starter: |
+  import json
+
+  good_raw = '{"name": "priya", "age": 31}'
+
+  # define extract_user(raw) below
+
+  result = extract_user(good_raw)
+  print(result["name"])
+grader:
+  kind: stdout-equality
+  expected: "priya"
+  normalize: collapse-trailing-newline
+solution: |
+  import json
+
+  good_raw = '{"name": "priya", "age": 31}'
+
+  def extract_user(raw):
+      data = json.loads(raw)
+      if "name" not in data or not isinstance(data["name"], str):
+          return "invalid"
+      if "age" not in data or not isinstance(data["age"], int):
+          return "invalid"
+      return data
+
+  result = extract_user(good_raw)
+  print(result["name"])
+hint:
+  - level: 1
+    body: 'Three steps: `json.loads(raw)`, then two guards (one per field), then return the dict.'
+  - level: 2
+    body: 'Each guard is `if "key" not in data or not isinstance(data["key"], <type>): return "invalid"`. After both pass, `return data`.'

@@ -1,0 +1,40 @@
+xp: 4
+estSeconds: 90
+concept: missing-required-field
+prompt: |
+  The model returned a response missing the required `email` field.
+  In real code, `Ticket.model_validate_json(raw)` would raise
+  `ValidationError`. Here, the assertion on line 8 raises `KeyError`
+  before the assertion can run. Fix the script so it prints the string
+  `missing email` instead of crashing.
+
+  Use `if "email" not in data` to check first; if missing, print
+  `missing email` and exit. Otherwise, continue.
+
+  Expected output:
+  ```
+  missing email
+  ```
+brokenCode: |
+  data = {
+      # the model "forgot" email
+      "severity": 3,
+      "summary": "login broken",
+  }
+
+  # this line crashes with KeyError because data["email"] doesn't exist
+  assert isinstance(data["email"], str)
+  print(data["email"])
+bugLines:
+  - 8
+  - 9
+grader:
+  kind: stdout-equality
+  expected: "missing email"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: 'Wrap the access in a guard. Check `if "email" not in data:` first, print the message, then `import sys; sys.exit()` or just don''t fall through.'
+  - level: 2
+    body: 'Replace lines 8-9 with: `if "email" not in data:` then `print("missing email")` then `else:` block with the assertion + print.'
+revealAfter: 5
