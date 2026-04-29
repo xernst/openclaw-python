@@ -1,0 +1,28 @@
+xp: 4
+estSeconds: 75
+concept: bare-except-antipattern
+prompt: |
+  Claude shipped this and it "worked" for weeks before someone noticed the
+  function was hiding a typo. The bare `except:` swallows everything,
+  including the real bug. Replace the bare `except:` with one that catches
+  only `ValueError`. The output should be `fallback`.
+brokenCode: |
+  def safe_int(text):
+      try:
+          return int(text)
+      except:
+          return "fallback"
+
+  print(safe_int("nope"))
+bugLines:
+  - 4
+grader:
+  kind: stdout-equality
+  expected: "fallback"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "Bare `except:` is the antipattern. Name the specific exception class you expect."
+  - level: 2
+    body: "Change line 4 to `except ValueError:`. The output stays `fallback` because that's still the error `int(\"nope\")` raises."
+revealAfter: 4

@@ -1,0 +1,51 @@
+xp: 8
+estSeconds: 130
+concept: try-except-checkpoint
+prompt: |
+  One last drill. AI wrote a function that looks up a price in a catalog dict
+  and converts a quantity string to an integer. Either lookup can fail. Wrap
+  the body in a `try/except` that catches **both** `KeyError` and `ValueError`,
+  and returns the string `"invalid"` for either case.
+
+  Two `except` blocks are fine — or one block with a tuple. Either works.
+
+  Expected output when you run:
+  ```
+  20
+  invalid
+  invalid
+  ```
+starter: |
+  catalog = {"apple": 2, "bread": 5}
+
+  def total(item, qty_text):
+      # wrap the two lines below in try/except
+      price = catalog[item]
+      qty = int(qty_text)
+      return price * qty
+
+  print(total("apple", "10"))
+  print(total("steak", "10"))
+  print(total("apple", "ten"))
+grader:
+  kind: stdout-equality
+  expected: |
+    20
+    invalid
+    invalid
+  normalize: collapse-trailing-newline
+solution: |
+  catalog = {"apple": 2, "bread": 5}
+
+  def total(item, qty_text):
+      try:
+          price = catalog[item]
+          qty = int(qty_text)
+          return price * qty
+      except (KeyError, ValueError):
+          return "invalid"
+
+  print(total("apple", "10"))
+  print(total("steak", "10"))
+  print(total("apple", "ten"))
+passThreshold: 0.66

@@ -1,0 +1,40 @@
+xp: 5
+estSeconds: 100
+concept: write-try-except-function
+prompt: |
+  Write a function called `safe_int` that takes one argument `text` and
+  returns `int(text)` if it parses, or the integer `0` if it raises a
+  `ValueError`. Then call it twice and print the results:
+
+  ```
+  print(safe_int("42"))
+  print(safe_int("hello"))
+  ```
+
+  Expected output:
+  ```
+  42
+  0
+  ```
+starter: |
+  # define safe_int below, then call it twice
+grader:
+  kind: stdout-equality
+  expected: |
+    42
+    0
+  normalize: collapse-trailing-newline
+solution: |
+  def safe_int(text):
+      try:
+          return int(text)
+      except ValueError:
+          return 0
+
+  print(safe_int("42"))
+  print(safe_int("hello"))
+hint:
+  - level: 1
+    body: "Three blocks: `def`, then `try:` with `return int(text)`, then `except ValueError:` with `return 0`."
+  - level: 2
+    body: "Don't forget to call `safe_int(\"42\")` and `safe_int(\"hello\")` and wrap each in `print(...)`."

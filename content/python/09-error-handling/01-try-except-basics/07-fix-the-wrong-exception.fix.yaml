@@ -1,0 +1,28 @@
+xp: 4
+estSeconds: 75
+concept: matching-exception-class
+prompt: |
+  This function is meant to look up a key in a dict and return a default if
+  the key isn't there. AI wrote `except ValueError`, which never matches,
+  so the missing-key case still crashes. Fix the exception class on line 3
+  so the script prints `unknown`.
+brokenCode: |
+  def get_user_role(roles, user):
+      try:
+          return roles[user]
+      except ValueError:
+          return "unknown"
+
+  print(get_user_role({"maya": "admin"}, "marcus"))
+bugLines:
+  - 4
+grader:
+  kind: stdout-equality
+  expected: "unknown"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "What error does Python raise when a dict key isn't found? Not `ValueError`."
+  - level: 2
+    body: "Replace `ValueError` with `KeyError` on line 4. That's the exception `dict[missing_key]` raises."
+revealAfter: 4

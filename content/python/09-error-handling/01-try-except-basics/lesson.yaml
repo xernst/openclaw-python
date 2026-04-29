@@ -1,0 +1,14 @@
+slug: try-except-basics
+title: "try/except — catching what AI didn't"
+estMinutes: 7
+prerequisites: []
+order:
+  - 01-intro.read.md
+  - 02-which-block-runs.mc.yaml
+  - 03-naming-the-error.read.md
+  - 04-predict-the-fallback.predict.yaml
+  - 05-fill-the-keyword.fill.yaml
+  - 06-fix-the-bare-except.fix.yaml
+  - 07-fix-the-wrong-exception.fix.yaml
+  - 08-write-safe-int.write.yaml
+  - 09-checkpoint.checkpoint.yaml

@@ -1,0 +1,24 @@
+xp: 3
+estSeconds: 50
+concept: try-except-syntax
+prompt: |
+  Cursor wrote a `try` block but forgot the keyword that introduces the
+  catch. Fill in the missing keyword on line 4.
+
+  Keyword: ___
+code: |
+  try:
+      number = int("oops")
+      print(number)
+  ___ ValueError:
+      print("could not parse")
+blanks:
+  - id: keyword
+    accept:
+      - except
+    caseSensitive: true
+hint:
+  - level: 1
+    body: "Two keywords frame the block. The first is `try`. The second is what catches the error."
+  - level: 2
+    body: "The keyword is `except`. Lowercase, exactly four letters."

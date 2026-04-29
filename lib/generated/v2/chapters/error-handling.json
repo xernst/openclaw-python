@@ -1,0 +1,258 @@
+{
+  "number": 9,
+  "slug": "error-handling",
+  "title": "Error handling — when AI's code crashes mid-flight",
+  "blurb": "AI loves a happy path. The moment a file isn't there or an API blinks, the script blows up. `try/except` is how you keep the program alive long enough to log what went wrong.",
+  "lessons": [
+    {
+      "slug": "try-except-basics",
+      "title": "try/except — catching what AI didn't",
+      "estMinutes": 7,
+      "prerequisites": [],
+      "steps": [
+        {
+          "type": "read",
+          "id": "error-handling/try-except-basics/s01-01-intro",
+          "xp": 1,
+          "hint": [],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 30,
+          "concept": "try-except-introduction",
+          "body": "# `try/except` — the seatbelt AI forgets to put on\n\nEvery script has lines that *might* fail. Reading a file that doesn't exist.\nParsing a string that isn't a number. Calling an API that times out.\n\nPython's built-in answer is `try/except`: run the risky line, and if it\nexplodes, catch the explosion and decide what to do next.\n\nWhen AI writes code, it tends to write the happy path and leave you to add\nthe seatbelt. That's the gap this chapter closes.\n\nHit **Run** on the editor. The string `\"42\"` parses fine, so the `except`\nblock never fires. We'll break it on purpose in a moment.",
+          "cta": "Got it",
+          "code": "try:\n    result = int(\"42\")\n    print(result)\nexcept ValueError:\n    print(\"not a number\")\n",
+          "runnable": true
+        },
+        {
+          "type": "mc",
+          "id": "error-handling/try-except-basics/s02-02-which-block-runs",
+          "xp": 2,
+          "hint": [],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 40,
+          "concept": "try-except-control-flow",
+          "prompt": "Read the code in the editor. `int(\"not a number\")` will raise a `ValueError`\non line 2. Which lines actually print?\n",
+          "options": [
+            {
+              "id": "a",
+              "label": "`parsed: ...` and `after the block`",
+              "explain": "Line 2 raises before line 3 runs, so `parsed:` never prints."
+            },
+            {
+              "id": "b",
+              "label": "Only `caught it`",
+              "explain": "Execution does continue past the block — `after the block` prints too."
+            },
+            {
+              "id": "c",
+              "label": "`caught it` and `after the block`"
+            },
+            {
+              "id": "d",
+              "label": "Nothing — the program crashes",
+              "explain": "That's what happens *without* `try/except`. With it, the error is caught and the program keeps going."
+            }
+          ],
+          "answerIds": [
+            "c"
+          ],
+          "shuffle": false,
+          "code": "try:\n    x = int(\"not a number\")\n    print(\"parsed:\", x)\nexcept ValueError:\n    print(\"caught it\")\nprint(\"after the block\")\n",
+          "runnable": true
+        },
+        {
+          "type": "read",
+          "id": "error-handling/try-except-basics/s03-03-naming-the-error",
+          "xp": 2,
+          "hint": [],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 50,
+          "concept": "specific-exception-types",
+          "body": "# Catch the specific error, not \"anything that goes wrong\"\n\n`except:` on its own catches *everything* — including bugs you'd rather see\ncrash loudly. AI sometimes writes bare `except:` and silently hides the\nreal problem for hours.\n\nThe fix is to name the exception you actually expect:\n\n- `ValueError` — wrong kind of value (`int(\"hi\")`)\n- `KeyError` — dict key not found\n- `IndexError` — list index out of range\n- `TypeError` — wrong type for the operation\n- `FileNotFoundError` — open() couldn't find the file\n\nRun the editor. Two separate `try` blocks, each catching exactly the error\nit expects.",
+          "cta": "Got it",
+          "code": "pets = {\"dog\": \"rex\"}\n\ntry:\n    print(pets[\"cat\"])\nexcept KeyError:\n    print(\"no cat in the dict\")\n\ntry:\n    print(pets[\"dog\"] + 7)\nexcept TypeError:\n    print(\"can't add a string and a number\")\n",
+          "runnable": true
+        },
+        {
+          "type": "predict",
+          "id": "error-handling/try-except-basics/s04-04-predict-the-fallback",
+          "xp": 3,
+          "hint": [
+            {
+              "level": 1,
+              "body": "First call: `int(\"30\")` works, returns 30. Second call: `int(\"thirty\")` raises, so the `except` runs.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Output is `30` on line 1, `-1` on line 2 — the fallback value the function returns when parsing fails.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 60,
+          "concept": "except-fallback-value",
+          "code": "def parse_age(text):\n    try:\n        return int(text)\n    except ValueError:\n        return -1\n\nprint(parse_age(\"30\"))\nprint(parse_age(\"thirty\"))\n",
+          "prompt": "Read `parse_age`. The first call gets a clean number, the second gets\ngarbage. What does this print? (Two lines, in order.)\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "30\n-1\n",
+            "normalize": "collapse-trailing-newline"
+          }
+        },
+        {
+          "type": "fill",
+          "id": "error-handling/try-except-basics/s05-05-fill-the-keyword",
+          "xp": 3,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Two keywords frame the block. The first is `try`. The second is what catches the error.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "The keyword is `except`. Lowercase, exactly four letters.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 50,
+          "concept": "try-except-syntax",
+          "prompt": "Cursor wrote a `try` block but forgot the keyword that introduces the\ncatch. Fill in the missing keyword on line 4.\n\nKeyword: ___\n",
+          "code": "try:\n    number = int(\"oops\")\n    print(number)\n___ ValueError:\n    print(\"could not parse\")\n",
+          "blanks": [
+            {
+              "id": "keyword",
+              "accept": [
+                "except"
+              ],
+              "caseSensitive": true,
+              "normalize": "trim"
+            }
+          ]
+        },
+        {
+          "type": "fix",
+          "id": "error-handling/try-except-basics/s06-06-fix-the-bare-except",
+          "xp": 4,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Bare `except:` is the antipattern. Name the specific exception class you expect.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Change line 4 to `except ValueError:`. The output stays `fallback` because that's still the error `int(\"nope\")` raises.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 75,
+          "concept": "bare-except-antipattern",
+          "brokenCode": "def safe_int(text):\n    try:\n        return int(text)\n    except:\n        return \"fallback\"\n\nprint(safe_int(\"nope\"))\n",
+          "prompt": "Claude shipped this and it \"worked\" for weeks before someone noticed the\nfunction was hiding a typo. The bare `except:` swallows everything,\nincluding the real bug. Replace the bare `except:` with one that catches\nonly `ValueError`. The output should be `fallback`.\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "fallback",
+            "normalize": "collapse-trailing-newline"
+          },
+          "bugLines": [
+            4
+          ],
+          "revealAfter": 4
+        },
+        {
+          "type": "fix",
+          "id": "error-handling/try-except-basics/s07-07-fix-the-wrong-exception",
+          "xp": 4,
+          "hint": [
+            {
+              "level": 1,
+              "body": "What error does Python raise when a dict key isn't found? Not `ValueError`.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Replace `ValueError` with `KeyError` on line 4. That's the exception `dict[missing_key]` raises.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 75,
+          "concept": "matching-exception-class",
+          "brokenCode": "def get_user_role(roles, user):\n    try:\n        return roles[user]\n    except ValueError:\n        return \"unknown\"\n\nprint(get_user_role({\"maya\": \"admin\"}, \"marcus\"))\n",
+          "prompt": "This function is meant to look up a key in a dict and return a default if\nthe key isn't there. AI wrote `except ValueError`, which never matches,\nso the missing-key case still crashes. Fix the exception class on line 3\nso the script prints `unknown`.\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "unknown",
+            "normalize": "collapse-trailing-newline"
+          },
+          "bugLines": [
+            4
+          ],
+          "revealAfter": 4
+        },
+        {
+          "type": "write",
+          "id": "error-handling/try-except-basics/s08-08-write-safe-int",
+          "xp": 5,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Three blocks: `def`, then `try:` with `return int(text)`, then `except ValueError:` with `return 0`.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Don't forget to call `safe_int(\"42\")` and `safe_int(\"hello\")` and wrap each in `print(...)`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 100,
+          "concept": "write-try-except-function",
+          "prompt": "Write a function called `safe_int` that takes one argument `text` and\nreturns `int(text)` if it parses, or the integer `0` if it raises a\n`ValueError`. Then call it twice and print the results:\n\n```\nprint(safe_int(\"42\"))\nprint(safe_int(\"hello\"))\n```\n\nExpected output:\n```\n42\n0\n```\n",
+          "starter": "# define safe_int below, then call it twice\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "42\n0\n",
+            "normalize": "collapse-trailing-newline"
+          },
+          "solution": "def safe_int(text):\n    try:\n        return int(text)\n    except ValueError:\n        return 0\n\nprint(safe_int(\"42\"))\nprint(safe_int(\"hello\"))\n",
+          "hiddenTests": []
+        },
+        {
+          "type": "checkpoint",
+          "id": "error-handling/try-except-basics/s09-09-checkpoint",
+          "xp": 8,
+          "hint": [],
+          "personalize": false,
+          "phase": "check",
+          "estSeconds": 130,
+          "concept": "try-except-checkpoint",
+          "prompt": "One last drill. AI wrote a function that looks up a price in a catalog dict\nand converts a quantity string to an integer. Either lookup can fail. Wrap\nthe body in a `try/except` that catches **both** `KeyError` and `ValueError`,\nand returns the string `\"invalid\"` for either case.\n\nTwo `except` blocks are fine — or one block with a tuple. Either works.\n\nExpected output when you run:\n```\n20\ninvalid\ninvalid\n```\n",
+          "starter": "catalog = {\"apple\": 2, \"bread\": 5}\n\ndef total(item, qty_text):\n    # wrap the two lines below in try/except\n    price = catalog[item]\n    qty = int(qty_text)\n    return price * qty\n\nprint(total(\"apple\", \"10\"))\nprint(total(\"steak\", \"10\"))\nprint(total(\"apple\", \"ten\"))\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "20\ninvalid\ninvalid\n",
+            "normalize": "collapse-trailing-newline"
+          },
+          "solution": "catalog = {\"apple\": 2, \"bread\": 5}\n\ndef total(item, qty_text):\n    try:\n        price = catalog[item]\n        qty = int(qty_text)\n        return price * qty\n    except (KeyError, ValueError):\n        return \"invalid\"\n\nprint(total(\"apple\", \"10\"))\nprint(total(\"steak\", \"10\"))\nprint(total(\"apple\", \"ten\"))\n",
+          "passThreshold": 0.66
+        }
+      ],
+      "xpTotal": 32
+    }
+  ],
+  "xpTotal": 32
+}

@@ -1,0 +1,27 @@
+xp: 2
+estSeconds: 40
+concept: try-except-control-flow
+code: |
+  try:
+      x = int("not a number")
+      print("parsed:", x)
+  except ValueError:
+      print("caught it")
+  print("after the block")
+prompt: |
+  Read the code in the editor. `int("not a number")` will raise a `ValueError`
+  on line 2. Which lines actually print?
+options:
+  - id: a
+    label: "`parsed: ...` and `after the block`"
+    explain: "Line 2 raises before line 3 runs, so `parsed:` never prints."
+  - id: b
+    label: "Only `caught it`"
+    explain: "Execution does continue past the block — `after the block` prints too."
+  - id: c
+    label: "`caught it` and `after the block`"
+  - id: d
+    label: "Nothing — the program crashes"
+    explain: "That's what happens *without* `try/except`. With it, the error is caught and the program keeps going."
+answerIds:
+  - c

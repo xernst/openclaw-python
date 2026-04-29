@@ -1,0 +1,26 @@
+xp: 3
+estSeconds: 60
+concept: except-fallback-value
+code: |
+  def parse_age(text):
+      try:
+          return int(text)
+      except ValueError:
+          return -1
+
+  print(parse_age("30"))
+  print(parse_age("thirty"))
+prompt: |
+  Read `parse_age`. The first call gets a clean number, the second gets
+  garbage. What does this print? (Two lines, in order.)
+grader:
+  kind: stdout-equality
+  expected: |
+    30
+    -1
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "First call: `int(\"30\")` works, returns 30. Second call: `int(\"thirty\")` raises, so the `except` runs."
+  - level: 2
+    body: "Output is `30` on line 1, `-1` on line 2 — the fallback value the function returns when parsing fails."
