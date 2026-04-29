@@ -1,0 +1,21 @@
+xp: 3
+estSeconds: 60
+concept: loop-with-string-method
+code: |
+  pets = ["cat", "dog", "snail"]
+  for p in pets:
+      print(p.upper())
+prompt: |
+  What does this print? One pet per line, in order.
+grader:
+  kind: stdout-equality
+  expected: |
+    CAT
+    DOG
+    SNAIL
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "The loop runs three times. Each trip, `p.upper()` returns the uppercase version."
+  - level: 2
+    body: "`CAT`, `DOG`, `SNAIL` — each on its own line."

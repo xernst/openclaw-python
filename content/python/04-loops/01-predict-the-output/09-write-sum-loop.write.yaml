@@ -1,0 +1,32 @@
+xp: 5
+estSeconds: 90
+concept: accumulator-loop
+prompt: |
+  Write a loop that sums every number in `nums = [10, 20, 30, 40]` and prints
+  the total.
+
+  Expected output:
+  ```
+  100
+  ```
+starter: |
+  nums = [10, 20, 30, 40]
+  total = 0
+  # your loop here:
+
+  print(total)
+grader:
+  kind: stdout-equality
+  expected: "100"
+  normalize: collapse-trailing-newline
+solution: |
+  nums = [10, 20, 30, 40]
+  total = 0
+  for n in nums:
+      total = total + n
+  print(total)
+hint:
+  - level: 1
+    body: "Two-line loop. Header: `for n in nums:`. Body: `total = total + n`, indented."
+  - level: 2
+    body: "`for n in nums:` then on the next line, indented, `total = total + n`."

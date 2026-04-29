@@ -1,0 +1,42 @@
+xp: 8
+estSeconds: 120
+concept: loops-recap
+prompt: |
+  One last thing. AI handed back a list of three users with scores. Your job:
+  loop through them and print each user's name and score on its own line, in
+  the format `name: score`.
+
+  Expected output:
+  ```
+  maya: 92
+  marcus: 78
+  priya: 88
+  ```
+starter: |
+  users = [
+      {"name": "maya", "score": 92},
+      {"name": "marcus", "score": 78},
+      {"name": "priya", "score": 88},
+  ]
+  # your loop here:
+grader:
+  kind: stdout-equality
+  expected: |
+    maya: 92
+    marcus: 78
+    priya: 88
+  normalize: collapse-trailing-newline
+solution: |
+  users = [
+      {"name": "maya", "score": 92},
+      {"name": "marcus", "score": 78},
+      {"name": "priya", "score": 88},
+  ]
+  for user in users:
+      print(f"{user['name']}: {user['score']}")
+passThreshold: 0.66
+hint:
+  - level: 1
+    body: "`for user in users:` walks through the list. Inside, reach into each user's dict for `name` and `score`."
+  - level: 2
+    body: "`for user in users:` then `print(f\"{user['name']}: {user['score']}\")`."

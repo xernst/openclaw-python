@@ -1,0 +1,19 @@
+xp: 3
+estSeconds: 60
+concept: range-exclusive-stop
+code: |
+  total = 0
+  for i in range(1, 5):
+      total = total + i
+  print(total)
+prompt: |
+  This adds up some numbers. What's the final total?
+grader:
+  kind: stdout-equality
+  expected: "10"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "`range(1, 5)` produces `1, 2, 3, 4` — the `5` is the stop, Python never reaches it."
+  - level: 2
+    body: "`1 + 2 + 3 + 4` is `10`."

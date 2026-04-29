@@ -1,0 +1,32 @@
+xp: 3
+estSeconds: 50
+concept: dict-items-iteration
+prompt: |
+  Cursor wrote a loop that walks through a dict and prints each name and score.
+  The loop header is missing the second loop variable. Fill it in.
+  ```python
+  scores = {"maya": 92, "marcus": 78}
+  for name, ___ in scores.items():
+      print(f"{name}: {___}")
+  ```
+  Both blanks take the same name.
+blanks:
+  - id: var1
+    accept:
+      - score
+      - points
+      - value
+      - v
+    caseSensitive: true
+  - id: var2
+    accept:
+      - score
+      - points
+      - value
+      - v
+    caseSensitive: true
+hint:
+  - level: 1
+    body: "`dict.items()` hands back two values per trip — the key and the value. Both blanks need the same name you pick for the value."
+  - level: 2
+    body: "`score` is the obvious one. `for name, score in scores.items():` then `print(f\"{name}: {score}\")`."

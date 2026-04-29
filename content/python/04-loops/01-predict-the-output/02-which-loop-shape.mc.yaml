@@ -1,0 +1,25 @@
+xp: 2
+estSeconds: 35
+concept: loop-syntax-rules
+code: |
+  pets = ["luna", "moose"]
+prompt: |
+  Cursor offered four lines that could go after `pets = ["luna", "moose"]`.
+  Only one is valid Python that walks through the list. Which one?
+options:
+  - id: a
+    label: "`for pet of pets:`"
+    explain: "`of` is JavaScript. Python uses `in`."
+  - id: b
+    label: "`for pet in pets:`"
+  - id: c
+    label: "`foreach pet in pets:`"
+    explain: "`foreach` is C# / PHP. Python's keyword is just `for`."
+  - id: d
+    label: "`for (pet in pets):`"
+    explain: "Python doesn't wrap the loop header in parens."
+answerIds:
+  - b
+hint:
+  - level: 1
+    body: "Python's loop keyword is `for`. The connector is `in`. No parens, no `of`."

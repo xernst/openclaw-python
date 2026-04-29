@@ -1,0 +1,15 @@
+slug: predict-the-output
+title: "Loops — read it, predict it, then trust it"
+estMinutes: 8
+prerequisites: []
+order:
+  - 01-intro.read.md
+  - 02-which-loop-shape.mc.yaml
+  - 03-range.read.md
+  - 04-predict-the-list-loop.predict.yaml
+  - 05-predict-the-range.predict.yaml
+  - 06-fill-the-loop-variable.fill.yaml
+  - 07-fix-the-off-by-one.fix.yaml
+  - 08-fix-the-dict-loop.fix.yaml
+  - 09-write-sum-loop.write.yaml
+  - 10-checkpoint.checkpoint.yaml

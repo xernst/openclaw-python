@@ -1,0 +1,27 @@
+xp: 4
+estSeconds: 75
+concept: dict-default-iteration
+prompt: |
+  Cursor wrote this expecting it to print `maya: 92` and `marcus: 78`. Instead
+  it crashes with a `ValueError` because looping a dict directly only hands you
+  the keys, not the keys *and* values.
+
+  Fix line 2 so the loop prints both lines.
+brokenCode: |
+  scores = {"maya": 92, "marcus": 78}
+  for name, score in scores:
+      print(f"{name}: {score}")
+bugLines:
+  - 2
+grader:
+  kind: stdout-equality
+  expected: |
+    maya: 92
+    marcus: 78
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "Looping `for x in some_dict` hands you keys only. To get keys *and* values, you need to ask for both."
+  - level: 2
+    body: "Change `scores` to `scores.items()` on line 2."
+revealAfter: 4

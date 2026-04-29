@@ -1,0 +1,28 @@
+xp: 4
+estSeconds: 75
+concept: range-off-by-one
+prompt: |
+  Claude wrote a loop that's supposed to print `1, 2, 3, 4, 5` (one per line)
+  but it stops at `4`. This is the most common loop bug AI ships.
+
+  Fix line 1 so the loop prints all five numbers.
+brokenCode: |
+  for i in range(1, 5):
+      print(i)
+bugLines:
+  - 1
+grader:
+  kind: stdout-equality
+  expected: |
+    1
+    2
+    3
+    4
+    5
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "`range`'s second argument is the stop, and Python stops *before* it. To include `5`, the stop has to be `6`."
+  - level: 2
+    body: "Change `range(1, 5)` to `range(1, 6)`."
+revealAfter: 4
