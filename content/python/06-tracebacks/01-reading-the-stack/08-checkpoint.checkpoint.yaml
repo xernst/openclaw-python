@@ -1,0 +1,26 @@
+xp: 8
+estSeconds: 120
+concept: tracebacks-recap
+prompt: |
+  One last thing. AI handed you this script and it crashes. The traceback ends
+  with `KeyError: 'email'`. Your job: read the dict on line 1, then fix the
+  lookup on line 2 so the script prints `email: maya@example.com`.
+
+  Two changes total. The dict has the user's email under a different key name —
+  use the correct one.
+starter: |
+  user = {"name": "maya", "contact": "maya@example.com"}
+  print(f"email: {user['email']}")
+grader:
+  kind: stdout-equality
+  expected: "email: maya@example.com"
+  normalize: collapse-trailing-newline
+solution: |
+  user = {"name": "maya", "contact": "maya@example.com"}
+  print(f"email: {user['contact']}")
+passThreshold: 0.66
+hint:
+  - level: 1
+    body: "`KeyError: 'email'` means there's no `email` key. Look at line 1 — what key actually holds the email value?"
+  - level: 2
+    body: "The key is `contact`. Change `user['email']` to `user['contact']`."

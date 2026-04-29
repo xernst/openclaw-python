@@ -1,0 +1,13 @@
+slug: reading-the-stack
+title: "Tracebacks — read the wall of text"
+estMinutes: 7
+prerequisites: []
+order:
+  - 01-anatomy.read.md
+  - 02-which-error.mc.yaml
+  - 03-error-types.read.md
+  - 04-predict-the-error.predict.yaml
+  - 05-fix-nameerror.fix.yaml
+  - 06-fix-typeerror.fix.yaml
+  - 07-fix-attributeerror.fix.yaml
+  - 08-checkpoint.checkpoint.yaml

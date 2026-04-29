@@ -1,0 +1,18 @@
+xp: 3
+estSeconds: 60
+concept: indexerror-prediction
+code: |
+  pets = ["luna", "moose"]
+  print(pets[5])
+prompt: |
+  This crashes. Type the **error type only** (one word, no message,
+  no quotes). For example: `NameError`.
+grader:
+  kind: stdout-equality
+  expected: "IndexError"
+  normalize: trim
+hint:
+  - level: 1
+    body: "The list has 2 items. The code asks for index 5. What's the error type for *list too short*?"
+  - level: 2
+    body: "It's `IndexError`. Same family of bugs as off-by-one loop bounds."

@@ -1,0 +1,23 @@
+xp: 4
+estSeconds: 75
+concept: nameerror-fix
+prompt: |
+  Cursor wrote this and it crashes with `NameError: name 'user_name' is not defined`.
+  Read the traceback when you run it — Python tells you the bad line.
+
+  Fix it so the code prints `hi, maya`.
+brokenCode: |
+  username = "maya"
+  print(f"hi, {user_name}")
+bugLines:
+  - 2
+grader:
+  kind: stdout-equality
+  expected: "hi, maya"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "`NameError` means a variable name doesn't exist. Compare line 1 and line 2 carefully."
+  - level: 2
+    body: "Line 1 defines `username`. Line 2 uses `user_name`. Match them."
+revealAfter: 4

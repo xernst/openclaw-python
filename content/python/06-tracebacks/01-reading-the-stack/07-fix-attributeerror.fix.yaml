@@ -1,0 +1,30 @@
+xp: 4
+estSeconds: 80
+concept: attributeerror-none
+prompt: |
+  Cursor wrote a function `find_name` that's supposed to return a name string
+  but returns `None` when the user is missing. Then line 5 calls `.upper()` on
+  the result, which crashes with `AttributeError: 'NoneType' object has no attribute 'upper'`.
+
+  Fix line 1 so the function actually returns `"maya"`. The `None` case is a
+  separate bug — for now, just give the function a real return value so the
+  script prints `MAYA`.
+brokenCode: |
+  def find_name():
+      name = "maya"
+      # missing return
+
+  result = find_name()
+  print(result.upper())
+bugLines:
+  - 3
+grader:
+  kind: stdout-equality
+  expected: "MAYA"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "`AttributeError: 'NoneType' object` is the giveaway — the function returned `None`. Why? It has no `return`."
+  - level: 2
+    body: "Replace the `# missing return` comment on line 3 with `return name`."
+revealAfter: 4

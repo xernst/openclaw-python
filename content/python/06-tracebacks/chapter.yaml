@@ -1,0 +1,6 @@
+number: 6
+slug: tracebacks
+title: "Tracebacks — Cursor wrote this and crashed"
+blurb: "When Python crashes, it tells you exactly what happened and where. Most non-engineers panic at the wall of text. You're going to learn to read it."
+lessons:
+  - 01-reading-the-stack

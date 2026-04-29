@@ -1,0 +1,26 @@
+xp: 4
+estSeconds: 80
+concept: typeerror-string-vs-int
+prompt: |
+  Claude wrote this expecting `total: 15`. Instead it crashes with
+  `TypeError: unsupported operand type(s) for +: 'int' and 'str'`.
+
+  The bug is on line 3: `"10"` is a string, not a number. Python won't add
+  `5 + "10"`. Fix the line so the code prints `total: 15`.
+brokenCode: |
+  base = 5
+  extra = "10"
+  total = base + extra
+  print(f"total: {total}")
+bugLines:
+  - 3
+grader:
+  kind: stdout-equality
+  expected: "total: 15"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "Python won't add an int and a string. You need to convert the string to an int with `int(...)`."
+  - level: 2
+    body: "Change line 3 to `total = base + int(extra)`."
+revealAfter: 4

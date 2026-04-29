@@ -1,0 +1,26 @@
+xp: 2
+estSeconds: 45
+concept: error-classification
+code: |
+  user = {"name": "maya"}
+  print(user["email"])
+prompt: |
+  Cursor wrote this snippet and it crashes. Before you run it, what error type
+  does Python throw?
+options:
+  - id: a
+    label: "`NameError`"
+    explain: "`NameError` is for variables that don't exist. `user` is defined fine."
+  - id: b
+    label: "`KeyError`"
+  - id: c
+    label: "`IndexError`"
+    explain: "`IndexError` is for lists with a too-large index. This is a dict, not a list."
+  - id: d
+    label: "`AttributeError`"
+    explain: "`AttributeError` is for `.method` calls on the wrong type. This is bracket access."
+answerIds:
+  - b
+hint:
+  - level: 1
+    body: "It's a dict lookup with a missing key. Python has a specific error name for that."
