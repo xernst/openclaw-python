@@ -252,7 +252,7 @@ async function loadLesson(chapterDir, lessonFolder, chapterSlug) {
   const lessonDir = join(chapterDir, lessonFolder);
   const lessonYamlPath = join(lessonDir, "lesson.yaml");
   if (!existsSync(lessonYamlPath)) {
-    throw new Error(`Missing lesson.yaml in ${lessonDir}`);
+    return null; // authoring-in-progress: lesson scaffolded but not yet declared
   }
   const lessonMeta = LessonYaml.parse(YAML.parse(await readFile(lessonYamlPath, "utf8")));
   const lessonId = `${chapterSlug}/${lessonMeta.slug}`;
@@ -260,6 +260,9 @@ async function loadLesson(chapterDir, lessonFolder, chapterSlug) {
   const steps = [];
   for (let i = 0; i < lessonMeta.order.length; i++) {
     const filename = lessonMeta.order[i];
+    if (!existsSync(join(lessonDir, filename))) {
+      return null; // step listed in order[] but file not yet written
+    }
     const step = await loadStep(lessonDir, filename, i, lessonId);
     steps.push(step);
   }
@@ -303,6 +306,7 @@ async function loadChapter(chapterFolder) {
   const lessons = [];
   for (const lessonFolder of chapterMeta.lessons) {
     const lesson = await loadLesson(chapterDir, lessonFolder, chapterMeta.slug);
+    if (!lesson) return null; // partial chapter — skip until all listed lessons land
     lessons.push(lesson);
   }
 
