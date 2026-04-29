@@ -1,0 +1,14 @@
+slug: raising-and-custom-exceptions
+title: "Raising errors — making your code fail loudly on purpose"
+estMinutes: 8
+prerequisites: []
+order:
+  - 01-intro.read.md
+  - 02-which-raise-fires.mc.yaml
+  - 03-custom-exception-classes.read.md
+  - 04-predict-the-raise.predict.yaml
+  - 05-fill-the-raise-keyword.fill.yaml
+  - 06-fix-the-silent-swallow.fix.yaml
+  - 07-fix-the-bare-raise.fix.yaml
+  - 08-write-validate-age.write.yaml
+  - 09-checkpoint.checkpoint.yaml

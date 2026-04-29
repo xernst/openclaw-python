@@ -1,0 +1,43 @@
+xp: 4
+estSeconds: 80
+concept: re-raising-with-context
+prompt: |
+  Cursor wrote a function that catches an exception, logs it, and was
+  *supposed* to re-raise so the caller still sees the failure. Instead it
+  catches, logs, and silently returns `None`. The script then crashes
+  later in a confusing place because a downstream call gets `None`.
+
+  Add a single line so that after the `print` on line 5, the same
+  exception keeps propagating. The bare `raise` keyword (no class, no
+  message) re-raises the exception that was just caught.
+
+  Expected output:
+  ```
+  logging: bad input
+  caught at top: bad input
+  ```
+brokenCode: |
+  def parse(text):
+      try:
+          return int(text)
+      except ValueError as err:
+          print(f"logging: {err}")
+
+  try:
+      parse("bad input")
+  except ValueError as err:
+      print(f"caught at top: {err}")
+bugLines:
+  - 5
+grader:
+  kind: stdout-equality
+  expected: |
+    logging: bad input
+    caught at top: bad input
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "After the `print`, you need to re-throw the same exception. The keyword is `raise` — with nothing after it."
+  - level: 2
+    body: "Add `raise` as a new line right after `print(f\"logging: {err}\")`. Bare `raise` (no class, no message) inside an `except` block re-raises whatever was caught."
+revealAfter: 4

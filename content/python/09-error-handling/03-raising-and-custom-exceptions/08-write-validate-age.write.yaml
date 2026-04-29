@@ -1,0 +1,46 @@
+xp: 5
+estSeconds: 110
+concept: write-raise-function
+prompt: |
+  Write a function `validate_age(age)` that:
+
+  - Returns `age` unchanged when `age` is an integer between `0` and `120`
+    (inclusive).
+  - Raises `ValueError` with the message `f"age out of range: {age}"`
+    otherwise.
+
+  Then call it three times inside `try/except ValueError as err: print(err)`
+  blocks so the output below prints. Use `print(validate_age(...))` for
+  the happy-path call.
+
+  Expected output:
+  ```
+  30
+  age out of range: -5
+  age out of range: 200
+  ```
+starter: |
+  # define validate_age below
+grader:
+  kind: stdout-equality
+  expected: |
+    30
+    age out of range: -5
+    age out of range: 200
+  normalize: collapse-trailing-newline
+solution: |
+  def validate_age(age):
+      if age < 0 or age > 120:
+          raise ValueError(f"age out of range: {age}")
+      return age
+
+  for a in [30, -5, 200]:
+      try:
+          print(validate_age(a))
+      except ValueError as err:
+          print(err)
+hint:
+  - level: 1
+    body: "Function body: `if age < 0 or age > 120: raise ValueError(...)` then `return age`. Then a loop or three explicit `try/except` blocks at the bottom."
+  - level: 2
+    body: "`def validate_age(age):` then `if age < 0 or age > 120: raise ValueError(f\"age out of range: {age}\")` then `return age`. Then loop over `[30, -5, 200]`, wrap each in `try/except ValueError as err: print(err)`."

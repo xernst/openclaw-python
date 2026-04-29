@@ -1,0 +1,23 @@
+xp: 3
+estSeconds: 50
+concept: raise-keyword
+prompt: |
+  Cursor wrote a guard clause but forgot the keyword that actually throws
+  the exception. Fill in the missing keyword on line 3.
+
+  Keyword: ___
+code: |
+  def withdraw(balance, amount):
+      if amount > balance:
+          ___ ValueError("insufficient balance")
+      return balance - amount
+blanks:
+  - id: keyword
+    accept:
+      - raise
+    caseSensitive: true
+hint:
+  - level: 1
+    body: "Five letters. The keyword that turns an exception class into a thrown error."
+  - level: 2
+    body: "It's `raise`. Lowercase. Read line 3 as: throw a `ValueError` with this message right now."

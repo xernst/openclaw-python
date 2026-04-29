@@ -5,3 +5,4 @@ blurb: "AI loves a happy path. The moment a file isn't there or an API blinks, t
 lessons:
   - 01-try-except-basics
   - 02-catching-specific-errors
+  - 03-raising-and-custom-exceptions

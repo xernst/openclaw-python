@@ -1,0 +1,41 @@
+xp: 4
+estSeconds: 85
+concept: silent-error-antipattern
+prompt: |
+  Claude shipped this and a teammate spent two days debugging a "missing
+  data" bug that turned out to be `validate_order` silently returning
+  `None` for any bad input. The `except: pass` swallows every exception
+  including bugs.
+
+  Replace the `try/except` block with a single `raise ValueError(...)`
+  that fails loudly when `qty` is not positive. Keep the message
+  `"qty must be positive"`. The expected output (a traceback) just needs
+  to print `qty must be positive` somewhere — for this drill, change the
+  `print` at the bottom to wrap the call in a `try/except ValueError as e:
+  print(e)` so the test can grade it.
+brokenCode: |
+  def validate_order(qty):
+      try:
+          if qty <= 0:
+              return None
+      except:
+          pass
+      return qty
+
+  print(validate_order(-3))
+bugLines:
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+grader:
+  kind: stdout-equality
+  expected: "qty must be positive"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "Replace the whole `try/except/return None` block with a single `if qty <= 0: raise ValueError(\"qty must be positive\")`. Then wrap the call site in `try/except ValueError as e: print(e)`."
+  - level: 2
+    body: "Function body: `if qty <= 0: raise ValueError(\"qty must be positive\")` then `return qty`. Bottom: `try: validate_order(-3)\\nexcept ValueError as e: print(e)`."
+revealAfter: 4

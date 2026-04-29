@@ -1,0 +1,32 @@
+xp: 3
+estSeconds: 65
+concept: raise-and-recover
+code: |
+  class TokenExpired(Exception):
+      pass
+
+  def verify(token):
+      if token == "":
+          raise TokenExpired("empty token")
+      return f"ok: {token}"
+
+  for t in ["abc", "", "xyz"]:
+      try:
+          print(verify(t))
+      except TokenExpired as err:
+          print(f"reject: {err}")
+prompt: |
+  The loop runs `verify` on three tokens. The middle one is empty and
+  triggers a `raise`. What does this print? (Three lines, in order.)
+grader:
+  kind: stdout-equality
+  expected: |
+    ok: abc
+    reject: empty token
+    ok: xyz
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "First and third tokens skip the `if`, hit the `return`, print the success line. Middle one raises and gets caught."
+  - level: 2
+    body: "Outputs are `ok: abc`, then `reject: empty token`, then `ok: xyz`. The loop keeps going after the caught exception."

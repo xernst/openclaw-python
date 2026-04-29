@@ -1,0 +1,36 @@
+xp: 2
+estSeconds: 50
+concept: raise-with-message
+code: |
+  def divide(a, b):
+      if b == 0:
+          raise ZeroDivisionError("denominator was zero")
+      return a / b
+
+  try:
+      result = divide(10, 0)
+      print(result)
+  except ZeroDivisionError as err:
+      print(f"caught: {err}")
+prompt: |
+  Read the code. `divide(10, 0)` triggers the `raise` on line 3. The
+  caller wraps it in `try/except`. What prints?
+options:
+  - id: a
+    label: "`5.0`"
+    explain: "`divide(10, 0)` never reaches the `return` — the `raise` fires first."
+  - id: b
+    label: "`caught: denominator was zero`"
+  - id: c
+    label: "Nothing — the program crashes"
+    explain: "It would crash if there were no `try/except`. There is one, and it catches `ZeroDivisionError`, so execution continues."
+  - id: d
+    label: "`caught: ZeroDivisionError`"
+    explain: "`{err}` formats the *message* of the exception, not the class name. Use `type(err).__name__` for the class."
+answerIds:
+  - b
+hint:
+  - level: 1
+    body: "`raise ZeroDivisionError(\"denominator was zero\")` flies up to the `try`. The `except` binds it to `err`. What does `f\"caught: {err}\"` print?"
+  - level: 2
+    body: "When you put an exception instance in an f-string, you get the message. So the line prints `caught: denominator was zero`."

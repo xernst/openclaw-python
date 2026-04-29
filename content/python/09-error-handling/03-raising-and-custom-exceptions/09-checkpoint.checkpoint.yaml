@@ -1,0 +1,66 @@
+xp: 8
+estSeconds: 150
+concept: raise-and-custom-exceptions-checkpoint
+prompt: |
+  Last drill. Write a tiny order system:
+
+  1. Define a custom exception class `OutOfStock` that inherits from
+     `Exception`.
+  2. Define a function `place_order(inventory, item, qty)` that:
+     - Raises `KeyError(item)` if `item` is not in `inventory`.
+     - Raises `OutOfStock(f"only {inventory[item]} left of {item}")`
+       if `inventory[item] < qty`.
+     - Otherwise returns the string `f"shipped {qty} {item}"`.
+  3. Loop over three orders. For each, wrap the call in
+     `try/except (KeyError, OutOfStock) as err: print(err)`.
+
+  Use this inventory and these orders:
+  ```
+  inventory = {"book": 5, "pen": 0}
+  orders = [("book", 2), ("pen", 1), ("hat", 1)]
+  ```
+
+  Expected output:
+  ```
+  shipped 2 book
+  only 0 left of pen
+  'hat'
+  ```
+starter: |
+  # 1. define OutOfStock
+
+  # 2. define place_order
+
+  # 3. loop and print
+grader:
+  kind: stdout-equality
+  expected: |
+    shipped 2 book
+    only 0 left of pen
+    'hat'
+  normalize: collapse-trailing-newline
+solution: |
+  class OutOfStock(Exception):
+      pass
+
+  def place_order(inventory, item, qty):
+      if item not in inventory:
+          raise KeyError(item)
+      if inventory[item] < qty:
+          raise OutOfStock(f"only {inventory[item]} left of {item}")
+      return f"shipped {qty} {item}"
+
+  inventory = {"book": 5, "pen": 0}
+  orders = [("book", 2), ("pen", 1), ("hat", 1)]
+
+  for item, qty in orders:
+      try:
+          print(place_order(inventory, item, qty))
+      except (KeyError, OutOfStock) as err:
+          print(err)
+passThreshold: 0.66
+hint:
+  - level: 1
+    body: "`class OutOfStock(Exception): pass`. Then `def place_order(...)` with two `if` guards and a return. Then a loop with `try/except (KeyError, OutOfStock) as err: print(err)`."
+  - level: 2
+    body: "The third call raises `KeyError(\"hat\")`. Printing a `KeyError` instance shows the key in single quotes — that's why the expected output has `'hat'` with quotes."

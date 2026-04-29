@@ -524,7 +524,282 @@
         }
       ],
       "xpTotal": 32
+    },
+    {
+      "slug": "raising-and-custom-exceptions",
+      "title": "Raising errors — making your code fail loudly on purpose",
+      "estMinutes": 8,
+      "prerequisites": [],
+      "steps": [
+        {
+          "type": "read",
+          "id": "error-handling/raising-and-custom-exceptions/s01-01-intro",
+          "xp": 1,
+          "hint": [],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 100,
+          "concept": "raising-exceptions",
+          "body": "# Raising errors — telling Python to crash on purpose\n\nSo far every exception you've seen was raised *by Python itself*: a bad\n`int(...)`, a missing dict key, an out-of-range index. But you can also\nraise your own. The keyword is `raise`, and it's how you turn a quiet\n\"the inputs to this function are nonsense\" into a loud, traceback-able\ncrash that points at the exact line that's wrong.\n\nThis is the move that separates code that hides bugs from code that\n*finds them for you*. Cursor reaches for it inconsistently — sometimes\nright, often missing. Reading AI code, the question to ask at the top\nof every function is: *what inputs make this function meaningless, and\ndoes it `raise` for them or silently produce garbage?*\n\n## The mental model\n\n`raise` is the inverse of `try/except`. Where `try` says *\"if something\ngoes wrong, here's what to do,\"* `raise` says *\"something is wrong,\nhere's what to throw.\"* The shape:\n\n```python\nraise ValueError(\"amount must be positive\")\n```\n\nThree parts: the keyword `raise`, an exception class (`ValueError`),\nand — usually — a string explaining what's wrong. Python wraps the\nmessage in an instance of the class and propagates it up the call\nstack the same way an automatic exception would. Anyone with a\nmatching `except` catches it. Nobody catches it, the program crashes\nwith a traceback.\n\nWhen the message is good, the traceback alone tells the next developer\n(or future-you) exactly what went wrong without opening the file. When\nthe message is `\"error\"` or `\"invalid\"`, you get a useless traceback\nthat forces you to re-read the function. Spend the extra five seconds\non a real message.\n\n## A worked example\n\nThe editor on the right has a payment function with input validation:\n\n```python\ndef charge(amount):\n    if amount <= 0:\n        raise ValueError(f\"amount must be positive, got {amount}\")\n    print(f\"charging ${amount}\")\n\ncharge(50)\ncharge(-10)\n```\n\n`charge(50)` passes the check (50 is greater than 0), so it prints\n`charging $50` and returns. `charge(-10)` fails the check on line 2.\nThe `raise` fires immediately. Python builds a `ValueError` instance\nwith the message `amount must be positive, got -10` and propagates it\nup. There's no `try` around the call site, so the program crashes and\nyou see a clean traceback that names the offending value.\n\nThat last detail — *\"got -10\"* — is what makes a raised exception\nuseful. The class tells you the *kind* of failure (a value is\ninvalid). The message tells you which value, what it was, and why it\nwas wrong. Six words. Unforgettable when you're debugging at 11pm.\n\n## Where AI specifically gets this wrong\n\nTwo patterns to flag in code Cursor writes you.\n\n**One: silent guards.** AI loves to write `if amount <= 0: return None`\ninstead of `raise`. Now the function \"works\" for negative inputs — it\nreturns nothing, and the caller has no idea anything went wrong. Three\nfunction calls later, something else explodes for a reason that has\nnothing to do with the real bug. `raise` would have caught it on line\ntwo of the original function.\n\n**Two: useless messages.** `raise ValueError(\"error\")` and `raise\nValueError()` are both legal Python and both useless. The exception\nclass alone is barely more informative than `print(\"something\nbroke\")`. Always include a message that names *which* input failed\nand what its value was.\n\nRun the editor. The first call works. The second crashes with a\ntraceback that points at line 3 — the `raise` itself — and tells you\nexactly what was wrong with the input.",
+          "cta": "Got it",
+          "code": "def charge(amount):\n    if amount <= 0:\n        raise ValueError(f\"amount must be positive, got {amount}\")\n    print(f\"charging ${amount}\")\n\ncharge(50)\ncharge(-10)\n",
+          "runnable": true
+        },
+        {
+          "type": "mc",
+          "id": "error-handling/raising-and-custom-exceptions/s02-02-which-raise-fires",
+          "xp": 2,
+          "hint": [
+            {
+              "level": 1,
+              "body": "`raise ZeroDivisionError(\"denominator was zero\")` flies up to the `try`. The `except` binds it to `err`. What does `f\"caught: {err}\"` print?",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "When you put an exception instance in an f-string, you get the message. So the line prints `caught: denominator was zero`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 50,
+          "concept": "raise-with-message",
+          "prompt": "Read the code. `divide(10, 0)` triggers the `raise` on line 3. The\ncaller wraps it in `try/except`. What prints?\n",
+          "options": [
+            {
+              "id": "a",
+              "label": "`5.0`",
+              "explain": "`divide(10, 0)` never reaches the `return` — the `raise` fires first."
+            },
+            {
+              "id": "b",
+              "label": "`caught: denominator was zero`"
+            },
+            {
+              "id": "c",
+              "label": "Nothing — the program crashes",
+              "explain": "It would crash if there were no `try/except`. There is one, and it catches `ZeroDivisionError`, so execution continues."
+            },
+            {
+              "id": "d",
+              "label": "`caught: ZeroDivisionError`",
+              "explain": "`{err}` formats the *message* of the exception, not the class name. Use `type(err).__name__` for the class."
+            }
+          ],
+          "answerIds": [
+            "b"
+          ],
+          "shuffle": false,
+          "code": "def divide(a, b):\n    if b == 0:\n        raise ZeroDivisionError(\"denominator was zero\")\n    return a / b\n\ntry:\n    result = divide(10, 0)\n    print(result)\nexcept ZeroDivisionError as err:\n    print(f\"caught: {err}\")\n",
+          "runnable": true
+        },
+        {
+          "type": "read",
+          "id": "error-handling/raising-and-custom-exceptions/s03-03-custom-exception-classes",
+          "xp": 2,
+          "hint": [],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 120,
+          "concept": "custom-exception-classes",
+          "body": "# Custom exceptions — naming the failures your code actually has\n\nThe five built-in exceptions (`ValueError`, `KeyError`, `TypeError`,\n`IndexError`, `FileNotFoundError`) cover most situations. But they're\n*generic*. Every Python program in the world uses `ValueError` for\n\"the input was wrong.\" When you read an AI-generated FastAPI app and\nsee `except ValueError`, you have no idea whether that's catching a\nparse error, a validation error, an out-of-range business rule, or a\ngenuine bug.\n\nThe fix: define your own exception class for failures that have a\nspecific meaning in *your* code. It's three lines and it pays back\nevery time you read the codebase later.\n\n## The mental model\n\nA custom exception is just a Python class that inherits from\n`Exception` (or one of its subclasses). The body can be empty:\n\n```python\nclass PaymentDeclined(Exception):\n    pass\n```\n\nThat's it. You now have a fully functional exception class. You can\nraise it (`raise PaymentDeclined(\"...\")`), catch it (`except\nPaymentDeclined`), and — most importantly — anyone reading the code\nsees the *name* and immediately knows what kind of failure this is.\n\"Payment declined\" is unambiguous. \"Value error\" isn't.\n\nYou can also build a small hierarchy when several failures share a\ncategory:\n\n```python\nclass PaymentDeclined(Exception):\n    pass\n\nclass InsufficientFunds(PaymentDeclined):\n    pass\n\nclass CardExpired(PaymentDeclined):\n    pass\n```\n\nNow `except PaymentDeclined` catches *both* of the specific subclasses\n(because of inheritance), and `except InsufficientFunds` catches only\nthat one. You get to choose how broad each catch is.\n\n## A worked example\n\nThe editor on the right has a tiny payment system:\n\n```python\nclass PaymentDeclined(Exception):\n    pass\n\nclass InsufficientFunds(PaymentDeclined):\n    pass\n\ndef charge(account, amount):\n    if account[\"balance\"] < amount:\n        raise InsufficientFunds(\n            f\"need {amount}, have {account['balance']}\"\n        )\n    account[\"balance\"] -= amount\n\ntry:\n    charge({\"balance\": 30}, 100)\nexcept PaymentDeclined as err:\n    print(f\"payment failed: {err}\")\n```\n\n`charge` notices the balance is too low, raises\n`InsufficientFunds(...)`. The `except` clause catches\n`PaymentDeclined`, and because `InsufficientFunds` is a subclass,\ninheritance means the catch fires. Output: `payment failed: need 100,\nhave 30`.\n\nNotice the asymmetry: the `raise` is specific (`InsufficientFunds`),\nthe `except` is broad (`PaymentDeclined`). That's almost always the\nright shape — raise as specifically as you can, catch as broadly as\nthe recovery applies. A handler that says \"any payment failure goes\nto this branch\" is fine. A handler that says \"any error anywhere goes\nto this branch\" is `except Exception` again, and we already covered\nwhy that's a bad idea.\n\n## When to actually do this\n\nDon't make a custom exception for every function. The bar is: *would\na reader be confused about what kind of failure this is?* If the\nanswer is yes, name it. Real cases where it earns its keep:\n\n- Domain rules. `InsufficientFunds`, `OrderAlreadyShipped`,\n  `RateLimitExceeded`. These are events in the business, not generic\n  bad values.\n- Boundary failures. `UpstreamAPIError`, `ConfigMissing`,\n  `AuthenticationFailed`. These mark *where* the failure came from so\n  the right caller can handle it.\n- Anything you'll need to handle differently from a generic\n  `ValueError` somewhere upstream.\n\n## Where AI specifically gets this wrong\n\nCursor under-uses custom exceptions and over-uses string messages\ninside `ValueError`. You'll see code like `raise ValueError(\"user\nnot found\")` and `raise ValueError(\"token expired\")` and `raise\nValueError(\"rate limited\")` all in the same file. Now any caller has\nto *parse the message string* to figure out which case fired. That's\nfragile — a typo in the message breaks the handler, and a reader has\nto grep for the string everywhere.\n\nWhen you see three `raise ValueError(...)` calls in the same module\nwith three meaningfully different meanings, that's the signal: lift\neach into its own class. Run the editor and watch a custom exception\ncatch its own subclass.",
+          "cta": "Got it",
+          "code": "class PaymentDeclined(Exception):\n    pass\n\nclass InsufficientFunds(PaymentDeclined):\n    pass\n\ndef charge(account, amount):\n    if account[\"balance\"] < amount:\n        raise InsufficientFunds(\n            f\"need {amount}, have {account['balance']}\"\n        )\n    account[\"balance\"] -= amount\n\ntry:\n    charge({\"balance\": 30}, 100)\nexcept PaymentDeclined as err:\n    print(f\"payment failed: {err}\")\n",
+          "runnable": true
+        },
+        {
+          "type": "predict",
+          "id": "error-handling/raising-and-custom-exceptions/s04-04-predict-the-raise",
+          "xp": 3,
+          "hint": [
+            {
+              "level": 1,
+              "body": "First and third tokens skip the `if`, hit the `return`, print the success line. Middle one raises and gets caught.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Outputs are `ok: abc`, then `reject: empty token`, then `ok: xyz`. The loop keeps going after the caught exception.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 65,
+          "concept": "raise-and-recover",
+          "code": "class TokenExpired(Exception):\n    pass\n\ndef verify(token):\n    if token == \"\":\n        raise TokenExpired(\"empty token\")\n    return f\"ok: {token}\"\n\nfor t in [\"abc\", \"\", \"xyz\"]:\n    try:\n        print(verify(t))\n    except TokenExpired as err:\n        print(f\"reject: {err}\")\n",
+          "prompt": "The loop runs `verify` on three tokens. The middle one is empty and\ntriggers a `raise`. What does this print? (Three lines, in order.)\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "ok: abc\nreject: empty token\nok: xyz\n",
+            "normalize": "collapse-trailing-newline"
+          }
+        },
+        {
+          "type": "fill",
+          "id": "error-handling/raising-and-custom-exceptions/s05-05-fill-the-raise-keyword",
+          "xp": 3,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Five letters. The keyword that turns an exception class into a thrown error.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "It's `raise`. Lowercase. Read line 3 as: throw a `ValueError` with this message right now.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 50,
+          "concept": "raise-keyword",
+          "prompt": "Cursor wrote a guard clause but forgot the keyword that actually throws\nthe exception. Fill in the missing keyword on line 3.\n\nKeyword: ___\n",
+          "code": "def withdraw(balance, amount):\n    if amount > balance:\n        ___ ValueError(\"insufficient balance\")\n    return balance - amount\n",
+          "blanks": [
+            {
+              "id": "keyword",
+              "accept": [
+                "raise"
+              ],
+              "caseSensitive": true,
+              "normalize": "trim"
+            }
+          ]
+        },
+        {
+          "type": "fix",
+          "id": "error-handling/raising-and-custom-exceptions/s06-06-fix-the-silent-swallow",
+          "xp": 4,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Replace the whole `try/except/return None` block with a single `if qty <= 0: raise ValueError(\"qty must be positive\")`. Then wrap the call site in `try/except ValueError as e: print(e)`.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Function body: `if qty <= 0: raise ValueError(\"qty must be positive\")` then `return qty`. Bottom: `try: validate_order(-3)\\nexcept ValueError as e: print(e)`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 85,
+          "concept": "silent-error-antipattern",
+          "brokenCode": "def validate_order(qty):\n    try:\n        if qty <= 0:\n            return None\n    except:\n        pass\n    return qty\n\nprint(validate_order(-3))\n",
+          "prompt": "Claude shipped this and a teammate spent two days debugging a \"missing\ndata\" bug that turned out to be `validate_order` silently returning\n`None` for any bad input. The `except: pass` swallows every exception\nincluding bugs.\n\nReplace the `try/except` block with a single `raise ValueError(...)`\nthat fails loudly when `qty` is not positive. Keep the message\n`\"qty must be positive\"`. The expected output (a traceback) just needs\nto print `qty must be positive` somewhere — for this drill, change the\n`print` at the bottom to wrap the call in a `try/except ValueError as e:\nprint(e)` so the test can grade it.\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "qty must be positive",
+            "normalize": "collapse-trailing-newline"
+          },
+          "bugLines": [
+            2,
+            3,
+            4,
+            5,
+            6
+          ],
+          "revealAfter": 4
+        },
+        {
+          "type": "fix",
+          "id": "error-handling/raising-and-custom-exceptions/s07-07-fix-the-bare-raise",
+          "xp": 4,
+          "hint": [
+            {
+              "level": 1,
+              "body": "After the `print`, you need to re-throw the same exception. The keyword is `raise` — with nothing after it.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Add `raise` as a new line right after `print(f\"logging: {err}\")`. Bare `raise` (no class, no message) inside an `except` block re-raises whatever was caught.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 80,
+          "concept": "re-raising-with-context",
+          "brokenCode": "def parse(text):\n    try:\n        return int(text)\n    except ValueError as err:\n        print(f\"logging: {err}\")\n\ntry:\n    parse(\"bad input\")\nexcept ValueError as err:\n    print(f\"caught at top: {err}\")\n",
+          "prompt": "Cursor wrote a function that catches an exception, logs it, and was\n*supposed* to re-raise so the caller still sees the failure. Instead it\ncatches, logs, and silently returns `None`. The script then crashes\nlater in a confusing place because a downstream call gets `None`.\n\nAdd a single line so that after the `print` on line 5, the same\nexception keeps propagating. The bare `raise` keyword (no class, no\nmessage) re-raises the exception that was just caught.\n\nExpected output:\n```\nlogging: bad input\ncaught at top: bad input\n```\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "logging: bad input\ncaught at top: bad input\n",
+            "normalize": "collapse-trailing-newline"
+          },
+          "bugLines": [
+            5
+          ],
+          "revealAfter": 4
+        },
+        {
+          "type": "write",
+          "id": "error-handling/raising-and-custom-exceptions/s08-08-write-validate-age",
+          "xp": 5,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Function body: `if age < 0 or age > 120: raise ValueError(...)` then `return age`. Then a loop or three explicit `try/except` blocks at the bottom.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "`def validate_age(age):` then `if age < 0 or age > 120: raise ValueError(f\"age out of range: {age}\")` then `return age`. Then loop over `[30, -5, 200]`, wrap each in `try/except ValueError as err: print(err)`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 110,
+          "concept": "write-raise-function",
+          "prompt": "Write a function `validate_age(age)` that:\n\n- Returns `age` unchanged when `age` is an integer between `0` and `120`\n  (inclusive).\n- Raises `ValueError` with the message `f\"age out of range: {age}\"`\n  otherwise.\n\nThen call it three times inside `try/except ValueError as err: print(err)`\nblocks so the output below prints. Use `print(validate_age(...))` for\nthe happy-path call.\n\nExpected output:\n```\n30\nage out of range: -5\nage out of range: 200\n```\n",
+          "starter": "# define validate_age below\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "30\nage out of range: -5\nage out of range: 200\n",
+            "normalize": "collapse-trailing-newline"
+          },
+          "solution": "def validate_age(age):\n    if age < 0 or age > 120:\n        raise ValueError(f\"age out of range: {age}\")\n    return age\n\nfor a in [30, -5, 200]:\n    try:\n        print(validate_age(a))\n    except ValueError as err:\n        print(err)\n",
+          "hiddenTests": []
+        },
+        {
+          "type": "checkpoint",
+          "id": "error-handling/raising-and-custom-exceptions/s09-09-checkpoint",
+          "xp": 8,
+          "hint": [
+            {
+              "level": 1,
+              "body": "`class OutOfStock(Exception): pass`. Then `def place_order(...)` with two `if` guards and a return. Then a loop with `try/except (KeyError, OutOfStock) as err: print(err)`.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "The third call raises `KeyError(\"hat\")`. Printing a `KeyError` instance shows the key in single quotes — that's why the expected output has `'hat'` with quotes.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "check",
+          "estSeconds": 150,
+          "concept": "raise-and-custom-exceptions-checkpoint",
+          "prompt": "Last drill. Write a tiny order system:\n\n1. Define a custom exception class `OutOfStock` that inherits from\n   `Exception`.\n2. Define a function `place_order(inventory, item, qty)` that:\n   - Raises `KeyError(item)` if `item` is not in `inventory`.\n   - Raises `OutOfStock(f\"only {inventory[item]} left of {item}\")`\n     if `inventory[item] < qty`.\n   - Otherwise returns the string `f\"shipped {qty} {item}\"`.\n3. Loop over three orders. For each, wrap the call in\n   `try/except (KeyError, OutOfStock) as err: print(err)`.\n\nUse this inventory and these orders:\n```\ninventory = {\"book\": 5, \"pen\": 0}\norders = [(\"book\", 2), (\"pen\", 1), (\"hat\", 1)]\n```\n\nExpected output:\n```\nshipped 2 book\nonly 0 left of pen\n'hat'\n```\n",
+          "starter": "# 1. define OutOfStock\n\n# 2. define place_order\n\n# 3. loop and print\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "shipped 2 book\nonly 0 left of pen\n'hat'\n",
+            "normalize": "collapse-trailing-newline"
+          },
+          "solution": "class OutOfStock(Exception):\n    pass\n\ndef place_order(inventory, item, qty):\n    if item not in inventory:\n        raise KeyError(item)\n    if inventory[item] < qty:\n        raise OutOfStock(f\"only {inventory[item]} left of {item}\")\n    return f\"shipped {qty} {item}\"\n\ninventory = {\"book\": 5, \"pen\": 0}\norders = [(\"book\", 2), (\"pen\", 1), (\"hat\", 1)]\n\nfor item, qty in orders:\n    try:\n        print(place_order(inventory, item, qty))\n    except (KeyError, OutOfStock) as err:\n        print(err)\n",
+          "passThreshold": 0.66
+        }
+      ],
+      "xpTotal": 32
     }
   ],
-  "xpTotal": 64
+  "xpTotal": 96
 }
