@@ -148,7 +148,10 @@ const PersistentIDE = forwardRef<PersistentIDEHandle, Props>(function Persistent
   );
 
   const handleRun = useCallback(async (): Promise<RunResult | null> => {
-    if (!activeFile || status !== "ready" || running) return null;
+    if (!activeFile || running) return null;
+    // We don't bail when status === "loading" — the worker awaits ensurePyodide()
+    // internally, so the run queues and resolves once Python finishes booting.
+    // The user sees "Running…" instead of "Editor isn't ready yet."
     setRunning(true);
     const code = drafts[activeFile.name] ?? activeFile.body;
     const result = await run(code);
@@ -157,7 +160,7 @@ const PersistentIDE = forwardRef<PersistentIDEHandle, Props>(function Persistent
     setRunning(false);
     onResult?.(result);
     return result;
-  }, [activeFile, drafts, onResult, run, running, status]);
+  }, [activeFile, drafts, onResult, run, running]);
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
