@@ -120,7 +120,30 @@ This course makes you the person who catches those. The goal isn't memorizing sy
 
 ## Web app curriculum (currently shipped)
 
-The interactive web app currently covers chapters 01–12 in step-based form (variables, functions, lists/dicts, loops, conditionals, tracebacks, mutation/state, modules/imports, error handling, files & I/O, classes basics, HTTP/APIs). Each chapter has 1–3 lessons; each lesson has 8–10 step-typed micro-screens (read · multiple-choice · fill-blank · predict-output · fix-bug · write-code · reorder · checkpoint).
+**18 chapters · 38 lessons · ~410 step-typed micro-screens.** The interactive web app covers:
+
+| # | Chapter | Lessons | Focus |
+|---|---|---|---|
+| 1 | variables | 1 | naming, assignment, the rebind move |
+| 2 | functions | 3 | def/return, args+defaults, closures+decorators |
+| 3 | lists & dicts | 3 | the bones of an API response, comprehensions, nested data |
+| 4 | loops | 3 | predict-the-output, while/break, enumerate+zip |
+| 5 | conditionals | 2 | truthiness traps, elif + match-case |
+| 6 | tracebacks | 3 | reading the stack, the five error classes, debug-by-print |
+| 7 | mutation & state | 2 | why-it-breaks, copy vs reference |
+| 8 | modules & imports | 2 | venv pain, from-imports + aliases |
+| 9 | error handling | 3 | try/except, catching specifics, raising + custom |
+| 10 | files & I/O | 3 | read/write, pathlib, csv + JSONL |
+| 11 | classes basics | 3 | reading AI's classes, instance vs class, dataclasses |
+| 12 | HTTP & APIs | 3 | making the call, status codes, parsing nested responses |
+| **13** | **LLM APIs** | **1** | **messages, roles, response shape (Claude + OpenAI SDK)** |
+| **14** | **structured output** | **1** | **Pydantic schemas, JSON validation, the missing-field bug** |
+| **15** | **MCP** | **1** | **Model Context Protocol — servers, tools, when MCP > custom** |
+| **16** | **agent loops** | **1** | **stop_reason, tool_use, the request → tool → respond cycle** |
+| **17** | **git + GitHub** | **1** | **the three states, gh CLI, the AI-builder git workflow** |
+| **18** | **secrets** | **1** | **.env, os.getenv, .gitignore, leaked-key recovery** |
+
+Chapters 13–18 are the wedge for AI-first builders — the part of the course that no other Python school is teaching in 2026. Each lesson has 9 steps in the canonical sequence: `read → mc → read → predict → fill → fix → fix → write → checkpoint`.
 
 ## Stack
 
