@@ -2,14 +2,15 @@ xp: 3
 estSeconds: 50
 concept: dict-key-access
 prompt: |
-  Cursor wrote a quick lookup of a user's email. It defined the dict on line 1
-  and tried to reach for the email on line 2, but it left a blank where the
-  key should go. Fill it in.
-  ```python
+  Cursor wrote a quick lookup of a user's email (see the editor). It defined
+  the dict on line 1 and tried to reach for the email on line 2 — but it
+  left a blank where the key should go. The script should print the email
+  address.
+
+  Key: ___
+code: |
   user = {"name": "{{user.name}}", "email": "you@example.com", "score": 92}
   print(user[___])
-  ```
-  The script should print the email address.
 blanks:
   - id: key
     accept:

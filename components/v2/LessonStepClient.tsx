@@ -245,12 +245,11 @@ function buildFilesForStep(step: Step): IDEFile[] {
         },
       ];
     case "fill": {
-      // Pull the code template out of the prompt's first python fence so the
-      // IDE always shows code, never narrative. Blanks (`___`) stay visible
-      // in the editor as part of the read-only template; the user types the
-      // answer in the prompt panel input. Fixes "IDE holds directions, not
-      // code" feedback.
-      const code = extractFirstPythonFence(step.prompt);
+      // Prefer the explicit step.code field (cleaner separation of concerns —
+      // prompt panel narrates, IDE shows code). Fall back to extracting the
+      // first python fence from the prompt for backwards compat with steps
+      // authored before the `code` field landed.
+      const code = step.code ?? extractFirstPythonFence(step.prompt);
       return [
         {
           name: "main.py",

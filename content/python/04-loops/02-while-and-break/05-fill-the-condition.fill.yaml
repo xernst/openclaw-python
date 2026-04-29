@@ -3,13 +3,14 @@ estSeconds: 55
 concept: while-keyword
 prompt: |
   Cursor wrote a loop that should run as long as `attempts` is less than `3`.
-  The loop keyword is missing. Fill it in.
-  ```python
+  The loop keyword is missing.
+
+  Keyword: ___
+code: |
   attempts = 0
   ___ attempts < 3:
       print(f"attempt {attempts + 1}")
       attempts += 1
-  ```
 blanks:
   - id: keyword
     accept:

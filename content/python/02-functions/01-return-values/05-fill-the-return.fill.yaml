@@ -2,14 +2,15 @@ xp: 3
 estSeconds: 50
 concept: return-keyword
 prompt: |
-  Cursor wrote a function that's supposed to hand back a greeting string,
-  but the keyword on line 2 is missing. Fill in the blank.
-  ```python
+  Look at the editor. Cursor wrote a function that's supposed to hand back a
+  greeting string, but the keyword on line 2 is missing.
+
+  Keyword: ___
+code: |
   def greet(name):
       ___ f"hi, {name}"
 
   print(greet("{{user.name}}"))
-  ```
 blanks:
   - id: keyword
     accept:

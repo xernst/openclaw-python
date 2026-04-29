@@ -165,6 +165,7 @@ export const FillBlankStep = z.object({
   type: z.literal("fill"),
   ...StepBaseFields,
   prompt: z.string(),                  // contains one or more `___` placeholders
+  code: z.string().optional(),         // shown read-only in the IDE; if absent, IDE inherits previous step
   blanks: z
     .array(
       z.object({

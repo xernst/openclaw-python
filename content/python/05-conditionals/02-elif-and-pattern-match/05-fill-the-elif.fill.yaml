@@ -2,9 +2,11 @@ xp: 3
 estSeconds: 55
 concept: elif-keyword
 prompt: |
-  Cursor wrote a three-branch chain. The middle keyword is missing — it's the
-  one that means "otherwise, check this." Fill it in.
-  ```python
+  Cursor wrote a three-branch chain (see the editor). The middle keyword is
+  missing — it's the one that means "otherwise, check this."
+
+  Keyword: ___
+code: |
   weather = "rain"
 
   if weather == "sun":
@@ -13,7 +15,6 @@ prompt: |
       print("umbrella")
   else:
       print("just go")
-  ```
 blanks:
   - id: keyword
     accept:

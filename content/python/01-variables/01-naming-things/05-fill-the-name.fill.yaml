@@ -2,12 +2,14 @@ xp: 2
 estSeconds: 50
 concept: f-string-interpolation
 prompt: |
-  Cursor wrote this snippet for a greeting feature. The variable was defined on line 1.
-  Fill in the blank on line 2 so the print statement actually uses it.
-  ```python
+  Look at the editor on the right. Cursor wrote a greeting snippet — the
+  variable was defined on line 1, but the f-string on line 2 has a blank
+  where the variable name should go.
+
+  Variable name: ___
+code: |
   user_name = "Maya"
   print(f"hi, {___}")
-  ```
 blanks:
   - id: name
     accept:

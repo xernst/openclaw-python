@@ -2,14 +2,17 @@ xp: 3
 estSeconds: 50
 concept: dict-items-iteration
 prompt: |
-  Cursor wrote a loop that walks through a dict and prints each name and score.
-  The loop header is missing the second loop variable. Fill it in.
-  ```python
+  Cursor wrote a loop that walks through a dict and prints each name and
+  score. The loop header is missing the second loop variable, and the
+  f-string on the next line uses the same name. Both blanks take the same
+  word.
+
+  Variable name (line 2): ___
+  Same name in f-string (line 3): ___
+code: |
   scores = {"maya": 92, "marcus": 78}
   for name, ___ in scores.items():
       print(f"{name}: {___}")
-  ```
-  Both blanks take the same name.
 blanks:
   - id: var1
     accept:

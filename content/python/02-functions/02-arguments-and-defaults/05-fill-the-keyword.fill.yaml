@@ -2,17 +2,19 @@ xp: 3
 estSeconds: 55
 concept: keyword-argument-syntax
 prompt: |
-  Cursor wrote a function with three parameters. The first call uses positional
-  arguments. The second call wants to skip the middle one and only set the
-  last one. Fill in the missing keyword name on line 6.
-  ```python
+  Cursor wrote a function with three parameters (see the editor). The first
+  call uses positional arguments. The second call wants to skip the middle
+  parameter and only set the last one. Fill in the missing keyword name on
+  line 6.
+
+  Keyword: ___
+code: |
   def log(message, level="info", source="app"):
       print(f"[{level}] {source}: {message}")
 
   log("started", "warn", "auth")
 
   log("started", ___="auth")
-  ```
 blanks:
   - id: keyword
     accept:

@@ -4,13 +4,14 @@ concept: as-keyword
 prompt: |
   Cursor wrote a data-science snippet and aliased `pandas` as `pd` — the
   industry-standard rename. The keyword that does the renaming is missing
-  on line 1. Fill it in.
-  ```python
+  on line 1.
+
+  Keyword (two letters): ___
+code: |
   import pandas ___ pd
 
   # later in the file:
   # df = pd.DataFrame(rows)
-  ```
 blanks:
   - id: keyword
     accept:

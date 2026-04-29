@@ -122,6 +122,7 @@ const FillBlankStep = z.object({
   type: z.literal("fill"),
   ...StepBaseFields,
   prompt: z.string(),
+  code: z.string().optional(),
   blanks: z.array(z.object({
     id: z.string(),
     accept: z.array(z.string()).min(1),

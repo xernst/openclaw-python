@@ -4,7 +4,9 @@ concept: deepcopy-syntax
 prompt: |
   Cursor wrote a snippet that needs an *independent* copy of a nested dict.
   The `copy` module is imported. Fill in the function name on line 4.
-  ```python
+
+  Function name: ___
+code: |
   import copy
 
   user = {"name": "alex", "skills": ["python"]}
@@ -13,7 +15,6 @@ prompt: |
   safe["skills"].append("rust")
 
   print(user["skills"])  # should print ['python']
-  ```
 blanks:
   - id: function
     accept:

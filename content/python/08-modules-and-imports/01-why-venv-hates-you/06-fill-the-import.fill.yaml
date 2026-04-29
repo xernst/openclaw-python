@@ -3,13 +3,14 @@ estSeconds: 50
 concept: from-import-syntax
 prompt: |
   Cursor wants to use `dumps` from the `json` module to turn a dict into a
-  string. The import line is missing a keyword. Fill in the blank.
-  ```python
+  string. The import line is missing a keyword.
+
+  Keyword: ___
+code: |
   ___ json import dumps
 
   user = {"name": "{{user.name}}", "score": 92}
   print(dumps(user))
-  ```
 blanks:
   - id: keyword
     accept:
