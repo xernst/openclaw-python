@@ -1,0 +1,40 @@
+xp: 2
+estSeconds: 50
+concept: csv-reader-vs-dictreader
+code: |
+  import csv
+  from pathlib import Path
+
+  Path("/tmp/x.csv").write_text("name,score\nalex,82\nsam,91\n")
+
+  # option A
+  with open("/tmp/x.csv", newline="") as f:
+      for row in csv.reader(f):
+          print(row[0], row[1])
+
+  # option B
+  with open("/tmp/x.csv", newline="") as f:
+      for row in csv.DictReader(f):
+          print(row["name"], row["score"])
+prompt: |
+  Both `csv.reader` and `csv.DictReader` produce data here. Which
+  pattern is the right one to reach for in new code?
+options:
+  - id: a
+    label: "`csv.reader` — fewer characters, returns lists"
+    explain: "Lists by index work but break the moment a column shifts. `row[0]` doesn't say what it is. Use `DictReader` for header-aware code."
+  - id: b
+    label: "`csv.DictReader` — column names instead of indexes"
+  - id: c
+    label: "Either is fine, the column count is small"
+    explain: "Even with 2 columns, named access is more readable. The bigger win is when the schema changes — `DictReader` keeps working if a new column appears in the middle."
+  - id: d
+    label: "Neither — write `f.read().split(\",\")` for full control"
+    explain: "Hand-rolled splitting breaks the moment a value contains a comma or a quoted string. Always use the `csv` module."
+answerIds:
+  - b
+hint:
+  - level: 1
+    body: "One returns lists keyed by integer index. The other returns dicts keyed by header name. Which is more readable a year later?"
+  - level: 2
+    body: "`csv.DictReader` keys rows by column name. Indexes are positional and break when columns are reordered."

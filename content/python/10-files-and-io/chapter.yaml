@@ -5,3 +5,4 @@ blurb: "Reading a CSV, writing a log, parsing a JSON dump. The first thing AI do
 lessons:
   - 01-reading-and-writing
   - 02-pathlib-basics
+  - 03-csv-and-jsonl

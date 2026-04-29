@@ -1,0 +1,44 @@
+xp: 4
+estSeconds: 90
+concept: jsonl-vs-json
+prompt: |
+  Cursor wrote a JSONL reader using `json.load(f)`, which expects the
+  *whole file* to be a single JSON document. The file is JSONL — one
+  object per line — so `json.load` blows up.
+
+  Replace lines 12-13 with the standard JSONL loop: iterate `f`, and
+  call `json.loads(line)` on each line. Print each record's `prompt`
+  field.
+brokenCode: |
+  import json
+  from pathlib import Path
+
+  Path("/tmp/log.jsonl").write_text(
+      '{"id": 1, "prompt": "summarize"}\n'
+      '{"id": 2, "prompt": "translate"}\n'
+      '{"id": 3, "prompt": "rewrite"}\n'
+  )
+
+  prompts = []
+  with open("/tmp/log.jsonl") as f:
+      records = json.load(f)
+      for r in records:
+          prompts.append(r["prompt"])
+
+  print("\n".join(prompts))
+bugLines:
+  - 12
+  - 13
+grader:
+  kind: stdout-equality
+  expected: |
+    summarize
+    translate
+    rewrite
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "Replace `records = json.load(f)` and the inner loop with a single loop: `for line in f:` then `r = json.loads(line)` then append `r[\"prompt\"]`."
+  - level: 2
+    body: "Lines 12-14 become: `for line in f:` then `r = json.loads(line)` then `prompts.append(r[\"prompt\"])`. Note the singular `loads` (string in) vs `load` (file in)."
+revealAfter: 4

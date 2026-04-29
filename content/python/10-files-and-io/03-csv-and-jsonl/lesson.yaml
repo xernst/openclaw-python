@@ -1,0 +1,14 @@
+slug: csv-and-jsonl
+title: "CSV and JSONL — the two formats AI moves data in"
+estMinutes: 9
+prerequisites: []
+order:
+  - 01-intro.read.md
+  - 02-which-reader.mc.yaml
+  - 03-jsonl-line-by-line.read.md
+  - 04-predict-the-row.predict.yaml
+  - 05-fill-the-dictreader.fill.yaml
+  - 06-fix-the-encoding.fix.yaml
+  - 07-fix-the-jsonl-parse.fix.yaml
+  - 08-write-load-jsonl.write.yaml
+  - 09-checkpoint.checkpoint.yaml

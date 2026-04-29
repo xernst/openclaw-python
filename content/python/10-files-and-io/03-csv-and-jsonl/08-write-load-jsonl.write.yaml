@@ -1,0 +1,61 @@
+xp: 5
+estSeconds: 120
+concept: write-jsonl-loader
+prompt: |
+  Write a function `load_jsonl(path)` that opens the file at `path`,
+  iterates one line at a time, parses each line with `json.loads`, and
+  returns the resulting list of dicts.
+
+  The starter writes three records into `/tmp/runs.jsonl`. Calling
+  `load_jsonl` and printing the `id` of each record should produce:
+
+  ```
+  1
+  2
+  3
+  ```
+starter: |
+  import json
+  from pathlib import Path
+
+  Path("/tmp/runs.jsonl").write_text(
+      '{"id": 1, "ok": true}\n'
+      '{"id": 2, "ok": false}\n'
+      '{"id": 3, "ok": true}\n'
+  )
+
+  # define load_jsonl below
+
+  for record in load_jsonl(Path("/tmp/runs.jsonl")):
+      print(record["id"])
+grader:
+  kind: stdout-equality
+  expected: |
+    1
+    2
+    3
+  normalize: collapse-trailing-newline
+solution: |
+  import json
+  from pathlib import Path
+
+  Path("/tmp/runs.jsonl").write_text(
+      '{"id": 1, "ok": true}\n'
+      '{"id": 2, "ok": false}\n'
+      '{"id": 3, "ok": true}\n'
+  )
+
+  def load_jsonl(path):
+      records = []
+      with open(path) as f:
+          for line in f:
+              records.append(json.loads(line))
+      return records
+
+  for record in load_jsonl(Path("/tmp/runs.jsonl")):
+      print(record["id"])
+hint:
+  - level: 1
+    body: "Open the file in a `with` block, iterate line by line, append `json.loads(line)` to a list, return the list."
+  - level: 2
+    body: "`def load_jsonl(path):` then `records = []` then `with open(path) as f: for line in f: records.append(json.loads(line))` then `return records`. A list comprehension also works: `return [json.loads(line) for line in open(path)]`."

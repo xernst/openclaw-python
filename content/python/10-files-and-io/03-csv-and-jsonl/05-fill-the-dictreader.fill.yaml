@@ -1,0 +1,28 @@
+xp: 3
+estSeconds: 60
+concept: dictreader-name
+prompt: |
+  Cursor wrote a CSV-reading loop but used the wrong reader class. Fill
+  in the class name on line 7 that yields *dicts* keyed by column name
+  instead of lists keyed by index.
+
+  Class: csv.___
+code: |
+  import csv
+  from pathlib import Path
+
+  Path("/tmp/people.csv").write_text("name,city\nmaya,nyc\n")
+
+  with open("/tmp/people.csv", newline="") as f:
+      for row in csv.___(f):
+          print(row["name"], row["city"])
+blanks:
+  - id: class
+    accept:
+      - DictReader
+    caseSensitive: true
+hint:
+  - level: 1
+    body: "Two words mashed together, capital D, capital R. The reader that returns dicts."
+  - level: 2
+    body: "It's `DictReader`. Capital D, capital R. `csv.DictReader(f)` yields a dict per row keyed by header column names."

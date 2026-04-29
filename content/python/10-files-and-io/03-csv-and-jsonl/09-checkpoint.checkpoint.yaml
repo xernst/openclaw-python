@@ -1,0 +1,84 @@
+xp: 8
+estSeconds: 160
+concept: csv-and-jsonl-checkpoint
+prompt: |
+  Last drill. Convert a CSV into JSONL.
+
+  Write a function `csv_to_jsonl(csv_path, jsonl_path)` that:
+
+  1. Opens `csv_path` with `csv.DictReader` (remember `newline=""`).
+  2. For each row, converts the `score` column from string to int.
+  3. Writes one JSON object per line to `jsonl_path`.
+  4. Returns the number of rows written.
+
+  The starter writes a tiny CSV, calls your function, then reads the
+  JSONL back and prints each parsed record's `name` and `score`.
+
+  Expected output:
+  ```
+  3
+  alex 82
+  sam 91
+  jordan 77
+  ```
+starter: |
+  import csv
+  import json
+  from pathlib import Path
+
+  Path("/tmp/scores.csv").write_text(
+      "name,score\n"
+      "alex,82\n"
+      "sam,91\n"
+      "jordan,77\n"
+  )
+
+  # define csv_to_jsonl below
+
+  count = csv_to_jsonl(Path("/tmp/scores.csv"), Path("/tmp/scores.jsonl"))
+  print(count)
+
+  for line in Path("/tmp/scores.jsonl").read_text().splitlines():
+      r = json.loads(line)
+      print(r["name"], r["score"])
+grader:
+  kind: stdout-equality
+  expected: |
+    3
+    alex 82
+    sam 91
+    jordan 77
+  normalize: collapse-trailing-newline
+solution: |
+  import csv
+  import json
+  from pathlib import Path
+
+  Path("/tmp/scores.csv").write_text(
+      "name,score\n"
+      "alex,82\n"
+      "sam,91\n"
+      "jordan,77\n"
+  )
+
+  def csv_to_jsonl(csv_path, jsonl_path):
+      count = 0
+      with open(csv_path, newline="") as src, open(jsonl_path, "w") as dst:
+          for row in csv.DictReader(src):
+              row["score"] = int(row["score"])
+              dst.write(json.dumps(row) + "\n")
+              count += 1
+      return count
+
+  count = csv_to_jsonl(Path("/tmp/scores.csv"), Path("/tmp/scores.jsonl"))
+  print(count)
+
+  for line in Path("/tmp/scores.jsonl").read_text().splitlines():
+      r = json.loads(line)
+      print(r["name"], r["score"])
+passThreshold: 0.66
+hint:
+  - level: 1
+    body: "Open both files in one `with` block. Iterate `csv.DictReader(src)`. Convert `row[\"score\"]` to int. Write `json.dumps(row) + \"\\n\"` to the destination. Track count, return it."
+  - level: 2
+    body: "`with open(csv_path, newline=\"\") as src, open(jsonl_path, \"w\") as dst:` then loop, convert score, write each JSON line, increment count. Return count."

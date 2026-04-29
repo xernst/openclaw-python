@@ -1,0 +1,32 @@
+xp: 3
+estSeconds: 70
+concept: csv-string-types
+code: |
+  import csv
+  from pathlib import Path
+
+  Path("/tmp/items.csv").write_text(
+      "name,price\n"
+      "apple,2\n"
+      "bread,5\n"
+  )
+
+  total = 0
+  with open("/tmp/items.csv", newline="") as f:
+      for row in csv.DictReader(f):
+          total += int(row["price"])
+
+  print(total)
+prompt: |
+  The CSV has two rows with prices 2 and 5. The loop sums them. What
+  prints? (Pay attention to the `int(...)` call — without it, the `+=`
+  would crash.)
+grader:
+  kind: stdout-equality
+  expected: "7"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "`row[\"price\"]` is the string `\"2\"` then `\"5\"`. `int(...)` converts each to a number before the `+=`. Sum is 2 + 5."
+  - level: 2
+    body: "Output: `7`. Without the `int()`, you'd get `\"2\" + 0` → `TypeError`."

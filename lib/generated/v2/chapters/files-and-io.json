@@ -527,7 +527,279 @@
         }
       ],
       "xpTotal": 32
+    },
+    {
+      "slug": "csv-and-jsonl",
+      "title": "CSV and JSONL — the two formats AI moves data in",
+      "estMinutes": 9,
+      "prerequisites": [],
+      "steps": [
+        {
+          "type": "read",
+          "id": "files-and-io/csv-and-jsonl/s01-01-intro",
+          "xp": 1,
+          "hint": [],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 110,
+          "concept": "csv-dictreader",
+          "body": "# CSV — the format every AI dataset and spreadsheet export uses\n\nPull any dataset off Kaggle, export anything from Notion or\nSalesforce, dump any database table to a file — you get a CSV. Cursor\nships CSV-handling code constantly: read this export, filter these\nrows, write a cleaned version. Knowing the *one right shape* of that\ncode saves you from the four wrong ones AI alternates between.\n\nThe right shape is `csv.DictReader`. It reads each row as a dict\nkeyed by the header column names. You don't index by position\n(`row[2]`), you index by column name (`row[\"age\"]`), which means a\nnew column showing up next month doesn't break your code.\n\n## The mental model\n\nA CSV file is a plain text file where each line is a row and commas\nseparate the fields. The first line is usually the header — column\nnames — and every line after that is data:\n\n```\nname,role,age\nmaya,admin,29\nmarcus,viewer,34\n```\n\n`csv.DictReader` reads the first line, remembers the column names,\nthen yields each subsequent line as a dict mapping column name to\nstring value:\n\n```python\n{\"name\": \"maya\", \"role\": \"admin\", \"age\": \"29\"}\n{\"name\": \"marcus\", \"role\": \"viewer\", \"age\": \"34\"}\n```\n\nThree things to internalize:\n\n1. **All values are strings.** Even `\"29\"`. CSV has no type system —\n   it's text. If you need an int, you `int(row[\"age\"])` yourself.\n2. **You iterate the reader.** It doesn't load the whole file into\n   memory. `for row in reader:` streams one row at a time, which means\n   it works on a 2GB CSV the same way it works on a 50-line file.\n3. **You need `newline=\"\"` on the `open` call.** This is the gotcha.\n   Without it, Windows-style line endings can cause `csv.DictReader`\n   to see blank rows. Always include it. Always.\n\n## A worked example\n\nThe editor on the right writes a tiny CSV and reads it back:\n\n```python\nimport csv\nfrom pathlib import Path\n\nPath(\"/tmp/users.csv\").write_text(\n    \"name,role,age\\n\"\n    \"maya,admin,29\\n\"\n    \"marcus,viewer,34\\n\"\n)\n\nwith open(\"/tmp/users.csv\", newline=\"\") as f:\n    for row in csv.DictReader(f):\n        print(row[\"name\"], \"->\", row[\"role\"])\n```\n\nThe `with` block opens the file for reading. `csv.DictReader(f)`\nwraps the file handle and yields one dict per data row. The loop\nprints `name -> role` for each. Output:\n\n```\nmaya -> admin\nmarcus -> viewer\n```\n\n`pathlib`'s `read_text` doesn't fit this case because `csv.DictReader`\nwants a file-like object that yields lines, not a string. So we drop\nback to `open(...)` here — that's the only time in this chapter\nyou'll see the old `open` shape. Remember `newline=\"\"`.\n\n## Where AI specifically gets this wrong\n\nThree patterns to watch for in code Cursor writes you.\n\n**One: `csv.reader` instead of `csv.DictReader`.** `csv.reader` gives\nyou a list per row — `[\"maya\", \"admin\", \"29\"]`. You then have to\nremember that index 0 is name, index 1 is role, index 2 is age.\nThat's brittle and unreadable. AI defaults to `csv.reader` because\nit's older. Reach for `DictReader` unless you're explicitly working\nwith a header-less file.\n\n**Two: forgetting `newline=\"\"`.** Cursor will write `with open(p) as\nf: csv.DictReader(f)` and ship it. On the developer's Mac it works.\nOn a teammate's Windows machine, every other row is empty. Add\n`newline=\"\"` every single time you open a file for `csv` work.\n\n**Three: forgetting the values are strings.** `int(row[\"age\"]) > 30`\nworks. `row[\"age\"] > 30` is `\"29\" > 30` — a `TypeError` (Python 3\nwon't compare strings to ints). When you see CSV data being treated\nlike numbers without an explicit `int()` or `float()`, that's a bug\nabout to happen.\n\nRun the editor. Pyodide's virtual filesystem makes the file write\nreal, and `DictReader` streams it back as dicts.",
+          "cta": "Got it",
+          "code": "import csv\nfrom pathlib import Path\n\nPath(\"/tmp/users.csv\").write_text(\n    \"name,role,age\\n\"\n    \"maya,admin,29\\n\"\n    \"marcus,viewer,34\\n\"\n)\n\nwith open(\"/tmp/users.csv\", newline=\"\") as f:\n    for row in csv.DictReader(f):\n        print(row[\"name\"], \"->\", row[\"role\"])\n",
+          "runnable": true
+        },
+        {
+          "type": "mc",
+          "id": "files-and-io/csv-and-jsonl/s02-02-which-reader",
+          "xp": 2,
+          "hint": [
+            {
+              "level": 1,
+              "body": "One returns lists keyed by integer index. The other returns dicts keyed by header name. Which is more readable a year later?",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "`csv.DictReader` keys rows by column name. Indexes are positional and break when columns are reordered.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 50,
+          "concept": "csv-reader-vs-dictreader",
+          "prompt": "Both `csv.reader` and `csv.DictReader` produce data here. Which\npattern is the right one to reach for in new code?\n",
+          "options": [
+            {
+              "id": "a",
+              "label": "`csv.reader` — fewer characters, returns lists",
+              "explain": "Lists by index work but break the moment a column shifts. `row[0]` doesn't say what it is. Use `DictReader` for header-aware code."
+            },
+            {
+              "id": "b",
+              "label": "`csv.DictReader` — column names instead of indexes"
+            },
+            {
+              "id": "c",
+              "label": "Either is fine, the column count is small",
+              "explain": "Even with 2 columns, named access is more readable. The bigger win is when the schema changes — `DictReader` keeps working if a new column appears in the middle."
+            },
+            {
+              "id": "d",
+              "label": "Neither — write `f.read().split(\",\")` for full control",
+              "explain": "Hand-rolled splitting breaks the moment a value contains a comma or a quoted string. Always use the `csv` module."
+            }
+          ],
+          "answerIds": [
+            "b"
+          ],
+          "shuffle": false,
+          "code": "import csv\nfrom pathlib import Path\n\nPath(\"/tmp/x.csv\").write_text(\"name,score\\nalex,82\\nsam,91\\n\")\n\n# option A\nwith open(\"/tmp/x.csv\", newline=\"\") as f:\n    for row in csv.reader(f):\n        print(row[0], row[1])\n\n# option B\nwith open(\"/tmp/x.csv\", newline=\"\") as f:\n    for row in csv.DictReader(f):\n        print(row[\"name\"], row[\"score\"])\n",
+          "runnable": true
+        },
+        {
+          "type": "read",
+          "id": "files-and-io/csv-and-jsonl/s03-03-jsonl-line-by-line",
+          "xp": 2,
+          "hint": [],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 130,
+          "concept": "jsonl-streaming",
+          "body": "# JSONL — the format AI training data ships in\n\nCSV is fine until your rows have *nested* data. The moment a column\nneeds to be a list, a dict, or anything richer than a string, CSV\nbreaks. The replacement that's everywhere in modern AI work is\n**JSONL**: one JSON object per line, separated by newlines. OpenAI's\nfine-tuning format is JSONL. Anthropic's batch API is JSONL. Every\nLLM eval framework writes JSONL. Read one, you've read them all.\n\n## The mental model\n\nA JSONL file looks like this:\n\n```\n{\"id\": 1, \"prompt\": \"summarize\", \"tokens\": 240}\n{\"id\": 2, \"prompt\": \"translate\", \"tokens\": 180}\n{\"id\": 3, \"prompt\": \"rewrite\", \"tokens\": 95}\n```\n\nThree lines, three independent JSON objects. *Not* a JSON array of\nobjects (no surrounding `[ ]`, no commas between lines). This is the\nkey shape: each line stands on its own.\n\nWhy that matters: you can read the file *one line at a time*. A 5GB\nJSONL file streams through Python without ever holding the whole\nthing in memory. A 5GB JSON array can't — `json.load(f)` would parse\nthe whole array at once. JSONL is the streaming-friendly cousin of\nJSON.\n\n## The shape AI expects you to write\n\nEvery JSONL reader in the world looks like this:\n\n```python\nimport json\n\nwith open(\"data.jsonl\") as f:\n    for line in f:\n        row = json.loads(line)\n        # row is a dict, do something with it\n```\n\nIterating a file handle yields one line at a time, including the\ntrailing `\\n`. `json.loads` is forgiving about trailing whitespace,\nso you don't need to `.strip()`. Each `row` is a dict you can index\nby key.\n\nWriting JSONL is the symmetric shape:\n\n```python\nimport json\n\nwith open(\"data.jsonl\", \"w\") as f:\n    for row in records:\n        f.write(json.dumps(row) + \"\\n\")\n```\n\n`json.dumps` is the inverse of `json.loads` — dict in, JSON string\nout. Append `\"\\n\"` so each record gets its own line.\n\n## A worked example\n\nThe editor on the right writes three JSONL records and reads them back:\n\n```python\nimport json\nfrom pathlib import Path\n\ndata = [\n    {\"id\": 1, \"prompt\": \"summarize\", \"tokens\": 240},\n    {\"id\": 2, \"prompt\": \"translate\", \"tokens\": 180},\n    {\"id\": 3, \"prompt\": \"rewrite\", \"tokens\": 95},\n]\n\npath = Path(\"/tmp/log.jsonl\")\npath.write_text(\"\\n\".join(json.dumps(d) for d in data) + \"\\n\")\n\nwith open(path) as f:\n    for line in f:\n        row = json.loads(line)\n        print(row[\"id\"], row[\"prompt\"], row[\"tokens\"])\n```\n\nThe write step uses a `\"\\n\".join(...)` trick to format the file\nin one go: dump each dict, glue them with newlines, and append a\nfinal `\"\\n\"` so the last line is properly terminated.\n\nThe read step iterates lines, parses each, and prints three columns\nof structured output:\n\n```\n1 summarize 240\n2 translate 180\n3 rewrite 95\n```\n\n## Where AI specifically gets this wrong\n\nThree patterns to watch for in code Cursor writes you.\n\n**One: confusing JSON and JSONL.** Cursor will sometimes write\n`json.load(f)` against a JSONL file and get a `JSONDecodeError` on\nline 1, character 0 of line 2. The error message is cryptic. The fix\nis the line-by-line shape above. If a file ends in `.jsonl` (or even\njust has multiple `}` lines), it's not one JSON document.\n\n**Two: forgetting the trailing `\\n`.** Some tools strip blank lines,\nsome don't. Some readers tolerate a missing final newline, some\ndon't. Always end JSONL files with `\\n` — it's free safety. The\n`\"\\n\".join + \"\\n\"` shape in the example handles it.\n\n**Three: hand-rolling the parser.** When AI doesn't know the file is\nJSONL, it sometimes writes `f.read().split(\"\\n\")` and tries to\n`json.loads` each piece. That works *until* a value in the data\ncontains an embedded `\\n` (which JSON allows in strings). Then your\nhand-rolled splitter chops a record in half. Iterating the file\nhandle directly gives you actual lines, not \"split-on-newline.\"\nJSONL forbids embedded newlines inside values, so if you wrote the\nfile with `json.dumps`, line iteration is safe.\n\nRun the editor. Three records in, three records out, all streamed.",
+          "cta": "Got it",
+          "code": "import json\nfrom pathlib import Path\n\ndata = [\n    {\"id\": 1, \"prompt\": \"summarize\", \"tokens\": 240},\n    {\"id\": 2, \"prompt\": \"translate\", \"tokens\": 180},\n    {\"id\": 3, \"prompt\": \"rewrite\", \"tokens\": 95},\n]\n\npath = Path(\"/tmp/log.jsonl\")\npath.write_text(\"\\n\".join(json.dumps(d) for d in data) + \"\\n\")\n\nwith open(path) as f:\n    for line in f:\n        row = json.loads(line)\n        print(row[\"id\"], row[\"prompt\"], row[\"tokens\"])\n",
+          "runnable": true
+        },
+        {
+          "type": "predict",
+          "id": "files-and-io/csv-and-jsonl/s04-04-predict-the-row",
+          "xp": 3,
+          "hint": [
+            {
+              "level": 1,
+              "body": "`row[\"price\"]` is the string `\"2\"` then `\"5\"`. `int(...)` converts each to a number before the `+=`. Sum is 2 + 5.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Output: `7`. Without the `int()`, you'd get `\"2\" + 0` → `TypeError`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 70,
+          "concept": "csv-string-types",
+          "code": "import csv\nfrom pathlib import Path\n\nPath(\"/tmp/items.csv\").write_text(\n    \"name,price\\n\"\n    \"apple,2\\n\"\n    \"bread,5\\n\"\n)\n\ntotal = 0\nwith open(\"/tmp/items.csv\", newline=\"\") as f:\n    for row in csv.DictReader(f):\n        total += int(row[\"price\"])\n\nprint(total)\n",
+          "prompt": "The CSV has two rows with prices 2 and 5. The loop sums them. What\nprints? (Pay attention to the `int(...)` call — without it, the `+=`\nwould crash.)\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "7",
+            "normalize": "collapse-trailing-newline"
+          }
+        },
+        {
+          "type": "fill",
+          "id": "files-and-io/csv-and-jsonl/s05-05-fill-the-dictreader",
+          "xp": 3,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Two words mashed together, capital D, capital R. The reader that returns dicts.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "It's `DictReader`. Capital D, capital R. `csv.DictReader(f)` yields a dict per row keyed by header column names.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 60,
+          "concept": "dictreader-name",
+          "prompt": "Cursor wrote a CSV-reading loop but used the wrong reader class. Fill\nin the class name on line 7 that yields *dicts* keyed by column name\ninstead of lists keyed by index.\n\nClass: csv.___\n",
+          "code": "import csv\nfrom pathlib import Path\n\nPath(\"/tmp/people.csv\").write_text(\"name,city\\nmaya,nyc\\n\")\n\nwith open(\"/tmp/people.csv\", newline=\"\") as f:\n    for row in csv.___(f):\n        print(row[\"name\"], row[\"city\"])\n",
+          "blanks": [
+            {
+              "id": "class",
+              "accept": [
+                "DictReader"
+              ],
+              "caseSensitive": true,
+              "normalize": "trim"
+            }
+          ]
+        },
+        {
+          "type": "fix",
+          "id": "files-and-io/csv-and-jsonl/s06-06-fix-the-encoding",
+          "xp": 4,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Add `newline=\"\"` as a keyword argument to `open(...)`. It tells `open` not to translate line endings, which is what `csv` needs.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Change line 11 to `with open(\"/tmp/data.csv\", newline=\"\") as f:`. Always include `newline=\"\"` when opening a file for `csv.DictReader` or `csv.reader`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 90,
+          "concept": "csv-newline-argument",
+          "brokenCode": "import csv\nfrom pathlib import Path\n\nPath(\"/tmp/data.csv\").write_text(\n    \"name,role\\n\"\n    \"alex,owner\\n\"\n    \"sam,member\\n\"\n)\n\nrows = []\nwith open(\"/tmp/data.csv\") as f:\n    for row in csv.DictReader(f):\n        rows.append(f\"{row['name']}:{row['role']}\")\n\nprint(\"\\n\".join(rows))\n",
+          "prompt": "AI wrote a CSV reader that \"works on my machine\" and breaks on\nWindows: every other row comes back blank because of how Windows\nline endings interact with `csv.DictReader`.\n\nThe fix is one keyword argument on the `open` call. Add `newline=\"\"`\nto line 11 so the reader handles line endings correctly across\nplatforms. The expected output is two rows printed.\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "alex:owner\nsam:member\n",
+            "normalize": "collapse-trailing-newline"
+          },
+          "bugLines": [
+            11
+          ],
+          "revealAfter": 4
+        },
+        {
+          "type": "fix",
+          "id": "files-and-io/csv-and-jsonl/s07-07-fix-the-jsonl-parse",
+          "xp": 4,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Replace `records = json.load(f)` and the inner loop with a single loop: `for line in f:` then `r = json.loads(line)` then append `r[\"prompt\"]`.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Lines 12-14 become: `for line in f:` then `r = json.loads(line)` then `prompts.append(r[\"prompt\"])`. Note the singular `loads` (string in) vs `load` (file in).",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 90,
+          "concept": "jsonl-vs-json",
+          "brokenCode": "import json\nfrom pathlib import Path\n\nPath(\"/tmp/log.jsonl\").write_text(\n    '{\"id\": 1, \"prompt\": \"summarize\"}\\n'\n    '{\"id\": 2, \"prompt\": \"translate\"}\\n'\n    '{\"id\": 3, \"prompt\": \"rewrite\"}\\n'\n)\n\nprompts = []\nwith open(\"/tmp/log.jsonl\") as f:\n    records = json.load(f)\n    for r in records:\n        prompts.append(r[\"prompt\"])\n\nprint(\"\\n\".join(prompts))\n",
+          "prompt": "Cursor wrote a JSONL reader using `json.load(f)`, which expects the\n*whole file* to be a single JSON document. The file is JSONL — one\nobject per line — so `json.load` blows up.\n\nReplace lines 12-13 with the standard JSONL loop: iterate `f`, and\ncall `json.loads(line)` on each line. Print each record's `prompt`\nfield.\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "summarize\ntranslate\nrewrite\n",
+            "normalize": "collapse-trailing-newline"
+          },
+          "bugLines": [
+            12,
+            13
+          ],
+          "revealAfter": 4
+        },
+        {
+          "type": "write",
+          "id": "files-and-io/csv-and-jsonl/s08-08-write-load-jsonl",
+          "xp": 5,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Open the file in a `with` block, iterate line by line, append `json.loads(line)` to a list, return the list.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "`def load_jsonl(path):` then `records = []` then `with open(path) as f: for line in f: records.append(json.loads(line))` then `return records`. A list comprehension also works: `return [json.loads(line) for line in open(path)]`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 120,
+          "concept": "write-jsonl-loader",
+          "prompt": "Write a function `load_jsonl(path)` that opens the file at `path`,\niterates one line at a time, parses each line with `json.loads`, and\nreturns the resulting list of dicts.\n\nThe starter writes three records into `/tmp/runs.jsonl`. Calling\n`load_jsonl` and printing the `id` of each record should produce:\n\n```\n1\n2\n3\n```\n",
+          "starter": "import json\nfrom pathlib import Path\n\nPath(\"/tmp/runs.jsonl\").write_text(\n    '{\"id\": 1, \"ok\": true}\\n'\n    '{\"id\": 2, \"ok\": false}\\n'\n    '{\"id\": 3, \"ok\": true}\\n'\n)\n\n# define load_jsonl below\n\nfor record in load_jsonl(Path(\"/tmp/runs.jsonl\")):\n    print(record[\"id\"])\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "1\n2\n3\n",
+            "normalize": "collapse-trailing-newline"
+          },
+          "solution": "import json\nfrom pathlib import Path\n\nPath(\"/tmp/runs.jsonl\").write_text(\n    '{\"id\": 1, \"ok\": true}\\n'\n    '{\"id\": 2, \"ok\": false}\\n'\n    '{\"id\": 3, \"ok\": true}\\n'\n)\n\ndef load_jsonl(path):\n    records = []\n    with open(path) as f:\n        for line in f:\n            records.append(json.loads(line))\n    return records\n\nfor record in load_jsonl(Path(\"/tmp/runs.jsonl\")):\n    print(record[\"id\"])\n",
+          "hiddenTests": []
+        },
+        {
+          "type": "checkpoint",
+          "id": "files-and-io/csv-and-jsonl/s09-09-checkpoint",
+          "xp": 8,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Open both files in one `with` block. Iterate `csv.DictReader(src)`. Convert `row[\"score\"]` to int. Write `json.dumps(row) + \"\\n\"` to the destination. Track count, return it.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "`with open(csv_path, newline=\"\") as src, open(jsonl_path, \"w\") as dst:` then loop, convert score, write each JSON line, increment count. Return count.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "check",
+          "estSeconds": 160,
+          "concept": "csv-and-jsonl-checkpoint",
+          "prompt": "Last drill. Convert a CSV into JSONL.\n\nWrite a function `csv_to_jsonl(csv_path, jsonl_path)` that:\n\n1. Opens `csv_path` with `csv.DictReader` (remember `newline=\"\"`).\n2. For each row, converts the `score` column from string to int.\n3. Writes one JSON object per line to `jsonl_path`.\n4. Returns the number of rows written.\n\nThe starter writes a tiny CSV, calls your function, then reads the\nJSONL back and prints each parsed record's `name` and `score`.\n\nExpected output:\n```\n3\nalex 82\nsam 91\njordan 77\n```\n",
+          "starter": "import csv\nimport json\nfrom pathlib import Path\n\nPath(\"/tmp/scores.csv\").write_text(\n    \"name,score\\n\"\n    \"alex,82\\n\"\n    \"sam,91\\n\"\n    \"jordan,77\\n\"\n)\n\n# define csv_to_jsonl below\n\ncount = csv_to_jsonl(Path(\"/tmp/scores.csv\"), Path(\"/tmp/scores.jsonl\"))\nprint(count)\n\nfor line in Path(\"/tmp/scores.jsonl\").read_text().splitlines():\n    r = json.loads(line)\n    print(r[\"name\"], r[\"score\"])\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "3\nalex 82\nsam 91\njordan 77\n",
+            "normalize": "collapse-trailing-newline"
+          },
+          "solution": "import csv\nimport json\nfrom pathlib import Path\n\nPath(\"/tmp/scores.csv\").write_text(\n    \"name,score\\n\"\n    \"alex,82\\n\"\n    \"sam,91\\n\"\n    \"jordan,77\\n\"\n)\n\ndef csv_to_jsonl(csv_path, jsonl_path):\n    count = 0\n    with open(csv_path, newline=\"\") as src, open(jsonl_path, \"w\") as dst:\n        for row in csv.DictReader(src):\n            row[\"score\"] = int(row[\"score\"])\n            dst.write(json.dumps(row) + \"\\n\")\n            count += 1\n    return count\n\ncount = csv_to_jsonl(Path(\"/tmp/scores.csv\"), Path(\"/tmp/scores.jsonl\"))\nprint(count)\n\nfor line in Path(\"/tmp/scores.jsonl\").read_text().splitlines():\n    r = json.loads(line)\n    print(r[\"name\"], r[\"score\"])\n",
+          "passThreshold": 0.66
+        }
+      ],
+      "xpTotal": 32
     }
   ],
-  "xpTotal": 64
+  "xpTotal": 96
 }

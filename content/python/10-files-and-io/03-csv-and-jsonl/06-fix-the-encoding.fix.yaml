@@ -1,0 +1,41 @@
+xp: 4
+estSeconds: 90
+concept: csv-newline-argument
+prompt: |
+  AI wrote a CSV reader that "works on my machine" and breaks on
+  Windows: every other row comes back blank because of how Windows
+  line endings interact with `csv.DictReader`.
+
+  The fix is one keyword argument on the `open` call. Add `newline=""`
+  to line 11 so the reader handles line endings correctly across
+  platforms. The expected output is two rows printed.
+brokenCode: |
+  import csv
+  from pathlib import Path
+
+  Path("/tmp/data.csv").write_text(
+      "name,role\n"
+      "alex,owner\n"
+      "sam,member\n"
+  )
+
+  rows = []
+  with open("/tmp/data.csv") as f:
+      for row in csv.DictReader(f):
+          rows.append(f"{row['name']}:{row['role']}")
+
+  print("\n".join(rows))
+bugLines:
+  - 11
+grader:
+  kind: stdout-equality
+  expected: |
+    alex:owner
+    sam:member
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "Add `newline=\"\"` as a keyword argument to `open(...)`. It tells `open` not to translate line endings, which is what `csv` needs."
+  - level: 2
+    body: "Change line 11 to `with open(\"/tmp/data.csv\", newline=\"\") as f:`. Always include `newline=\"\"` when opening a file for `csv.DictReader` or `csv.reader`."
+revealAfter: 4
