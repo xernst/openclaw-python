@@ -1,0 +1,50 @@
+xp: 5
+estSeconds: 100
+concept: write-deep-copy
+prompt: |
+  Write a function `clone_user` that takes a user dict and returns a fully
+  independent copy — meaning if the caller mutates the cloned user's
+  `roles` list, the original user's `roles` list does **not** change.
+
+  The `copy` module is already imported. Two prints at the bottom check the
+  result. Expected output:
+  ```
+  original roles: ['member']
+  cloned roles: ['member', 'admin']
+  ```
+starter: |
+  import copy
+
+  def clone_user(user):
+      # return a fully independent copy:
+      pass
+
+  alex = {"name": "alex", "roles": ["member"]}
+  cloned = clone_user(alex)
+  cloned["roles"].append("admin")
+
+  print(f"original roles: {alex['roles']}")
+  print(f"cloned roles: {cloned['roles']}")
+grader:
+  kind: stdout-equality
+  expected: |
+    original roles: ['member']
+    cloned roles: ['member', 'admin']
+  normalize: collapse-trailing-newline
+solution: |
+  import copy
+
+  def clone_user(user):
+      return copy.deepcopy(user)
+
+  alex = {"name": "alex", "roles": ["member"]}
+  cloned = clone_user(alex)
+  cloned["roles"].append("admin")
+
+  print(f"original roles: {alex['roles']}")
+  print(f"cloned roles: {cloned['roles']}")
+hint:
+  - level: 1
+    body: "`user.copy()` won't work — `roles` is a nested list. You need the function from the `copy` module that copies every layer."
+  - level: 2
+    body: "Replace the `pass` with `return copy.deepcopy(user)`. That's the whole body."

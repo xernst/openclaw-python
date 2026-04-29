@@ -1,0 +1,23 @@
+xp: 3
+estSeconds: 70
+concept: predict-shallow-copy
+code: |
+  rows = [[1, 2], [3, 4]]
+  copy_rows = rows.copy()
+
+  copy_rows[0].append(99)
+  copy_rows.append([5, 6])
+
+  print(rows)
+prompt: |
+  Two operations on `copy_rows`. One mutates a shared inner list. One adds a
+  new outer item. What does printing `rows` show?
+grader:
+  kind: stdout-equality
+  expected: "[[1, 2, 99], [3, 4]]"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "`copy_rows.append([5, 6])` only changes the outer list of `copy_rows`. `copy_rows[0].append(99)` reaches into the shared inner list."
+  - level: 2
+    body: "`rows` and `copy_rows` share the inner lists. The first inner list becomes `[1, 2, 99]` for both. The new `[5, 6]` row only goes into `copy_rows`. So `rows` is `[[1, 2, 99], [3, 4]]`."

@@ -1,0 +1,14 @@
+slug: copy-vs-reference
+title: "Shallow copy, deep copy, and the nested-dict bug"
+estMinutes: 7
+prerequisites: []
+order:
+  - 01-intro.read.md
+  - 02-which-copies.mc.yaml
+  - 03-deep-copy.read.md
+  - 04-predict-the-shallow.predict.yaml
+  - 05-fill-the-copy-call.fill.yaml
+  - 06-fix-the-shallow-bug.fix.yaml
+  - 07-fix-the-dict-copy.fix.yaml
+  - 08-write-clone.write.yaml
+  - 09-checkpoint.checkpoint.yaml

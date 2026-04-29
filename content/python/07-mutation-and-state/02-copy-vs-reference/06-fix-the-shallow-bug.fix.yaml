@@ -1,0 +1,46 @@
+xp: 4
+estSeconds: 80
+concept: shallow-copy-not-enough
+prompt: |
+  Claude wrote a "make a backup before editing" snippet. The bug: it used
+  `.copy()` on a nested dict. When the script edits the backup's nested
+  `tags` list, the original list also changes.
+
+  The expected output is:
+  ```
+  original tags: ['admin']
+  backup tags:   ['admin', 'temp']
+  ```
+
+  Right now it's:
+  ```
+  original tags: ['admin', 'temp']
+  backup tags:   ['admin', 'temp']
+  ```
+
+  Fix line 5 so the backup is truly independent. The `copy` module is already
+  imported on line 1.
+brokenCode: |
+  import copy
+
+  original = {"name": "alex", "tags": ["admin"]}
+
+  backup = original.copy()
+  backup["tags"].append("temp")
+
+  print(f"original tags: {original['tags']}")
+  print(f"backup tags:   {backup['tags']}")
+bugLines:
+  - 5
+grader:
+  kind: stdout-equality
+  expected: |
+    original tags: ['admin']
+    backup tags:   ['admin', 'temp']
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "`.copy()` is shallow — the inner `tags` list is still shared. You need a deep copy."
+  - level: 2
+    body: "Change line 5 to `backup = copy.deepcopy(original)`. That copies the dict and the inner list."
+revealAfter: 4

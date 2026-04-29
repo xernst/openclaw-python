@@ -1,0 +1,26 @@
+xp: 3
+estSeconds: 55
+concept: deepcopy-syntax
+prompt: |
+  Cursor wrote a snippet that needs an *independent* copy of a nested dict.
+  The `copy` module is imported. Fill in the function name on line 4.
+  ```python
+  import copy
+
+  user = {"name": "alex", "skills": ["python"]}
+  safe = copy.___(user)
+
+  safe["skills"].append("rust")
+
+  print(user["skills"])  # should print ['python']
+  ```
+blanks:
+  - id: function
+    accept:
+      - deepcopy
+    caseSensitive: true
+hint:
+  - level: 1
+    body: "There's a function in the `copy` module that copies every layer, not just the outer one."
+  - level: 2
+    body: "It's `copy.deepcopy(user)`. `copy.copy()` would only do a shallow copy and the bug would still happen."

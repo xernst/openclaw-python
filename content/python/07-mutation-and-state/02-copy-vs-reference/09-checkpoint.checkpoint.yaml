@@ -1,0 +1,56 @@
+xp: 8
+estSeconds: 130
+concept: copy-recap
+prompt: |
+  Last one. Cursor wrote `apply_discount`, a function that's supposed to
+  take a list of order dicts and a percent, and return a *new* list of
+  orders with the discount applied. The original orders should be unchanged.
+
+  Two bugs: it uses `.copy()` instead of `deepcopy` (so the inner dicts are
+  shared), and it returns the wrong variable.
+
+  Fix the function so the script prints:
+  ```
+  original first price: 100
+  discounted first price: 90.0
+  ```
+starter: |
+  import copy
+
+  def apply_discount(orders, percent):
+      new_orders = orders.copy()
+      for order in new_orders:
+          order["price"] = order["price"] * (1 - percent / 100)
+      return orders
+
+  data = [{"id": 1, "price": 100}, {"id": 2, "price": 50}]
+  discounted = apply_discount(data, 10)
+
+  print(f"original first price: {data[0]['price']}")
+  print(f"discounted first price: {discounted[0]['price']}")
+grader:
+  kind: stdout-equality
+  expected: |
+    original first price: 100
+    discounted first price: 90.0
+  normalize: collapse-trailing-newline
+solution: |
+  import copy
+
+  def apply_discount(orders, percent):
+      new_orders = copy.deepcopy(orders)
+      for order in new_orders:
+          order["price"] = order["price"] * (1 - percent / 100)
+      return new_orders
+
+  data = [{"id": 1, "price": 100}, {"id": 2, "price": 50}]
+  discounted = apply_discount(data, 10)
+
+  print(f"original first price: {data[0]['price']}")
+  print(f"discounted first price: {discounted[0]['price']}")
+passThreshold: 0.66
+hint:
+  - level: 1
+    body: "Two changes. Line 4: `copy.deepcopy(orders)` instead of `orders.copy()`. Last line of the function: `return new_orders`, not `orders`."
+  - level: 2
+    body: "Swap line 4 to `new_orders = copy.deepcopy(orders)`. Swap the `return orders` line to `return new_orders`."

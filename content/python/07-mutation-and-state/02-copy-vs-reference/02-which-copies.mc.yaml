@@ -1,0 +1,26 @@
+xp: 2
+estSeconds: 45
+concept: copy-vs-alias
+prompt: |
+  Cursor wrote four lines, each meant to "copy" a list called `users`. Three
+  of them produce an independent copy. One only creates a second name for the
+  same list. Which one is the *not-copy*?
+options:
+  - id: a
+    label: "`backup = users`"
+  - id: b
+    label: "`backup = users[:]`"
+    explain: "Slice with no bounds is a list copy. Independent."
+  - id: c
+    label: "`backup = list(users)`"
+    explain: "The `list()` constructor builds a new list. Independent."
+  - id: d
+    label: "`backup = users.copy()`"
+    explain: "The `.copy()` method makes a new list. Independent."
+answerIds:
+  - a
+hint:
+  - level: 1
+    body: "Plain assignment is the trap. The other three each call something — a slice, a constructor, a method."
+  - level: 2
+    body: "`backup = users` is just a second name for the same list. The other three actually build a new list. This is the most common AI bug in this category."

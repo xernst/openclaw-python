@@ -1,0 +1,40 @@
+xp: 4
+estSeconds: 80
+concept: dict-aliasing-fix
+prompt: |
+  Cursor wrote a function that's supposed to take a `config` dict, return a
+  *modified copy* with `debug` set to `True`, and leave the original alone.
+
+  Right now the function mutates the original instead of copying it. The
+  expected output is:
+  ```
+  original debug: False
+  modified debug: True
+  ```
+
+  Fix line 2 so the function works on a real copy.
+brokenCode: |
+  def with_debug(config):
+      new_config = config
+      new_config["debug"] = True
+      return new_config
+
+  original = {"port": 3000, "debug": False}
+  modified = with_debug(original)
+
+  print(f"original debug: {original['debug']}")
+  print(f"modified debug: {modified['debug']}")
+bugLines:
+  - 2
+grader:
+  kind: stdout-equality
+  expected: |
+    original debug: False
+    modified debug: True
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "`new_config = config` is just a second name for the same dict. The function mutates the caller's dict. Use a real copy."
+  - level: 2
+    body: "Change line 2 to `new_config = config.copy()`. The dict is flat (no nested structures), so a shallow copy is enough."
+revealAfter: 4
