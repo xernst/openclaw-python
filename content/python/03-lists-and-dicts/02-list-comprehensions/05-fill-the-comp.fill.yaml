@@ -1,0 +1,21 @@
+xp: 3
+estSeconds: 55
+concept: comprehension-keyword
+prompt: |
+  Cursor wrote a comprehension that should walk through `words` and produce
+  a list of their lengths. The keyword on line 2 is missing. Fill it in.
+  ```python
+  words = ["hi", "hello", "hey"]
+  lengths = [len(w) ___ w in words]
+  print(lengths)
+  ```
+blanks:
+  - id: keyword
+    accept:
+      - for
+    caseSensitive: true
+hint:
+  - level: 1
+    body: "Every list comprehension needs the keyword that introduces the loop variable."
+  - level: 2
+    body: "It's `for`. The shape is `[expression for item in iterable]`."

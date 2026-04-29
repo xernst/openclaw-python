@@ -1,0 +1,27 @@
+xp: 2
+estSeconds: 40
+concept: comprehension-syntax
+code: |
+  names = ["alex", "sam", "jordan"]
+prompt: |
+  You want a new list with every name in upper case. Four candidates from
+  Cursor. Only one is a valid Python list comprehension. Which one?
+options:
+  - id: a
+    label: "`[name.upper() for name in names]`"
+  - id: b
+    label: "`[for name in names: name.upper()]`"
+    explain: "The expression goes first, then the `for`. No colon."
+  - id: c
+    label: "`{name.upper() for name in names}`"
+    explain: "Curly braces produce a set, not a list. Different shape, different behavior."
+  - id: d
+    label: "`[name.upper() in names]`"
+    explain: "Missing the `for name`. Without it, Python doesn't know what to iterate over."
+answerIds:
+  - a
+hint:
+  - level: 1
+    body: "Square brackets, expression first, then `for item in iterable`. That's the whole pattern."
+  - level: 2
+    body: "Read it left to right: *make a list of `name.upper()`, for every `name` in `names`*. Option A is the only valid Python."

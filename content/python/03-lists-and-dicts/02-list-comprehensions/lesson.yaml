@@ -1,0 +1,14 @@
+slug: list-comprehensions
+title: "The one-liner Python writes when it's showing off"
+estMinutes: 7
+prerequisites: []
+order:
+  - 01-intro.read.md
+  - 02-which-comp-shape.mc.yaml
+  - 03-with-filter.read.md
+  - 04-predict-the-comp.predict.yaml
+  - 05-fill-the-comp.fill.yaml
+  - 06-fix-the-comp.fix.yaml
+  - 07-fix-the-filter.fix.yaml
+  - 08-write-comp.write.yaml
+  - 09-checkpoint.checkpoint.yaml

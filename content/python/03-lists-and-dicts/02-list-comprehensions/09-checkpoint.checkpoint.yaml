@@ -1,0 +1,43 @@
+xp: 8
+estSeconds: 130
+concept: comprehensions-recap
+prompt: |
+  Last one. Cursor wrote a snippet to take a list of user dicts and pull out
+  just the names of users whose age is at least 18. The comprehension is
+  missing — only the `pass` placeholder is there.
+
+  Replace the `pass` line with a single comprehension so the script prints
+  `['alex', 'jordan']`.
+starter: |
+  users = [
+      {"name": "alex", "age": 34},
+      {"name": "bo", "age": 12},
+      {"name": "jordan", "age": 41},
+      {"name": "sam", "age": 9},
+  ]
+
+  # build a list of names where age >= 18
+  adult_names = pass
+
+  print(adult_names)
+grader:
+  kind: stdout-equality
+  expected: "['alex', 'jordan']"
+  normalize: collapse-trailing-newline
+solution: |
+  users = [
+      {"name": "alex", "age": 34},
+      {"name": "bo", "age": 12},
+      {"name": "jordan", "age": 41},
+      {"name": "sam", "age": 9},
+  ]
+
+  adult_names = [u["name"] for u in users if u["age"] >= 18]
+
+  print(adult_names)
+passThreshold: 0.66
+hint:
+  - level: 1
+    body: "Read it as a sentence: *the name of each user, for every user, if the user's age is at least 18.* That's the comprehension."
+  - level: 2
+    body: "`adult_names = [u[\"name\"] for u in users if u[\"age\"] >= 18]`. Replace the `pass`."

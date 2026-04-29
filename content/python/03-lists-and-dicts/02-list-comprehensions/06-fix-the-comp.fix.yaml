@@ -1,0 +1,23 @@
+xp: 4
+estSeconds: 70
+concept: comprehension-order
+prompt: |
+  Claude generated this and it crashes with a `SyntaxError`. The pieces of the
+  comprehension are in the wrong order — the `for` clause came first instead
+  of the expression. Reorder line 2 so the script prints `[2, 4, 6]`.
+brokenCode: |
+  numbers = [1, 2, 3]
+  doubled = [for n in numbers n * 2]
+  print(doubled)
+bugLines:
+  - 2
+grader:
+  kind: stdout-equality
+  expected: "[2, 4, 6]"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "The expression always goes first, then `for item in iterable`. Not the other way around."
+  - level: 2
+    body: "Change line 2 to `doubled = [n * 2 for n in numbers]`. Expression first, loop clause second."
+revealAfter: 4

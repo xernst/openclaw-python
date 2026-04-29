@@ -1,0 +1,30 @@
+xp: 5
+estSeconds: 100
+concept: write-comprehension
+prompt: |
+  Write a list comprehension that takes the list `prices = [12, 50, 8, 99, 30]`
+  and produces a new list containing only the prices over `15`. Print the
+  result.
+
+  Expected output:
+  ```
+  [50, 99, 30]
+  ```
+starter: |
+  prices = [12, 50, 8, 99, 30]
+
+  # one-line list comprehension below:
+
+grader:
+  kind: stdout-equality
+  expected: "[50, 99, 30]"
+  normalize: collapse-trailing-newline
+solution: |
+  prices = [12, 50, 8, 99, 30]
+  expensive = [p for p in prices if p > 15]
+  print(expensive)
+hint:
+  - level: 1
+    body: "Two pieces. The comprehension `[p for p in prices if p > 15]`. Then a `print` of whatever you assigned it to."
+  - level: 2
+    body: "`expensive = [p for p in prices if p > 15]` then `print(expensive)`."

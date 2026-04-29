@@ -1,0 +1,19 @@
+xp: 3
+estSeconds: 55
+concept: comprehension-evaluation
+code: |
+  numbers = [1, 2, 3, 4, 5]
+  result = [n * n for n in numbers if n % 2 == 0]
+  print(result)
+prompt: |
+  Read the comprehension left to right. Filter first, then transform.
+  What does this print?
+grader:
+  kind: stdout-equality
+  expected: "[4, 16]"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "The `if n % 2 == 0` keeps only even numbers. Then each survivor gets squared."
+  - level: 2
+    body: "Even numbers in `[1, 2, 3, 4, 5]` are `2` and `4`. Squared: `4` and `16`. Output is the list `[4, 16]`."

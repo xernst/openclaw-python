@@ -1,0 +1,26 @@
+xp: 4
+estSeconds: 80
+concept: comprehension-filter-vs-ternary
+prompt: |
+  Cursor wanted to keep only names longer than 3 characters. Instead of
+  filtering them out, it used an `if/else` *inside* the expression, so short
+  names got replaced with the string `"-"` instead of removed.
+
+  Output is currently `['alex', '-', 'jordan', '-']`. Fix line 2 so the
+  output is `['alex', 'jordan']` — short names removed entirely.
+brokenCode: |
+  names = ["alex", "bo", "jordan", "sam"]
+  long_names = [n if len(n) > 3 else "-" for n in names]
+  print(long_names)
+bugLines:
+  - 2
+grader:
+  kind: stdout-equality
+  expected: "['alex', 'jordan']"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "An `if` at the *end* of a comprehension filters items out. An `if/else` *inside* the expression replaces them. You want the filter."
+  - level: 2
+    body: "Change line 2 to `long_names = [n for n in names if len(n) > 3]`. Move the `if` to the end and drop the `else` branch."
+revealAfter: 4
