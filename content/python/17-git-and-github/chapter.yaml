@@ -1,0 +1,6 @@
+number: 17
+slug: git-and-github
+title: "Git and GitHub CLI — the AI builder's actual workflow"
+blurb: "Cursor and Claude Code commit on your behalf. Reading those commits — and undoing the bad ones — is your job. Learn the four-state model, the commands you'll run every day, and what `gh` does that `git` can't."
+lessons:
+  - 01-the-three-states

@@ -1,0 +1,29 @@
+xp: 3
+estSeconds: 75
+concept: git-status-counts
+code: |
+  status = {
+      "staged": ["a.py", "b.py"],
+      "modified": ["c.py"],
+      "untracked": ["d.py", "e.py", ".env"],
+  }
+
+  total_changes = len(status["staged"]) + len(status["modified"])
+  print(f"changes for next commit: {len(status['staged'])}")
+  print(f"total tracked changes: {total_changes}")
+  print(f"untracked files: {len(status['untracked'])}")
+prompt: |
+  Read the editor. The `status` dict mirrors what `git status` would
+  show. What do those three lines print, in order?
+grader:
+  kind: stdout-equality
+  expected: |
+    changes for next commit: 2
+    total tracked changes: 3
+    untracked files: 3
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: 'Three counts: staged length, staged + modified, untracked length.'
+  - level: 2
+    body: 'staged has 2 (a.py, b.py). modified has 1. untracked has 3 (d.py, e.py, .env).'

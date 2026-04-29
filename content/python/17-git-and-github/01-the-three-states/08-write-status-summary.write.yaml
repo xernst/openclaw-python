@@ -1,0 +1,56 @@
+xp: 5
+estSeconds: 130
+concept: parse-git-status
+prompt: |
+  Build a small status summarizer. Write `summarize(status)` that takes
+  a parsed git status dict and returns a one-line string of the form:
+
+  ```
+  <branch>: <staged> staged, <modified> modified, <untracked> untracked
+  ```
+
+  Where each `<n>` is the count of items in the matching list.
+
+  Then call it on the provided `status` and print the result.
+
+  Expected output:
+  ```
+  feature/login: 2 staged, 1 modified, 1 untracked
+  ```
+starter: |
+  status = {
+      "branch": "feature/login",
+      "staged": ["src/auth.py", "tests/test_auth.py"],
+      "modified": ["README.md"],
+      "untracked": [".env.local"],
+  }
+
+  # define summarize(status) below
+
+  print(summarize(status))
+grader:
+  kind: stdout-equality
+  expected: "feature/login: 2 staged, 1 modified, 1 untracked"
+  normalize: collapse-trailing-newline
+solution: |
+  status = {
+      "branch": "feature/login",
+      "staged": ["src/auth.py", "tests/test_auth.py"],
+      "modified": ["README.md"],
+      "untracked": [".env.local"],
+  }
+
+  def summarize(status):
+      return (
+          f"{status['branch']}: "
+          f"{len(status['staged'])} staged, "
+          f"{len(status['modified'])} modified, "
+          f"{len(status['untracked'])} untracked"
+      )
+
+  print(summarize(status))
+hint:
+  - level: 1
+    body: 'One f-string interpolating four values: the branch and the three lengths.'
+  - level: 2
+    body: '`f"{status[\"branch\"]}: {len(status[\"staged\"])} staged, {len(status[\"modified\"])} modified, {len(status[\"untracked\"])} untracked"`.'

@@ -1,0 +1,25 @@
+xp: 3
+estSeconds: 65
+concept: git-commit-flag
+prompt: |
+  Cursor wrote a wrapper that builds a git commit command string. The
+  flag on line 4 is missing — it's the short flag for setting the
+  commit message inline (so you don't need to open an editor).
+
+  Flag: -___
+code: |
+  message = "fix: token refresh"
+  files = ["src/auth.py"]
+
+  command_parts = ["git", "commit", "-___", message]
+  print(" ".join(command_parts))
+blanks:
+  - id: keyword
+    accept:
+      - m
+    caseSensitive: true
+hint:
+  - level: 1
+    body: 'Single letter. The mnemonic: `m` for message.'
+  - level: 2
+    body: '`-m` — `git commit -m "fix: token refresh"`. The full long form is `--message`.'

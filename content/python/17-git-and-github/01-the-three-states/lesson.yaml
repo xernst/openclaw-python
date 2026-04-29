@@ -1,0 +1,14 @@
+slug: the-three-states
+title: "Working tree, staging, commit — the model AI breaks first"
+estMinutes: 8
+prerequisites: []
+order:
+  - 01-intro.read.md
+  - 02-which-command-stages.mc.yaml
+  - 03-status-and-diff.read.md
+  - 04-predict-the-status.predict.yaml
+  - 05-fill-the-command.fill.yaml
+  - 06-fix-the-staged-files.fix.yaml
+  - 07-fix-the-pr-command.fix.yaml
+  - 08-write-status-summary.write.yaml
+  - 09-checkpoint.checkpoint.yaml

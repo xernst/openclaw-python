@@ -1,0 +1,29 @@
+xp: 4
+estSeconds: 90
+concept: gh-pr-create-vs-push
+prompt: |
+  Cursor wrote a script that builds the command to open a PR after a
+  push. It used `git pr create`, but that subcommand doesn't exist —
+  PRs are a GitHub concept, not a git concept. Fix the first item on
+  line 2 so the command uses the correct CLI.
+
+  Expected output:
+  ```
+  gh pr create --fill
+  ```
+brokenCode: |
+  # build the command to open a PR from the current branch
+  command_parts = ["git", "pr", "create", "--fill"]
+  print(" ".join(command_parts))
+bugLines:
+  - 2
+grader:
+  kind: stdout-equality
+  expected: "gh pr create --fill"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: 'Two CLIs in the AI builder workflow: one for local version control, one for GitHub. Which owns PRs?'
+  - level: 2
+    body: 'Replace `"git"` with `"gh"` on line 2. PRs live on GitHub, so they live in `gh`.'
+revealAfter: 3

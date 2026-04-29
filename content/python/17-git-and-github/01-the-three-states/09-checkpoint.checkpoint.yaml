@@ -1,0 +1,91 @@
+xp: 8
+estSeconds: 170
+concept: git-workflow-checkpoint
+prompt: |
+  Final drill. Write `safe_to_commit(status)` that decides whether the
+  current staged set is safe to commit. Rules:
+
+  - If anything in `status["staged"]` starts with `.env` (any case),
+    return `("block", "secrets staged")`.
+  - If `status["staged"]` is empty, return `("block", "nothing staged")`.
+  - Otherwise return `("ok", f"{n} files staged")` where `n` is the
+    count of staged files.
+
+  Then the script will exercise three cases and print each result.
+
+  Expected output:
+
+  ```
+  ok: 2 files staged
+  block: secrets staged
+  block: nothing staged
+  ```
+starter: |
+  good = {
+      "branch": "main",
+      "staged": ["src/auth.py", "tests/test_auth.py"],
+      "modified": [],
+      "untracked": [],
+  }
+
+  leak = {
+      "branch": "main",
+      "staged": ["src/auth.py", ".env.local"],
+      "modified": [],
+      "untracked": [],
+  }
+
+  empty = {
+      "branch": "main",
+      "staged": [],
+      "modified": ["README.md"],
+      "untracked": [],
+  }
+
+  # define safe_to_commit(status) below
+
+  for case in [good, leak, empty]:
+      verdict, reason = safe_to_commit(case)
+      print(f"{verdict}: {reason}")
+grader:
+  kind: stdout-equality
+  expected: |
+    ok: 2 files staged
+    block: secrets staged
+    block: nothing staged
+  normalize: collapse-trailing-newline
+solution: |
+  good = {
+      "branch": "main",
+      "staged": ["src/auth.py", "tests/test_auth.py"],
+      "modified": [],
+      "untracked": [],
+  }
+
+  leak = {
+      "branch": "main",
+      "staged": ["src/auth.py", ".env.local"],
+      "modified": [],
+      "untracked": [],
+  }
+
+  empty = {
+      "branch": "main",
+      "staged": [],
+      "modified": ["README.md"],
+      "untracked": [],
+  }
+
+  def safe_to_commit(status):
+      staged = status["staged"]
+      for f in staged:
+          if f.lower().startswith(".env"):
+              return ("block", "secrets staged")
+      if not staged:
+          return ("block", "nothing staged")
+      return ("ok", f"{len(staged)} files staged")
+
+  for case in [good, leak, empty]:
+      verdict, reason = safe_to_commit(case)
+      print(f"{verdict}: {reason}")
+passThreshold: 0.66

@@ -1,0 +1,258 @@
+{
+  "number": 17,
+  "slug": "git-and-github",
+  "title": "Git and GitHub CLI — the AI builder's actual workflow",
+  "blurb": "Cursor and Claude Code commit on your behalf. Reading those commits — and undoing the bad ones — is your job. Learn the four-state model, the commands you'll run every day, and what `gh` does that `git` can't.",
+  "lessons": [
+    {
+      "slug": "the-three-states",
+      "title": "Working tree, staging, commit — the model AI breaks first",
+      "estMinutes": 8,
+      "prerequisites": [],
+      "steps": [
+        {
+          "type": "read",
+          "id": "git-and-github/the-three-states/s01-01-intro",
+          "xp": 1,
+          "hint": [],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 90,
+          "concept": "git-three-states",
+          "body": "# Git has three states, and AI confuses them constantly\n\nCursor just made twelve edits across nine files and ran `git commit -am\n\"refactor\"`. Did it commit *all* of your changes? Half? The wrong half?\nYou can't answer until you understand git's three-state model. Skip\nthis and you'll either lose work or ship secrets.\n\n## The three states\n\nEvery file in a git repo lives in one of three places:\n\n```\nworking tree   ──> staging area (index)  ──> commit (HEAD)\n   (your edits)      (git add)               (git commit)\n```\n\n1. **Working tree.** The files on disk as you've edited them. Cursor\n   writes here.\n2. **Staging area** (also called the *index*). A snapshot of changes\n   you've marked for the next commit. `git add file.py` moves changes\n   from working tree → staging.\n3. **The last commit (HEAD).** What's actually saved in history.\n   `git commit` packages everything in staging into a new commit.\n\nThat arrow is one-way for `git add` and `git commit`. It's also\nreversible: `git restore --staged file` un-stages, `git restore file`\ndiscards working-tree changes.\n\n## The four file categories `git status` shows you\n\n```\nChanges to be committed:        # staged   - will land in next commit\n  modified:   src/auth.py\n\nChanges not staged for commit:  # modified - in working tree only\n  modified:   README.md\n\nUntracked files:                # untracked - git has never seen these\n  scratch.py\n```\n\nA file can be in *multiple* categories at once. If you `git add` then\nedit again, the same file shows up under both \"staged\" and \"modified\".\nThe staged version is what'll commit; the new edits won't.\n\n## What AI does that breaks this\n\nThree patterns Cursor and Claude Code fall into:\n\n- **`git add .` then `git commit`.** Stages every file, including\n  `.env` files, scratch notebooks, and large binaries. Always run\n  `git status` BEFORE adding, or stage specific files by name.\n- **`git commit -am \"...\"`.** The `-a` auto-stages every modified\n  tracked file. It does NOT add untracked files (good), but it also\n  doesn't pause to let you review. Cursor uses this constantly.\n- **Forgetting `.gitignore`.** AI happily commits `node_modules/`,\n  `__pycache__/`, and your virtualenv if there's no `.gitignore`.\n  Check the diff before pushing.\n\n## The two CLIs you'll use every day\n\n- **`git`** — the version-control tool. Local commits, branches,\n  diffs, history. Doesn't know GitHub exists.\n- **`gh`** — GitHub's CLI. PRs, issues, releases, repo creation.\n  Wraps the GitHub API so you don't have to leave the terminal.\n\nReal workflow:\n\n```bash\ngit checkout -b feature/auth-fix     # new branch\n# make edits\ngit add src/auth.py                  # stage one specific file\ngit commit -m \"fix: token refresh\"   # commit\ngit push -u origin feature/auth-fix  # push (first time uses -u)\ngh pr create --fill                  # open the PR from the terminal\ngh pr view --web                     # open it in the browser\n```\n\n> **Browser note:** we can't shell out to `git` here, so we'll use\n> Python dicts that match the *structured* output of `git status` and\n> `gh pr list`. The patterns and decisions are identical.\n\nRun the editor. We render a parsed `git status` for a typical mid-edit\nstate.",
+          "cta": "Got it",
+          "code": "# what `git status` would print, parsed into a Python dict.\n# we can't actually shell out to git in the browser, so the\n# rest of this lesson uses parsed status objects like this.\nstatus = {\n    \"branch\": \"feature/auth-fix\",\n    \"staged\": [\"src/auth.py\"],\n    \"modified\": [\"README.md\"],\n    \"untracked\": [\"scratch.py\"],\n}\n\nprint(f\"on branch: {status['branch']}\")\nprint(f\"staged ({len(status['staged'])}):    {status['staged']}\")\nprint(f\"modified ({len(status['modified'])}): {status['modified']}\")\nprint(f\"untracked ({len(status['untracked'])}): {status['untracked']}\")\n",
+          "runnable": true
+        },
+        {
+          "type": "mc",
+          "id": "git-and-github/the-three-states/s02-02-which-command-stages",
+          "xp": 2,
+          "hint": [],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 50,
+          "concept": "git-add-stages",
+          "prompt": "Cursor edited `src/auth.py`. You want to include that file in the\nnext commit. Which command moves it from the working tree into the\nstaging area?\n",
+          "options": [
+            {
+              "id": "a",
+              "label": "git commit src/auth.py",
+              "explain": "`git commit` only packages what's already staged. It doesn't stage the file itself first."
+            },
+            {
+              "id": "b",
+              "label": "git add src/auth.py"
+            },
+            {
+              "id": "c",
+              "label": "git push src/auth.py",
+              "explain": "`git push` uploads commits to a remote — it operates on the commit history, not on individual files."
+            },
+            {
+              "id": "d",
+              "label": "git status src/auth.py",
+              "explain": "`git status` is read-only. It shows you what state files are in but doesn't move anything."
+            }
+          ],
+          "answerIds": [
+            "b"
+          ],
+          "shuffle": false,
+          "code": "# walk through what happens to a file as it moves through the states.\n# we model each state as a tag on the file.\nstates = [\"working_tree\"]\n\n# equivalent of: git add src/auth.py\nstates.append(\"staging\")\n\n# equivalent of: git commit -m \"...\"\nstates.append(\"commit\")\n\nprint(\" -> \".join(states))\n",
+          "runnable": true
+        },
+        {
+          "type": "read",
+          "id": "git-and-github/the-three-states/s03-03-status-and-diff",
+          "xp": 2,
+          "hint": [],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 80,
+          "concept": "git-status-diff-and-gh",
+          "body": "# `git status`, `git diff`, and `gh pr list` — the three you'll run daily\n\nReading what AI just did is half the job. These three commands cover 90%\nof your daily inspection:\n\n### `git status`\n\nShows the four categories of files (staged, modified, untracked,\nunmerged). The shortcut form is `git status --porcelain` — machine-\nreadable, one file per line, two-character status codes. This is what\nscripts (and AI agents) parse. Use the human form when reading,\nporcelain when scripting.\n\n### `git diff`\n\nBy default shows the working tree vs staging — *what you'd lose if\nyou discarded changes*. Two key variations:\n\n- `git diff --staged` — shows what'll go into the next commit\n- `git diff main...HEAD` — full diff of your branch against main\n\nWhen Cursor commits something you don't trust, run `git diff HEAD~1` —\nthat's \"what did the last commit change?\" You'll catch the wrong-files-\nstaged bug in 30 seconds.\n\n### `gh pr list` and `gh pr view`\n\n`git` doesn't know GitHub exists; `gh` does. Lists open PRs in your\nrepo, shows the diff of any one of them, lets you check out a PR\nlocally with `gh pr checkout 142`. AI builders live in this command —\nit's how you review PRs without leaving the terminal.\n\n## A useful rule\n\nIf you can read `git status` and `git diff --staged`, you can catch\nalmost every commit Cursor messes up *before* it lands. Both commands\nare read-only. They cost nothing to run. Run them constantly.\n\nRun the editor. We parse a status snapshot and a list of open PRs.",
+          "cta": "Got it",
+          "code": "# parsed `git status --porcelain` plus a small `gh pr list` slice.\n# both are dicts here so we can read them like real CLI output.\n\nstatus = {\n    \"branch\": \"feature/login-rate-limit\",\n    \"staged\":   [\"src/auth/login.py\", \"tests/test_login.py\"],\n    \"modified\": [\"README.md\"],\n    \"untracked\": [\".env.local\"],\n}\n\nopen_prs = [\n    {\"number\": 142, \"title\": \"fix: token refresh\", \"author\": \"maya\", \"draft\": False},\n    {\"number\": 143, \"title\": \"wip: rate limit\",     \"author\": \"maya\", \"draft\": True},\n]\n\nprint(\"STAGED:\")\nfor f in status[\"staged\"]:\n    print(f\"  + {f}\")\n\nprint(\"\\nOPEN PRs:\")\nfor pr in open_prs:\n    tag = \"draft\" if pr[\"draft\"] else \"ready\"\n    print(f\"  #{pr['number']} [{tag}] {pr['title']}\")\n",
+          "runnable": true
+        },
+        {
+          "type": "predict",
+          "id": "git-and-github/the-three-states/s04-04-predict-the-status",
+          "xp": 3,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Three counts: staged length, staged + modified, untracked length.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "staged has 2 (a.py, b.py). modified has 1. untracked has 3 (d.py, e.py, .env).",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 75,
+          "concept": "git-status-counts",
+          "code": "status = {\n    \"staged\": [\"a.py\", \"b.py\"],\n    \"modified\": [\"c.py\"],\n    \"untracked\": [\"d.py\", \"e.py\", \".env\"],\n}\n\ntotal_changes = len(status[\"staged\"]) + len(status[\"modified\"])\nprint(f\"changes for next commit: {len(status['staged'])}\")\nprint(f\"total tracked changes: {total_changes}\")\nprint(f\"untracked files: {len(status['untracked'])}\")\n",
+          "prompt": "Read the editor. The `status` dict mirrors what `git status` would\nshow. What do those three lines print, in order?\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "changes for next commit: 2\ntotal tracked changes: 3\nuntracked files: 3\n",
+            "normalize": "collapse-trailing-newline"
+          }
+        },
+        {
+          "type": "fill",
+          "id": "git-and-github/the-three-states/s05-05-fill-the-command",
+          "xp": 3,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Single letter. The mnemonic: `m` for message.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "`-m` — `git commit -m \"fix: token refresh\"`. The full long form is `--message`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 65,
+          "concept": "git-commit-flag",
+          "prompt": "Cursor wrote a wrapper that builds a git commit command string. The\nflag on line 4 is missing — it's the short flag for setting the\ncommit message inline (so you don't need to open an editor).\n\nFlag: -___\n",
+          "code": "message = \"fix: token refresh\"\nfiles = [\"src/auth.py\"]\n\ncommand_parts = [\"git\", \"commit\", \"-___\", message]\nprint(\" \".join(command_parts))\n",
+          "blanks": [
+            {
+              "id": "keyword",
+              "accept": [
+                "m"
+              ],
+              "caseSensitive": true,
+              "normalize": "trim"
+            }
+          ]
+        },
+        {
+          "type": "fix",
+          "id": "git-and-github/the-three-states/s06-06-fix-the-staged-files",
+          "xp": 4,
+          "hint": [
+            {
+              "level": 1,
+              "body": "The filter is inverted. We want to KEEP files that do NOT start with `.env`.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Change `f.startswith(\".env\")` to `not f.startswith(\".env\")` on line 5.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 95,
+          "concept": "gitignore-secrets-leak",
+          "brokenCode": "staged_files = [\"src/auth.py\", \"tests/test_auth.py\", \".env\", \".env.local\"]\n\n# remove anything that looks like a secrets file before committing\nsafe = [f for f in staged_files if f.startswith(\".env\")]\nprint(safe)\n",
+          "prompt": "AI ran `git add .` and ended up staging `.env` along with the real\nsource changes. The script below filters the staged list, but the\nfilter on line 5 keeps `.env` instead of removing it. Fix line 5 so\nonly files that DON'T start with `.env` are kept.\n\nExpected output:\n```\n['src/auth.py', 'tests/test_auth.py']\n```\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "['src/auth.py', 'tests/test_auth.py']",
+            "normalize": "collapse-trailing-newline"
+          },
+          "bugLines": [
+            5
+          ],
+          "revealAfter": 4
+        },
+        {
+          "type": "fix",
+          "id": "git-and-github/the-three-states/s07-07-fix-the-pr-command",
+          "xp": 4,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Two CLIs in the AI builder workflow: one for local version control, one for GitHub. Which owns PRs?",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Replace `\"git\"` with `\"gh\"` on line 2. PRs live on GitHub, so they live in `gh`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 90,
+          "concept": "gh-pr-create-vs-push",
+          "brokenCode": "# build the command to open a PR from the current branch\ncommand_parts = [\"git\", \"pr\", \"create\", \"--fill\"]\nprint(\" \".join(command_parts))\n",
+          "prompt": "Cursor wrote a script that builds the command to open a PR after a\npush. It used `git pr create`, but that subcommand doesn't exist —\nPRs are a GitHub concept, not a git concept. Fix the first item on\nline 2 so the command uses the correct CLI.\n\nExpected output:\n```\ngh pr create --fill\n```\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "gh pr create --fill",
+            "normalize": "collapse-trailing-newline"
+          },
+          "bugLines": [
+            2
+          ],
+          "revealAfter": 3
+        },
+        {
+          "type": "write",
+          "id": "git-and-github/the-three-states/s08-08-write-status-summary",
+          "xp": 5,
+          "hint": [
+            {
+              "level": 1,
+              "body": "One f-string interpolating four values: the branch and the three lengths.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "`f\"{status[\\\"branch\\\"]}: {len(status[\\\"staged\\\"])} staged, {len(status[\\\"modified\\\"])} modified, {len(status[\\\"untracked\\\"])} untracked\"`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 130,
+          "concept": "parse-git-status",
+          "prompt": "Build a small status summarizer. Write `summarize(status)` that takes\na parsed git status dict and returns a one-line string of the form:\n\n```\n<branch>: <staged> staged, <modified> modified, <untracked> untracked\n```\n\nWhere each `<n>` is the count of items in the matching list.\n\nThen call it on the provided `status` and print the result.\n\nExpected output:\n```\nfeature/login: 2 staged, 1 modified, 1 untracked\n```\n",
+          "starter": "status = {\n    \"branch\": \"feature/login\",\n    \"staged\": [\"src/auth.py\", \"tests/test_auth.py\"],\n    \"modified\": [\"README.md\"],\n    \"untracked\": [\".env.local\"],\n}\n\n# define summarize(status) below\n\nprint(summarize(status))\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "feature/login: 2 staged, 1 modified, 1 untracked",
+            "normalize": "collapse-trailing-newline"
+          },
+          "solution": "status = {\n    \"branch\": \"feature/login\",\n    \"staged\": [\"src/auth.py\", \"tests/test_auth.py\"],\n    \"modified\": [\"README.md\"],\n    \"untracked\": [\".env.local\"],\n}\n\ndef summarize(status):\n    return (\n        f\"{status['branch']}: \"\n        f\"{len(status['staged'])} staged, \"\n        f\"{len(status['modified'])} modified, \"\n        f\"{len(status['untracked'])} untracked\"\n    )\n\nprint(summarize(status))\n",
+          "hiddenTests": []
+        },
+        {
+          "type": "checkpoint",
+          "id": "git-and-github/the-three-states/s09-09-checkpoint",
+          "xp": 8,
+          "hint": [],
+          "personalize": false,
+          "phase": "check",
+          "estSeconds": 170,
+          "concept": "git-workflow-checkpoint",
+          "prompt": "Final drill. Write `safe_to_commit(status)` that decides whether the\ncurrent staged set is safe to commit. Rules:\n\n- If anything in `status[\"staged\"]` starts with `.env` (any case),\n  return `(\"block\", \"secrets staged\")`.\n- If `status[\"staged\"]` is empty, return `(\"block\", \"nothing staged\")`.\n- Otherwise return `(\"ok\", f\"{n} files staged\")` where `n` is the\n  count of staged files.\n\nThen the script will exercise three cases and print each result.\n\nExpected output:\n\n```\nok: 2 files staged\nblock: secrets staged\nblock: nothing staged\n```\n",
+          "starter": "good = {\n    \"branch\": \"main\",\n    \"staged\": [\"src/auth.py\", \"tests/test_auth.py\"],\n    \"modified\": [],\n    \"untracked\": [],\n}\n\nleak = {\n    \"branch\": \"main\",\n    \"staged\": [\"src/auth.py\", \".env.local\"],\n    \"modified\": [],\n    \"untracked\": [],\n}\n\nempty = {\n    \"branch\": \"main\",\n    \"staged\": [],\n    \"modified\": [\"README.md\"],\n    \"untracked\": [],\n}\n\n# define safe_to_commit(status) below\n\nfor case in [good, leak, empty]:\n    verdict, reason = safe_to_commit(case)\n    print(f\"{verdict}: {reason}\")\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "ok: 2 files staged\nblock: secrets staged\nblock: nothing staged\n",
+            "normalize": "collapse-trailing-newline"
+          },
+          "solution": "good = {\n    \"branch\": \"main\",\n    \"staged\": [\"src/auth.py\", \"tests/test_auth.py\"],\n    \"modified\": [],\n    \"untracked\": [],\n}\n\nleak = {\n    \"branch\": \"main\",\n    \"staged\": [\"src/auth.py\", \".env.local\"],\n    \"modified\": [],\n    \"untracked\": [],\n}\n\nempty = {\n    \"branch\": \"main\",\n    \"staged\": [],\n    \"modified\": [\"README.md\"],\n    \"untracked\": [],\n}\n\ndef safe_to_commit(status):\n    staged = status[\"staged\"]\n    for f in staged:\n        if f.lower().startswith(\".env\"):\n            return (\"block\", \"secrets staged\")\n    if not staged:\n        return (\"block\", \"nothing staged\")\n    return (\"ok\", f\"{len(staged)} files staged\")\n\nfor case in [good, leak, empty]:\n    verdict, reason = safe_to_commit(case)\n    print(f\"{verdict}: {reason}\")\n",
+          "passThreshold": 0.66
+        }
+      ],
+      "xpTotal": 32
+    }
+  ],
+  "xpTotal": 32
+}

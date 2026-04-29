@@ -1,0 +1,33 @@
+xp: 2
+estSeconds: 50
+concept: git-add-stages
+code: |
+  # walk through what happens to a file as it moves through the states.
+  # we model each state as a tag on the file.
+  states = ["working_tree"]
+
+  # equivalent of: git add src/auth.py
+  states.append("staging")
+
+  # equivalent of: git commit -m "..."
+  states.append("commit")
+
+  print(" -> ".join(states))
+prompt: |
+  Cursor edited `src/auth.py`. You want to include that file in the
+  next commit. Which command moves it from the working tree into the
+  staging area?
+options:
+  - id: a
+    label: "git commit src/auth.py"
+    explain: "`git commit` only packages what's already staged. It doesn't stage the file itself first."
+  - id: b
+    label: "git add src/auth.py"
+  - id: c
+    label: "git push src/auth.py"
+    explain: "`git push` uploads commits to a remote — it operates on the commit history, not on individual files."
+  - id: d
+    label: "git status src/auth.py"
+    explain: "`git status` is read-only. It shows you what state files are in but doesn't move anything."
+answerIds:
+  - b
