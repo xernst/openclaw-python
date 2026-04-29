@@ -169,11 +169,18 @@ export default function LessonStepClient({
 }
 
 function ProgressBar({ value }: { value: number }) {
+  const pct = Math.min(100, Math.max(0, value * 100));
   return (
-    <div className="h-1 w-full overflow-hidden rounded-full bg-ink-800">
+    <div
+      role="progressbar"
+      aria-valuenow={Math.round(pct)}
+      aria-valuemin={0}
+      aria-valuemax={100}
+      className="h-1 w-full overflow-hidden rounded-full bg-ink-800"
+    >
       <div
-        className="h-full bg-ember-500 transition-all"
-        style={{ width: `${Math.min(100, Math.max(0, value * 100))}%` }}
+        className="h-full bg-ember-500 transition-all motion-reduce:transition-none"
+        style={{ width: `${pct}%` }}
       />
     </div>
   );

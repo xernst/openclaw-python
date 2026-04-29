@@ -262,14 +262,16 @@ const PersistentIDE = forwardRef<PersistentIDEHandle, Props>(function Persistent
               type="button"
               onClick={() => void handleRun()}
               disabled={!ready || running}
+              aria-busy={running}
+              aria-keyshortcuts="Meta+Enter Control+Enter"
               className={cn(
-                "inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition",
+                "inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition motion-reduce:transition-none",
                 "bg-ink-800 text-ink-100 hover:bg-ink-700",
                 "disabled:cursor-not-allowed disabled:opacity-40",
               )}
             >
               {running ? (
-                <Loader2 size={14} className="animate-spin" />
+                <Loader2 size={14} className="animate-spin motion-reduce:animate-none" />
               ) : (
                 <Play size={14} />
               )}
