@@ -1,0 +1,34 @@
+xp: 2
+estSeconds: 50
+concept: identifying-pathlib-style
+code: |
+  from pathlib import Path
+  import os
+
+  # four ways to build the same path:
+  a = "data" + "/" + "users.csv"
+  b = os.path.join("data", "users.csv")
+  c = f"data/{'users.csv'}"
+  d = Path("data") / "users.csv"
+prompt: |
+  Four lines, four ways to build the path `data/users.csv`. Which one is
+  the modern pathlib style — the one to reach for in new code?
+options:
+  - id: a
+    label: "`a = \"data\" + \"/\" + \"users.csv\"`"
+    explain: "String concatenation with `+`. Works, but breaks on Windows and is the worst of the four."
+  - id: b
+    label: "`b = os.path.join(\"data\", \"users.csv\")`"
+    explain: "Old `os.path` style. Works everywhere, but verbose and gives you a string back, not a `Path` object."
+  - id: c
+    label: "`c = f\"data/{'users.csv'}\"`"
+    explain: "F-string with a hard-coded `/`. Same problems as `+` concatenation, just dressed up."
+  - id: d
+    label: "`d = Path(\"data\") / \"users.csv\"`"
+answerIds:
+  - d
+hint:
+  - level: 1
+    body: "Pathlib uses the `/` operator on `Path` objects to join segments. The other three return plain strings."
+  - level: 2
+    body: "Option D is the pathlib idiom: `Path(\"data\") / \"users.csv\"`. The others all produce strings; this one produces a `Path` object with methods like `.exists()` and `.read_text()`."

@@ -1,0 +1,29 @@
+xp: 3
+estSeconds: 60
+concept: path-attributes
+code: |
+  from pathlib import Path
+
+  p = Path("/tmp/data/reports/q1.csv")
+
+  print(p.name)
+  print(p.suffix)
+  print(p.stem)
+  print(p.parent)
+prompt: |
+  `Path` objects expose four useful attributes for inspecting a path
+  *without* touching the filesystem. What does this print? (Four lines,
+  in order.)
+grader:
+  kind: stdout-equality
+  expected: |
+    q1.csv
+    .csv
+    q1
+    /tmp/data/reports
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "`name` is the last segment with extension. `suffix` is the dot-extension. `stem` is the name minus the extension. `parent` is everything before the last `/`."
+  - level: 2
+    body: "Outputs: `q1.csv`, `.csv` (with the dot), `q1`, `/tmp/data/reports`. One per line."

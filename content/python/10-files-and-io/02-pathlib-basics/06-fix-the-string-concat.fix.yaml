@@ -1,0 +1,33 @@
+xp: 4
+estSeconds: 85
+concept: replacing-string-concat
+prompt: |
+  Cursor wrote string concatenation to build a path. It works on Linux
+  and macOS by accident, but it's the wrong shape — and on Windows it
+  would join with the wrong separator entirely.
+
+  Replace lines 5 and 6 so they use a single `Path` object built with
+  the `/` operator. The output should be the file's contents:
+  `hello`.
+brokenCode: |
+  from pathlib import Path
+
+  base = "/tmp"
+  name = "greeting.txt"
+  full = base + "/" + name
+  Path(full).write_text("hello")
+
+  print(Path(full).read_text())
+bugLines:
+  - 5
+  - 6
+grader:
+  kind: stdout-equality
+  expected: "hello"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "Wrap `base` in a `Path`, then use the `/` operator to append `name`. Assign that to `full` and you can drop the second `Path(...)` wrap."
+  - level: 2
+    body: "Replace lines 5-6 with `full = Path(base) / name` then `full.write_text(\"hello\")`. The `print` line becomes `full.read_text()`."
+revealAfter: 4

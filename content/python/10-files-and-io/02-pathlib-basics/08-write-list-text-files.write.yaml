@@ -1,0 +1,53 @@
+xp: 5
+estSeconds: 110
+concept: write-pathlib-glob-function
+prompt: |
+  Write a function `list_text_files(folder)` that returns a list of the
+  *names* (not full paths) of all `.txt` files directly inside `folder`,
+  in sorted order.
+
+  Use `Path.glob("*.txt")` to find them. Use `.name` to get just the
+  filename from each `Path`. Wrap the result in `sorted(...)`.
+
+  The starter creates three files in `/tmp/notes/`. Calling the function
+  should produce:
+
+  ```
+  ['alpha.txt', 'beta.txt']
+  ```
+
+  (The `.md` file is filtered out by the glob.)
+starter: |
+  from pathlib import Path
+
+  base = Path("/tmp/notes")
+  base.mkdir(exist_ok=True)
+  (base / "alpha.txt").write_text("a")
+  (base / "beta.txt").write_text("b")
+  (base / "readme.md").write_text("c")
+
+  # define list_text_files below
+
+  print(list_text_files(base))
+grader:
+  kind: stdout-equality
+  expected: "['alpha.txt', 'beta.txt']"
+  normalize: collapse-trailing-newline
+solution: |
+  from pathlib import Path
+
+  base = Path("/tmp/notes")
+  base.mkdir(exist_ok=True)
+  (base / "alpha.txt").write_text("a")
+  (base / "beta.txt").write_text("b")
+  (base / "readme.md").write_text("c")
+
+  def list_text_files(folder):
+      return sorted(p.name for p in folder.glob("*.txt"))
+
+  print(list_text_files(base))
+hint:
+  - level: 1
+    body: "Inside the function: iterate `folder.glob(\"*.txt\")`, take `.name` from each, wrap in `sorted(...)`, return."
+  - level: 2
+    body: "`return sorted(p.name for p in folder.glob(\"*.txt\"))`. One line. Generator expression inside `sorted` works the same as a list comprehension here."

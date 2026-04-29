@@ -1,0 +1,14 @@
+slug: pathlib-basics
+title: "pathlib — the file API AI should reach for first"
+estMinutes: 8
+prerequisites: []
+order:
+  - 01-intro.read.md
+  - 02-which-call-is-pathlib.mc.yaml
+  - 03-read-write-and-glob.read.md
+  - 04-predict-the-suffix.predict.yaml
+  - 05-fill-the-method.fill.yaml
+  - 06-fix-the-string-concat.fix.yaml
+  - 07-fix-the-missing-check.fix.yaml
+  - 08-write-list-text-files.write.yaml
+  - 09-checkpoint.checkpoint.yaml

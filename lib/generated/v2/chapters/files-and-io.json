@@ -254,7 +254,280 @@
         }
       ],
       "xpTotal": 32
+    },
+    {
+      "slug": "pathlib-basics",
+      "title": "pathlib — the file API AI should reach for first",
+      "estMinutes": 8,
+      "prerequisites": [],
+      "steps": [
+        {
+          "type": "read",
+          "id": "files-and-io/pathlib-basics/s01-01-intro",
+          "xp": 1,
+          "hint": [],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 110,
+          "concept": "pathlib-introduction",
+          "body": "# `Path` — the object that replaces a thousand string operations\n\nReading AI-generated Python, you'll see two completely different ways\nof working with files. The old one looks like this:\n\n```python\nimport os\nlog_path = os.path.join(\"data\", \"logs\", \"today.log\")\nif os.path.exists(log_path):\n    with open(log_path) as f:\n        text = f.read()\n```\n\nFive function calls, three string-joining steps, and you still have to\nremember which OS-specific separator to worry about. AI ships this\nshape constantly because it's been on the internet since 2007.\n\nThe new way looks like this:\n\n```python\nfrom pathlib import Path\nlog_path = Path(\"data\") / \"logs\" / \"today.log\"\nif log_path.exists():\n    text = log_path.read_text()\n```\n\nSame job. Half the lines. No string mashing. The `/` operator joins\npath segments correctly on every platform. `.exists()` is a method on\nthe path object, not a function in another module. `.read_text()`\nopens, reads, and closes the file in one call.\n\n## The mental model\n\nA `Path` object is a *value that represents a filesystem location*. It\ndoesn't matter whether the file exists yet — `Path(\"anything\")` is\nalways a valid object. What you do with it next is what matters:\n\n- **Build** new paths: `p / \"subdir\" / \"file.txt\"`\n- **Inspect** without touching disk: `p.name`, `p.suffix`, `p.parent`\n- **Check** the filesystem: `p.exists()`, `p.is_file()`, `p.is_dir()`\n- **Read/write**: `p.read_text()`, `p.write_text(\"...\")`,\n  `p.read_bytes()`\n- **List children**: `p.iterdir()`, `p.glob(\"*.csv\")`\n\nEvery one of those is a method on the object. There is no separate\n`os.path.something` function to remember. The object knows what it\ncan do.\n\n## A worked example\n\nThe editor on the right uses `Path` end to end:\n\n```python\nfrom pathlib import Path\n\nlog = Path(\"/tmp/run.log\")\nlog.write_text(\"started\\n\")\nlog.write_text(log.read_text() + \"finished\\n\")\n\nprint(log.read_text())\nprint(\"exists?\", log.exists())\nprint(\"name:\", log.name)\n```\n\nLine by line:\n\n1. Build a `Path` object pointing at `/tmp/run.log`. The file doesn't\n   have to exist yet.\n2. `write_text` creates the file (or overwrites it) with the string\n   `\"started\\n\"`.\n3. `write_text` again — but this time the new content is the *current*\n   text plus `\"finished\\n\"`. The file ends up with two lines. (You'd\n   normally use `\"a\"` mode for true appending, but this composition\n   shows that `read_text` and `write_text` work together cleanly.)\n4. Print the final contents — `started\\nfinished\\n`.\n5. `.exists()` returns `True` now that we've written it.\n6. `.name` returns just the filename component, `\"run.log\"`.\n\nNo `open(...)`. No `with` block. No `f.write(...)`. Three method\ncalls do what `open` + `with` + `f.read` + `f.close` did.\n\n## Where AI specifically gets this wrong\n\nThree patterns to flag in code Cursor writes you.\n\n**One: `os.path.join(...)`.** Anytime you see `os.path.join(\"a\",\n\"b\")`, that's a `Path(\"a\") / \"b\"` waiting to happen. The pathlib\nversion is shorter, type-checked, and platform-correct. AI defaults\nto `os.path.join` because most of its training data is older than\npathlib being stable. Replace it.\n\n**One-and-a-half: `os.path.exists(p)`.** Becomes `p.exists()`. Same\nbehavior, no extra import.\n\n**Two: building paths with `+` or f-strings.** `path + \"/\" + name` is\nbroken on Windows and ugly everywhere. `Path(path) / name` is one\ncharacter shorter and works on every platform. Look for `f\"{folder}/\n{file}\"` constructions in AI code — every one of those is a\ncandidate for the `/` operator on a `Path`.\n\n**Three: `open(...)` for tiny reads.** When AI writes a four-line\n`with open(p) as f: text = f.read()` block to read one config file,\nit's `Path(p).read_text()` in disguise. The `with` block matters when\nyou're streaming or reading line by line — but for \"load the whole\nthing into a string,\" `read_text` is the move.\n\nRun the editor. The Pyodide environment exposes a virtual `/tmp`, so\nthe file genuinely gets written and read inside the browser.",
+          "cta": "Got it",
+          "code": "from pathlib import Path\n\nlog = Path(\"/tmp/run.log\")\nlog.write_text(\"started\\n\")\nlog.write_text(log.read_text() + \"finished\\n\")\n\nprint(log.read_text())\nprint(\"exists?\", log.exists())\nprint(\"name:\", log.name)\n",
+          "runnable": true
+        },
+        {
+          "type": "mc",
+          "id": "files-and-io/pathlib-basics/s02-02-which-call-is-pathlib",
+          "xp": 2,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Pathlib uses the `/` operator on `Path` objects to join segments. The other three return plain strings.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Option D is the pathlib idiom: `Path(\"data\") / \"users.csv\"`. The others all produce strings; this one produces a `Path` object with methods like `.exists()` and `.read_text()`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 50,
+          "concept": "identifying-pathlib-style",
+          "prompt": "Four lines, four ways to build the path `data/users.csv`. Which one is\nthe modern pathlib style — the one to reach for in new code?\n",
+          "options": [
+            {
+              "id": "a",
+              "label": "`a = \"data\" + \"/\" + \"users.csv\"`",
+              "explain": "String concatenation with `+`. Works, but breaks on Windows and is the worst of the four."
+            },
+            {
+              "id": "b",
+              "label": "`b = os.path.join(\"data\", \"users.csv\")`",
+              "explain": "Old `os.path` style. Works everywhere, but verbose and gives you a string back, not a `Path` object."
+            },
+            {
+              "id": "c",
+              "label": "`c = f\"data/{'users.csv'}\"`",
+              "explain": "F-string with a hard-coded `/`. Same problems as `+` concatenation, just dressed up."
+            },
+            {
+              "id": "d",
+              "label": "`d = Path(\"data\") / \"users.csv\"`"
+            }
+          ],
+          "answerIds": [
+            "d"
+          ],
+          "shuffle": false,
+          "code": "from pathlib import Path\nimport os\n\n# four ways to build the same path:\na = \"data\" + \"/\" + \"users.csv\"\nb = os.path.join(\"data\", \"users.csv\")\nc = f\"data/{'users.csv'}\"\nd = Path(\"data\") / \"users.csv\"\n",
+          "runnable": true
+        },
+        {
+          "type": "read",
+          "id": "files-and-io/pathlib-basics/s03-03-read-write-and-glob",
+          "xp": 2,
+          "hint": [],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 130,
+          "concept": "pathlib-read-write-glob",
+          "body": "# read_text, write_text, glob — the three you'll use every day\n\nThe intro showed `read_text` and `write_text`. This step adds the\nthird call you'll meet on day one of any AI project: `glob`. Together\nthey cover the 80% case for \"read some files, do something, write the\nresult.\"\n\n## `read_text` and `write_text`\n\n`p.read_text()` opens the file at `p`, reads the whole contents into a\nstring, closes the file. Encoding defaults to UTF-8, which is what\nyou want 99% of the time.\n\n`p.write_text(content)` opens the file at `p` for writing, dumps the\nstring, closes the file. If the file exists, it gets *overwritten* —\nno append, no warning. If the parent directory doesn't exist, the\ncall raises `FileNotFoundError`. (You can `p.parent.mkdir(parents=True,\nexist_ok=True)` to ensure the directory first.)\n\nThere's also `read_bytes` and `write_bytes` for binary content (PDFs,\nimages, anything not text). Same shape, different return type.\n\n## `glob` — find files matching a pattern\n\n`p.glob(pattern)` returns an iterator of paths inside the directory\n`p` whose names match `pattern`. The pattern syntax is the one your\nshell uses:\n\n- `*` matches any sequence of characters in a *single* path segment\n- `?` matches a single character\n- `**` matches any number of directories (recursive)\n- `[abc]` matches one character from the set\n\nCommon cases:\n\n```python\nbase.glob(\"*.csv\")        # all CSVs directly inside `base`\nbase.glob(\"*/*.csv\")      # CSVs one level deep\nbase.glob(\"**/*.csv\")     # CSVs anywhere underneath, recursive\n```\n\n`glob` returns an iterator, not a list. You usually want to wrap it in\n`sorted(...)` or `list(...)` if the order matters or you'll iterate\ntwice. `sorted` gives you alphabetical order by full path, which is\ndeterministic and almost always what you want for a file listing.\n\n## A worked example\n\nThe editor on the right writes three files into `/tmp/notes`, two\n`.txt` and one `.md`, then globs only the text ones:\n\n```python\nfrom pathlib import Path\n\nbase = Path(\"/tmp/notes\")\nbase.mkdir(exist_ok=True)\n(base / \"alpha.txt\").write_text(\"first\")\n(base / \"beta.txt\").write_text(\"second\")\n(base / \"gamma.md\").write_text(\"third\")\n\nfor txt in sorted(base.glob(\"*.txt\")):\n    print(txt.name, \"->\", txt.read_text())\n```\n\nOutput:\n\n```\nalpha.txt -> first\nbeta.txt -> second\n```\n\nThe `.md` file is filtered out because the pattern `*.txt` only\nmatches `.txt` extensions. `sorted` makes sure `alpha` comes before\n`beta` regardless of insertion order. `txt.name` strips the directory,\ngiving just the filename.\n\nThis six-line shape — *make a directory, write a few files, glob and\nread each one* — is what AI generates dozens of times in any data\npipeline, log processor, or scratch script.\n\n## Where AI specifically gets this wrong\n\nTwo patterns worth flagging.\n\n**One: forgetting `mkdir(exist_ok=True)`.** Cursor writes\n`p.write_text(...)` against a path whose parent directory doesn't\nexist yet, and the call blows up with `FileNotFoundError`. The fix is\none line — `p.parent.mkdir(parents=True, exist_ok=True)` before the\nwrite. AI sometimes skips this and only adds it after the first crash.\n\n**Two: globbing without `sorted`.** The order of `glob` results is\nfilesystem-defined, which means it's deterministic on one machine and\nrandomly different on another. If your script *does anything* based\non file order (concatenation, batching, IDs), wrap the glob in\n`sorted(...)` or you'll ship a bug that only shows up in production.\n\nRun the editor. Notice the `.md` file gets created but never read —\nthe pattern `*.txt` filters it out cleanly.",
+          "cta": "Got it",
+          "code": "from pathlib import Path\n\nbase = Path(\"/tmp/notes\")\nbase.mkdir(exist_ok=True)\n(base / \"alpha.txt\").write_text(\"first\")\n(base / \"beta.txt\").write_text(\"second\")\n(base / \"gamma.md\").write_text(\"third\")\n\nfor txt in sorted(base.glob(\"*.txt\")):\n    print(txt.name, \"->\", txt.read_text())\n",
+          "runnable": true
+        },
+        {
+          "type": "predict",
+          "id": "files-and-io/pathlib-basics/s04-04-predict-the-suffix",
+          "xp": 3,
+          "hint": [
+            {
+              "level": 1,
+              "body": "`name` is the last segment with extension. `suffix` is the dot-extension. `stem` is the name minus the extension. `parent` is everything before the last `/`.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Outputs: `q1.csv`, `.csv` (with the dot), `q1`, `/tmp/data/reports`. One per line.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 60,
+          "concept": "path-attributes",
+          "code": "from pathlib import Path\n\np = Path(\"/tmp/data/reports/q1.csv\")\n\nprint(p.name)\nprint(p.suffix)\nprint(p.stem)\nprint(p.parent)\n",
+          "prompt": "`Path` objects expose four useful attributes for inspecting a path\n*without* touching the filesystem. What does this print? (Four lines,\nin order.)\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "q1.csv\n.csv\nq1\n/tmp/data/reports\n",
+            "normalize": "collapse-trailing-newline"
+          }
+        },
+        {
+          "type": "fill",
+          "id": "files-and-io/pathlib-basics/s05-05-fill-the-method",
+          "xp": 3,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Two words separated by an underscore. Mirrors `write_text`.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "It's `read_text`. Lowercase, underscore. Read line 6 as: `config.read_text()` returns the file's contents as a string.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 60,
+          "concept": "read-text-method",
+          "prompt": "Fill in the pathlib method that reads the entire file into a string in\none call. No `open`, no `with`, no `f.read()`.\n\nMethod name: ___\n",
+          "code": "from pathlib import Path\n\nconfig = Path(\"/tmp/app.toml\")\nconfig.write_text(\"debug = true\\n\")\n\ncontents = config.___()\nprint(contents)\n",
+          "blanks": [
+            {
+              "id": "method",
+              "accept": [
+                "read_text"
+              ],
+              "caseSensitive": true,
+              "normalize": "trim"
+            }
+          ]
+        },
+        {
+          "type": "fix",
+          "id": "files-and-io/pathlib-basics/s06-06-fix-the-string-concat",
+          "xp": 4,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Wrap `base` in a `Path`, then use the `/` operator to append `name`. Assign that to `full` and you can drop the second `Path(...)` wrap.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Replace lines 5-6 with `full = Path(base) / name` then `full.write_text(\"hello\")`. The `print` line becomes `full.read_text()`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 85,
+          "concept": "replacing-string-concat",
+          "brokenCode": "from pathlib import Path\n\nbase = \"/tmp\"\nname = \"greeting.txt\"\nfull = base + \"/\" + name\nPath(full).write_text(\"hello\")\n\nprint(Path(full).read_text())\n",
+          "prompt": "Cursor wrote string concatenation to build a path. It works on Linux\nand macOS by accident, but it's the wrong shape — and on Windows it\nwould join with the wrong separator entirely.\n\nReplace lines 5 and 6 so they use a single `Path` object built with\nthe `/` operator. The output should be the file's contents:\n`hello`.\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "hello",
+            "normalize": "collapse-trailing-newline"
+          },
+          "bugLines": [
+            5,
+            6
+          ],
+          "revealAfter": 4
+        },
+        {
+          "type": "fix",
+          "id": "files-and-io/pathlib-basics/s07-07-fix-the-missing-check",
+          "xp": 4,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Inside `load_config`, check `path.exists()` first. If it does, return `path.read_text()`. Otherwise return `\"default config\"`. Then simplify line 7 to `print(load_config(missing))`.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Function body: `if path.exists(): return path.read_text()` then `return \"default config\"`. Line 7: `print(load_config(missing))`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 85,
+          "concept": "exists-check-before-read",
+          "brokenCode": "from pathlib import Path\n\ndef load_config(path):\n    return path.read_text()\n\nmissing = Path(\"/tmp/never-created.toml\")\nprint(load_config(missing) if False else \"default config\")\n",
+          "prompt": "AI wrote a function that reads a config file and falls back to a\ndefault if the file is missing. Trouble is, the function calls\n`read_text` *first* and then has nothing to catch the\n`FileNotFoundError`. The script crashes when the path doesn't exist.\n\nAdd an `if path.exists():` guard so the function returns\n`\"default config\"` when the file is missing and the file's contents\nwhen it exists.\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "default config",
+            "normalize": "collapse-trailing-newline"
+          },
+          "bugLines": [
+            4,
+            7
+          ],
+          "revealAfter": 4
+        },
+        {
+          "type": "write",
+          "id": "files-and-io/pathlib-basics/s08-08-write-list-text-files",
+          "xp": 5,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Inside the function: iterate `folder.glob(\"*.txt\")`, take `.name` from each, wrap in `sorted(...)`, return.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "`return sorted(p.name for p in folder.glob(\"*.txt\"))`. One line. Generator expression inside `sorted` works the same as a list comprehension here.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 110,
+          "concept": "write-pathlib-glob-function",
+          "prompt": "Write a function `list_text_files(folder)` that returns a list of the\n*names* (not full paths) of all `.txt` files directly inside `folder`,\nin sorted order.\n\nUse `Path.glob(\"*.txt\")` to find them. Use `.name` to get just the\nfilename from each `Path`. Wrap the result in `sorted(...)`.\n\nThe starter creates three files in `/tmp/notes/`. Calling the function\nshould produce:\n\n```\n['alpha.txt', 'beta.txt']\n```\n\n(The `.md` file is filtered out by the glob.)\n",
+          "starter": "from pathlib import Path\n\nbase = Path(\"/tmp/notes\")\nbase.mkdir(exist_ok=True)\n(base / \"alpha.txt\").write_text(\"a\")\n(base / \"beta.txt\").write_text(\"b\")\n(base / \"readme.md\").write_text(\"c\")\n\n# define list_text_files below\n\nprint(list_text_files(base))\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "['alpha.txt', 'beta.txt']",
+            "normalize": "collapse-trailing-newline"
+          },
+          "solution": "from pathlib import Path\n\nbase = Path(\"/tmp/notes\")\nbase.mkdir(exist_ok=True)\n(base / \"alpha.txt\").write_text(\"a\")\n(base / \"beta.txt\").write_text(\"b\")\n(base / \"readme.md\").write_text(\"c\")\n\ndef list_text_files(folder):\n    return sorted(p.name for p in folder.glob(\"*.txt\"))\n\nprint(list_text_files(base))\n",
+          "hiddenTests": []
+        },
+        {
+          "type": "checkpoint",
+          "id": "files-and-io/pathlib-basics/s09-09-checkpoint",
+          "xp": 8,
+          "hint": [
+            {
+              "level": 1,
+              "body": "List comprehension: `[p.read_text() for p in sorted(folder.glob(\"*.log\"))]`. Then `\"\".join(parts)` — each file already ends with `\\n`, so no extra separator.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "`def merge_logs(folder):` then `parts = [p.read_text() for p in sorted(folder.glob(\"*.log\"))]` then `return \"\".join(parts)`. The `.txt` file is filtered out by the glob.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "check",
+          "estSeconds": 150,
+          "concept": "pathlib-checkpoint",
+          "prompt": "Last drill. Write a function `merge_logs(folder)` that:\n\n1. Globs for all `*.log` files in `folder` (sorted by name).\n2. Reads each file's text.\n3. Returns a single string with the contents of all logs joined,\n   each separated by a single newline. Trailing newlines are fine.\n\nThe starter creates three log files. Calling the function should\nprint exactly:\n\n```\n--a--\n--b--\n--c--\n```\n\n(Each file's content is `--<letter>--\\n`. Concatenated they form\nthree lines.)\n",
+          "starter": "from pathlib import Path\n\nbase = Path(\"/tmp/logs\")\nbase.mkdir(exist_ok=True)\n(base / \"01.log\").write_text(\"--a--\\n\")\n(base / \"02.log\").write_text(\"--b--\\n\")\n(base / \"03.log\").write_text(\"--c--\\n\")\n(base / \"ignore.txt\").write_text(\"nope\\n\")\n\n# define merge_logs below\n\nprint(merge_logs(base), end=\"\")\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "--a--\n--b--\n--c--\n",
+            "normalize": "collapse-trailing-newline"
+          },
+          "solution": "from pathlib import Path\n\nbase = Path(\"/tmp/logs\")\nbase.mkdir(exist_ok=True)\n(base / \"01.log\").write_text(\"--a--\\n\")\n(base / \"02.log\").write_text(\"--b--\\n\")\n(base / \"03.log\").write_text(\"--c--\\n\")\n(base / \"ignore.txt\").write_text(\"nope\\n\")\n\ndef merge_logs(folder):\n    parts = [p.read_text() for p in sorted(folder.glob(\"*.log\"))]\n    return \"\".join(parts)\n\nprint(merge_logs(base), end=\"\")\n",
+          "passThreshold": 0.66
+        }
+      ],
+      "xpTotal": 32
     }
   ],
-  "xpTotal": 32
+  "xpTotal": 64
 }

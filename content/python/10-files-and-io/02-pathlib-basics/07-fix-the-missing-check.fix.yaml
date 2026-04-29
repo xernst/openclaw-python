@@ -1,0 +1,33 @@
+xp: 4
+estSeconds: 85
+concept: exists-check-before-read
+prompt: |
+  AI wrote a function that reads a config file and falls back to a
+  default if the file is missing. Trouble is, the function calls
+  `read_text` *first* and then has nothing to catch the
+  `FileNotFoundError`. The script crashes when the path doesn't exist.
+
+  Add an `if path.exists():` guard so the function returns
+  `"default config"` when the file is missing and the file's contents
+  when it exists.
+brokenCode: |
+  from pathlib import Path
+
+  def load_config(path):
+      return path.read_text()
+
+  missing = Path("/tmp/never-created.toml")
+  print(load_config(missing) if False else "default config")
+bugLines:
+  - 4
+  - 7
+grader:
+  kind: stdout-equality
+  expected: "default config"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "Inside `load_config`, check `path.exists()` first. If it does, return `path.read_text()`. Otherwise return `\"default config\"`. Then simplify line 7 to `print(load_config(missing))`."
+  - level: 2
+    body: "Function body: `if path.exists(): return path.read_text()` then `return \"default config\"`. Line 7: `print(load_config(missing))`."
+revealAfter: 4

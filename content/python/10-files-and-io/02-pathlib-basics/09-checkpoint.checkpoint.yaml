@@ -1,0 +1,63 @@
+xp: 8
+estSeconds: 150
+concept: pathlib-checkpoint
+prompt: |
+  Last drill. Write a function `merge_logs(folder)` that:
+
+  1. Globs for all `*.log` files in `folder` (sorted by name).
+  2. Reads each file's text.
+  3. Returns a single string with the contents of all logs joined,
+     each separated by a single newline. Trailing newlines are fine.
+
+  The starter creates three log files. Calling the function should
+  print exactly:
+
+  ```
+  --a--
+  --b--
+  --c--
+  ```
+
+  (Each file's content is `--<letter>--\n`. Concatenated they form
+  three lines.)
+starter: |
+  from pathlib import Path
+
+  base = Path("/tmp/logs")
+  base.mkdir(exist_ok=True)
+  (base / "01.log").write_text("--a--\n")
+  (base / "02.log").write_text("--b--\n")
+  (base / "03.log").write_text("--c--\n")
+  (base / "ignore.txt").write_text("nope\n")
+
+  # define merge_logs below
+
+  print(merge_logs(base), end="")
+grader:
+  kind: stdout-equality
+  expected: |
+    --a--
+    --b--
+    --c--
+  normalize: collapse-trailing-newline
+solution: |
+  from pathlib import Path
+
+  base = Path("/tmp/logs")
+  base.mkdir(exist_ok=True)
+  (base / "01.log").write_text("--a--\n")
+  (base / "02.log").write_text("--b--\n")
+  (base / "03.log").write_text("--c--\n")
+  (base / "ignore.txt").write_text("nope\n")
+
+  def merge_logs(folder):
+      parts = [p.read_text() for p in sorted(folder.glob("*.log"))]
+      return "".join(parts)
+
+  print(merge_logs(base), end="")
+passThreshold: 0.66
+hint:
+  - level: 1
+    body: "List comprehension: `[p.read_text() for p in sorted(folder.glob(\"*.log\"))]`. Then `\"\".join(parts)` — each file already ends with `\\n`, so no extra separator."
+  - level: 2
+    body: "`def merge_logs(folder):` then `parts = [p.read_text() for p in sorted(folder.glob(\"*.log\"))]` then `return \"\".join(parts)`. The `.txt` file is filtered out by the glob."

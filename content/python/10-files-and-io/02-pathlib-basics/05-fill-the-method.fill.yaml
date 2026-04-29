@@ -1,0 +1,26 @@
+xp: 3
+estSeconds: 60
+concept: read-text-method
+prompt: |
+  Fill in the pathlib method that reads the entire file into a string in
+  one call. No `open`, no `with`, no `f.read()`.
+
+  Method name: ___
+code: |
+  from pathlib import Path
+
+  config = Path("/tmp/app.toml")
+  config.write_text("debug = true\n")
+
+  contents = config.___()
+  print(contents)
+blanks:
+  - id: method
+    accept:
+      - read_text
+    caseSensitive: true
+hint:
+  - level: 1
+    body: "Two words separated by an underscore. Mirrors `write_text`."
+  - level: 2
+    body: "It's `read_text`. Lowercase, underscore. Read line 6 as: `config.read_text()` returns the file's contents as a string."
