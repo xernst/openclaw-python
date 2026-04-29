@@ -1,0 +1,40 @@
+xp: 4
+estSeconds: 95
+concept: moving-mutable-into-init
+prompt: |
+  Claude wrote a `Player` class with an `inventory = []` at the class
+  level. Two players share the same inventory list. The output is
+  `['sword', 'shield'] ['sword', 'shield']` instead of
+  `['sword'] ['shield']`.
+
+  Move the list into `__init__` so each player gets its own. After the
+  fix the output should be:
+  ```
+  ['sword'] ['shield']
+  ```
+brokenCode: |
+  class Player:
+      inventory = []
+
+      def pick_up(self, item):
+          self.inventory.append(item)
+
+  alex = Player()
+  sam = Player()
+
+  alex.pick_up("sword")
+  sam.pick_up("shield")
+
+  print(alex.inventory, sam.inventory)
+bugLines:
+  - 2
+grader:
+  kind: stdout-equality
+  expected: "['sword'] ['shield']"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "Delete `inventory = []` from the class body. Add an `__init__(self):` method that sets `self.inventory = []`."
+  - level: 2
+    body: "Replace line 2 with: `def __init__(self):` then on the next line, indented, `self.inventory = []`. Each player now creates a fresh list."
+revealAfter: 4

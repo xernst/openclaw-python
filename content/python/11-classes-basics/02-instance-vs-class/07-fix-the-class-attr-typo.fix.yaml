@@ -1,0 +1,42 @@
+xp: 4
+estSeconds: 90
+concept: assigning-vs-shadowing
+prompt: |
+  AI tried to update a class-level constant from inside an instance
+  method. The intent was to change the rate for *all* `Account`
+  instances. But `self.rate = 0.05` doesn't update the class attribute —
+  it creates a *new* instance attribute that shadows the class one,
+  only on this instance.
+
+  Fix line 6 so it updates the class attribute directly. Use
+  `Account.rate = 0.05` instead of `self.rate = 0.05`.
+
+  Expected output (both accounts share the new rate):
+  ```
+  0.05 0.05
+  ```
+brokenCode: |
+  class Account:
+      rate = 0.02
+
+      def bump_rate(self):
+          # supposed to bump the rate for ALL accounts:
+          self.rate = 0.05
+
+  a = Account()
+  b = Account()
+  a.bump_rate()
+
+  print(a.rate, b.rate)
+bugLines:
+  - 6
+grader:
+  kind: stdout-equality
+  expected: "0.05 0.05"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "`self.x = ...` always creates an instance attribute. To update the class attribute, address the class itself: `Account.rate = ...`."
+  - level: 2
+    body: "Change line 6 to `Account.rate = 0.05`. Now both `a.rate` and `b.rate` fall back to the (updated) class attribute and read `0.05`."
+revealAfter: 4

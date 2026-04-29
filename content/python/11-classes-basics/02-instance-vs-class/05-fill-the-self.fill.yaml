@@ -1,0 +1,31 @@
+xp: 3
+estSeconds: 55
+concept: self-prefix
+prompt: |
+  Cursor wrote `__init__` but left out the `self.` prefix on one
+  assignment. Without it, `model` is just a local variable that
+  disappears when `__init__` returns — the instance never gets the
+  attribute.
+
+  Fill in the missing prefix on line 4 so the print at the bottom
+  works.
+
+  Prefix: ___
+code: |
+  class Robot:
+
+      def __init__(self, model):
+          ___.model = model
+
+  r = Robot("v2")
+  print(r.model)
+blanks:
+  - id: prefix
+    accept:
+      - self
+    caseSensitive: true
+hint:
+  - level: 1
+    body: "The first parameter of every method is the conventional name for 'this instance'."
+  - level: 2
+    body: "The prefix is `self`. `self.model = model` stores the argument as an instance attribute."

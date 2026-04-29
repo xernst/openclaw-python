@@ -1,0 +1,34 @@
+xp: 2
+estSeconds: 50
+concept: identifying-class-vs-instance
+code: |
+  class Robot:
+      manufacturer = "acme"   # A
+
+      def __init__(self, model):
+          self.model = model       # B
+          self.battery = 100       # C
+          self.peers = []          # D
+prompt: |
+  Four assignments, four lines marked A through D. Which one creates a
+  *class* attribute (one copy total, shared by every `Robot`) rather
+  than an instance attribute?
+options:
+  - id: a
+    label: "A — `manufacturer = \"acme\"`"
+  - id: b
+    label: "B — `self.model = model`"
+    explain: "Inside `__init__`, with `self.`. That's an instance attribute. Each robot gets its own."
+  - id: c
+    label: "C — `self.battery = 100`"
+    explain: "Inside `__init__`, with `self.`. Instance attribute, one per robot."
+  - id: d
+    label: "D — `self.peers = []`"
+    explain: "Inside `__init__`, with `self.`. Instance attribute. (Doing it this way is also the right defense against the shared-list bug.)"
+answerIds:
+  - a
+hint:
+  - level: 1
+    body: "Class attributes are assigned at the top of the class body — no `self.`, no method context. Everything else is per-instance."
+  - level: 2
+    body: "`A` is the only assignment outside `__init__` and without `self.`. That makes `manufacturer` a class attribute, shared by every `Robot`."

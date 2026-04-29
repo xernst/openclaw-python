@@ -1,0 +1,14 @@
+slug: instance-vs-class
+title: "Instance vs class attributes — and the bug AI ships every time"
+estMinutes: 9
+prerequisites: []
+order:
+  - 01-intro.read.md
+  - 02-which-attribute-is-shared.mc.yaml
+  - 03-mutable-class-attr-trap.read.md
+  - 04-predict-the-shared-list.predict.yaml
+  - 05-fill-the-self.fill.yaml
+  - 06-fix-the-shared-default.fix.yaml
+  - 07-fix-the-class-attr-typo.fix.yaml
+  - 08-write-counter-class.write.yaml
+  - 09-checkpoint.checkpoint.yaml

@@ -1,0 +1,78 @@
+xp: 8
+estSeconds: 150
+concept: instance-vs-class-checkpoint
+prompt: |
+  Last drill. Build a `User` class that uses both buckets correctly:
+
+  - Class attribute `domain = "example.com"` (a constant — same for
+    every user).
+  - Instance attributes (assigned in `__init__`):
+    - `username` (passed in)
+    - `permissions` — an empty list (must be per-instance)
+  - Method `email()` returns `f"{self.username}@{self.domain}"`.
+  - Method `grant(perm)` appends `perm` to `self.permissions`.
+
+  Two users, distinct permission lists, shared domain string.
+
+  Expected output:
+  ```
+  maya@example.com
+  marcus@example.com
+  ['read']
+  ['read', 'write']
+  ```
+starter: |
+  # define User below
+
+  maya = User("maya")
+  marcus = User("marcus")
+
+  print(maya.email())
+  print(marcus.email())
+
+  maya.grant("read")
+  marcus.grant("read")
+  marcus.grant("write")
+
+  print(maya.permissions)
+  print(marcus.permissions)
+grader:
+  kind: stdout-equality
+  expected: |
+    maya@example.com
+    marcus@example.com
+    ['read']
+    ['read', 'write']
+  normalize: collapse-trailing-newline
+solution: |
+  class User:
+      domain = "example.com"
+
+      def __init__(self, username):
+          self.username = username
+          self.permissions = []
+
+      def email(self):
+          return f"{self.username}@{self.domain}"
+
+      def grant(self, perm):
+          self.permissions.append(perm)
+
+  maya = User("maya")
+  marcus = User("marcus")
+
+  print(maya.email())
+  print(marcus.email())
+
+  maya.grant("read")
+  marcus.grant("read")
+  marcus.grant("write")
+
+  print(maya.permissions)
+  print(marcus.permissions)
+passThreshold: 0.66
+hint:
+  - level: 1
+    body: "`domain = \"example.com\"` at the class level. `username` and `permissions` inside `__init__` with `self.`. Two methods: `email` returns the formatted string, `grant` appends."
+  - level: 2
+    body: "If you put `permissions = []` at the class level by mistake, both users will share the list and you'll see `['read', 'read', 'write']` on both. The fix is `self.permissions = []` inside `__init__`."

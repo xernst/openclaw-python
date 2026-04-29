@@ -1,6 +1,6 @@
 {
   "version": "0.1.0",
-  "generatedAt": "2026-04-29T18:08:24.634Z",
+  "generatedAt": "2026-04-29T18:11:09.295Z",
   "chapters": [
     {
       "number": 1,
@@ -97,9 +97,9 @@
       "slug": "classes-basics",
       "title": "Classes — reading what AI just wrote you",
       "blurb": "AI ships classes constantly: SQLAlchemy models, FastAPI schemas, custom exceptions. You don't need to design them. You need to read one without flinching.",
-      "lessonCount": 1,
-      "stepCount": 9,
-      "xpTotal": 32
+      "lessonCount": 2,
+      "stepCount": 18,
+      "xpTotal": 64
     },
     {
       "number": 12,

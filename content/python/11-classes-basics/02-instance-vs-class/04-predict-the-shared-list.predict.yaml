@@ -1,0 +1,30 @@
+xp: 3
+estSeconds: 70
+concept: shared-class-list-output
+code: |
+  class Inbox:
+      messages = []
+
+      def add(self, msg):
+          self.messages.append(msg)
+
+  inbox_a = Inbox()
+  inbox_b = Inbox()
+
+  inbox_a.add("hello")
+  inbox_b.add("world")
+
+  print(len(inbox_a.messages), len(inbox_b.messages))
+prompt: |
+  Two `Inbox` instances. Each appends one message. The class declares
+  `messages = []` at the top — so the list is shared. What does the
+  print produce?
+grader:
+  kind: stdout-equality
+  expected: "2 2"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "Both `add` calls go through `self.messages.append(...)`. `self.messages` resolves to the class-level list either way. Both inboxes see both messages."
+  - level: 2
+    body: "Output: `2 2`. Each `len(...)` reads the same shared list, which now has two entries."

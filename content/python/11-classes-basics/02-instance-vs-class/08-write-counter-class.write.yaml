@@ -1,0 +1,63 @@
+xp: 5
+estSeconds: 120
+concept: write-class-with-init
+prompt: |
+  Write a `Counter` class with:
+
+  - An instance attribute `count` that starts at `0`.
+  - A method `increment()` that adds 1 to `self.count`.
+  - A method `value()` that returns `self.count`.
+
+  Make sure the count is *per-instance* — two counters should not
+  share state.
+
+  Expected output:
+  ```
+  3
+  1
+  ```
+starter: |
+  # define Counter below
+
+  a = Counter()
+  a.increment()
+  a.increment()
+  a.increment()
+
+  b = Counter()
+  b.increment()
+
+  print(a.value())
+  print(b.value())
+grader:
+  kind: stdout-equality
+  expected: |
+    3
+    1
+  normalize: collapse-trailing-newline
+solution: |
+  class Counter:
+      def __init__(self):
+          self.count = 0
+
+      def increment(self):
+          self.count += 1
+
+      def value(self):
+          return self.count
+
+  a = Counter()
+  a.increment()
+  a.increment()
+  a.increment()
+
+  b = Counter()
+  b.increment()
+
+  print(a.value())
+  print(b.value())
+hint:
+  - level: 1
+    body: "Three pieces: `__init__` sets `self.count = 0`, `increment` does `self.count += 1`, `value` returns `self.count`. Each method takes `self` as its first parameter."
+  - level: 2
+    body: "`class Counter:` then `def __init__(self): self.count = 0` then `def increment(self): self.count += 1` then `def value(self): return self.count`. Make sure `count = 0` is inside `__init__`, not at the class level."

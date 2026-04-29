@@ -252,7 +252,278 @@
         }
       ],
       "xpTotal": 32
+    },
+    {
+      "slug": "instance-vs-class",
+      "title": "Instance vs class attributes — and the bug AI ships every time",
+      "estMinutes": 9,
+      "prerequisites": [],
+      "steps": [
+        {
+          "type": "read",
+          "id": "classes-basics/instance-vs-class/s01-01-intro",
+          "xp": 1,
+          "hint": [],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 110,
+          "concept": "instance-vs-class-attributes",
+          "body": "# Two kinds of attributes — and AI mixes them up at least once\n\nWhen you read a class Cursor wrote you, every variable inside it\nfalls into one of two buckets. Knowing which bucket you're looking at\nis the difference between code that does what you expect and code\nthat has every instance of a class quietly sharing the same list.\n\nThe two buckets:\n\n- **Instance attributes** — assigned with `self.something = ...` inside\n  a method (almost always `__init__`). One copy per instance. Each\n  `Dog` you create gets its own `name`.\n- **Class attributes** — assigned at the *top of the class body*, with\n  no `self.`. One copy total, shared by every instance. Every `Dog`\n  ever created sees the same `species`.\n\nMost of the bugs in AI-generated class code come from putting\nsomething in the wrong bucket — most often, putting an instance value\n(like a list of items, a counter, a config dict) on the class by\naccident.\n\n## The mental model\n\nThe class body is executed *once*, when Python first defines the\nclass. Anything assigned at that level lives on the class itself:\n\n```python\nclass Dog:\n    species = \"canis familiaris\"   # class attribute — assigned once\n```\n\n`__init__` runs *every time* you create a new instance. Anything\nassigned via `self.` lives on that specific instance:\n\n```python\n    def __init__(self, name):\n        self.name = name           # instance attribute — one per dog\n```\n\nWhen you write `rex.species`, Python first looks at `rex` itself for\na `species` attribute. There isn't one (we only set `name` per\ninstance). So Python falls back to the class — `Dog.species` — and\nfinds `\"canis familiaris\"`. That fallback is what makes class\nattributes feel like instance attributes when you read them. The\ntrap, you'll see in two steps, is that *writing* doesn't follow the\nsame rule.\n\n## A worked example\n\nThe editor on the right defines a tiny `Dog` class with one of each\nbucket:\n\n```python\nclass Dog:\n    species = \"canis familiaris\"\n\n    def __init__(self, name):\n        self.name = name\n```\n\nTwo instances:\n\n```python\nrex = Dog(\"rex\")\nwhiskers = Dog(\"whiskers\")\n```\n\nEach has its own `name` — they're not shared. But both *see* the\nsame `species`, because there's only one — it lives on the class:\n\n```\nrex is a canis familiaris\nwhiskers is a canis familiaris\nclass-level: canis familiaris\n```\n\nYou can also read the class attribute directly off the class itself\n(`Dog.species`), which sometimes makes the two buckets clearer when\nyou're debugging.\n\n## Where AI specifically gets this wrong\n\nThe single biggest pattern: **AI puts mutable instance state on the\nclass by accident.** It looks like this:\n\n```python\nclass Cart:\n    items = []          # bug — same list shared by every cart!\n\n    def add(self, item):\n        self.items.append(item)\n```\n\n`items` is at the class level, so there's *one list* shared by every\n`Cart` ever created. Add to one cart, every other cart sees the new\nitem too. We'll prove this in the next steps and learn the fix.\n\nThe rule of thumb when you read AI code: **if the value is a list,\ndict, or set sitting at the top of a class body, that's almost\nalways a bug.** Strings, ints, and bools at the top are usually\nfine — they're constants like the `species` example. But mutable\ncontainers belong inside `__init__` with `self.` so each instance\ngets its own.\n\nRun the editor. Two dogs, two distinct names, one shared species —\nexactly the right shape for these kinds of values.",
+          "cta": "Got it",
+          "code": "class Dog:\n    species = \"canis familiaris\"\n\n    def __init__(self, name):\n        self.name = name\n\nrex = Dog(\"rex\")\nwhiskers = Dog(\"whiskers\")\n\nprint(rex.name, \"is a\", rex.species)\nprint(whiskers.name, \"is a\", whiskers.species)\nprint(\"class-level:\", Dog.species)\n",
+          "runnable": true
+        },
+        {
+          "type": "mc",
+          "id": "classes-basics/instance-vs-class/s02-02-which-attribute-is-shared",
+          "xp": 2,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Class attributes are assigned at the top of the class body — no `self.`, no method context. Everything else is per-instance.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "`A` is the only assignment outside `__init__` and without `self.`. That makes `manufacturer` a class attribute, shared by every `Robot`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 50,
+          "concept": "identifying-class-vs-instance",
+          "prompt": "Four assignments, four lines marked A through D. Which one creates a\n*class* attribute (one copy total, shared by every `Robot`) rather\nthan an instance attribute?\n",
+          "options": [
+            {
+              "id": "a",
+              "label": "A — `manufacturer = \"acme\"`"
+            },
+            {
+              "id": "b",
+              "label": "B — `self.model = model`",
+              "explain": "Inside `__init__`, with `self.`. That's an instance attribute. Each robot gets its own."
+            },
+            {
+              "id": "c",
+              "label": "C — `self.battery = 100`",
+              "explain": "Inside `__init__`, with `self.`. Instance attribute, one per robot."
+            },
+            {
+              "id": "d",
+              "label": "D — `self.peers = []`",
+              "explain": "Inside `__init__`, with `self.`. Instance attribute. (Doing it this way is also the right defense against the shared-list bug.)"
+            }
+          ],
+          "answerIds": [
+            "a"
+          ],
+          "shuffle": false,
+          "code": "class Robot:\n    manufacturer = \"acme\"   # A\n\n    def __init__(self, model):\n        self.model = model       # B\n        self.battery = 100       # C\n        self.peers = []          # D\n",
+          "runnable": true
+        },
+        {
+          "type": "read",
+          "id": "classes-basics/instance-vs-class/s03-03-mutable-class-attr-trap",
+          "xp": 2,
+          "hint": [],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 130,
+          "concept": "mutable-class-attribute-bug",
+          "body": "# The mutable-class-attribute trap\n\nNow the bug AI ships at least once a quarter, and the fix that costs\nfour characters.\n\n## The bug\n\nCursor reaches for class-level lists when it wants a \"default value\"\nfor an attribute. It looks innocent:\n\n```python\nclass Cart:\n    items = []\n\n    def add(self, item):\n        self.items.append(item)\n```\n\nThis *seems* to say \"every cart starts with an empty list of items.\"\nWhat it actually says is \"there is one `items` list, attached to the\nclass, and every cart points at it.\" Watch what happens:\n\n```python\na = Cart(); a.add(\"apple\")\nb = Cart(); b.add(\"bread\")\n\nprint(a.items)   # ['apple', 'bread']  <-- ?!\nprint(b.items)   # ['apple', 'bread']\n```\n\nBoth carts see both items. Because `self.items.append(...)` doesn't\n*assign* a new list to `self`; it mutates the existing list — the one\nsitting on the class. Every instance is reading and writing through\nto the same list.\n\nThis is the same shape as the \"mutable default argument\" bug in the\nfunctions chapter. It bites every Python beginner exactly once,\nright after AI generates a class for them.\n\n## The fix\n\nMove the assignment into `__init__`:\n\n```python\nclass Cart:\n    def __init__(self):\n        self.items = []\n\n    def add(self, item):\n        self.items.append(item)\n```\n\nNow `__init__` runs *for each new cart*. Every `Cart()` call creates\na brand new empty list and binds it to that instance's `items`\nattribute. Two carts, two independent lists.\n\n```python\na = Cart(); a.add(\"apple\")\nb = Cart(); b.add(\"bread\")\n\nprint(a.items)   # ['apple']\nprint(b.items)   # ['bread']\n```\n\nFour characters of extra code (`def __init__(self):`) and one\nindent — that's the whole fix.\n\n## Why \"read works, write breaks\" makes this so confusing\n\nThere's a subtlety that makes this bug hard to spot. *Reading* a\nclass attribute through an instance works fine:\n\n```python\nclass Dog:\n    species = \"canis familiaris\"\n\nprint(Dog().species)   # 'canis familiaris' — works\n```\n\nThat's because Python looks at the instance first, doesn't find\n`species`, falls back to the class, and returns it. The instance\nappears to \"have\" the class attribute even though it doesn't really.\n\nBut *writing* breaks the symmetry. `self.species = \"wolf\"` on an\ninstance creates a *new instance attribute* that shadows the class\none — only on that instance. And `self.items.append(...)` doesn't\nwrite to `self`; it mutates the class-level list in place.\n\nThe rule that emerges: **strings, ints, and bools at the class level\nare fine** (they're effectively constants). **Lists, dicts, and sets\nat the class level are almost always a bug** — instance state should\ngo in `__init__`.\n\n## Where AI specifically gets this wrong\n\nWhen you see this in code Cursor wrote:\n\n```python\nclass Whatever:\n    cache = {}\n    items = []\n    config = {\"x\": 1}\n\n    def __init__(self, name):\n        self.name = name\n```\n\n…flag it. Every one of those mutable class attributes is a shared\npiece of global state pretending to be per-instance. Move them all\ninto `__init__`:\n\n```python\nclass Whatever:\n    def __init__(self, name):\n        self.name = name\n        self.cache = {}\n        self.items = []\n        self.config = {\"x\": 1}\n```\n\nRun the editor. The `BadCart` instances share their list and you'll\nsee `apple` and `bread` in *both*. The `GoodCart` instances each\nhave their own list — exactly what you'd want.",
+          "cta": "Got it",
+          "code": "class BadCart:\n    items = []                        # one list shared by every cart\n\n    def add(self, item):\n        self.items.append(item)\n\nclass GoodCart:\n    def __init__(self):\n        self.items = []               # one list per cart\n\n    def add(self, item):\n        self.items.append(item)\n\na = BadCart(); a.add(\"apple\")\nb = BadCart(); b.add(\"bread\")\nprint(\"BadCart a:\", a.items)\nprint(\"BadCart b:\", b.items)\n\nx = GoodCart(); x.add(\"apple\")\ny = GoodCart(); y.add(\"bread\")\nprint(\"GoodCart x:\", x.items)\nprint(\"GoodCart y:\", y.items)\n",
+          "runnable": true
+        },
+        {
+          "type": "predict",
+          "id": "classes-basics/instance-vs-class/s04-04-predict-the-shared-list",
+          "xp": 3,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Both `add` calls go through `self.messages.append(...)`. `self.messages` resolves to the class-level list either way. Both inboxes see both messages.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Output: `2 2`. Each `len(...)` reads the same shared list, which now has two entries.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 70,
+          "concept": "shared-class-list-output",
+          "code": "class Inbox:\n    messages = []\n\n    def add(self, msg):\n        self.messages.append(msg)\n\ninbox_a = Inbox()\ninbox_b = Inbox()\n\ninbox_a.add(\"hello\")\ninbox_b.add(\"world\")\n\nprint(len(inbox_a.messages), len(inbox_b.messages))\n",
+          "prompt": "Two `Inbox` instances. Each appends one message. The class declares\n`messages = []` at the top — so the list is shared. What does the\nprint produce?\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "2 2",
+            "normalize": "collapse-trailing-newline"
+          }
+        },
+        {
+          "type": "fill",
+          "id": "classes-basics/instance-vs-class/s05-05-fill-the-self",
+          "xp": 3,
+          "hint": [
+            {
+              "level": 1,
+              "body": "The first parameter of every method is the conventional name for 'this instance'.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "The prefix is `self`. `self.model = model` stores the argument as an instance attribute.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 55,
+          "concept": "self-prefix",
+          "prompt": "Cursor wrote `__init__` but left out the `self.` prefix on one\nassignment. Without it, `model` is just a local variable that\ndisappears when `__init__` returns — the instance never gets the\nattribute.\n\nFill in the missing prefix on line 4 so the print at the bottom\nworks.\n\nPrefix: ___\n",
+          "code": "class Robot:\n\n    def __init__(self, model):\n        ___.model = model\n\nr = Robot(\"v2\")\nprint(r.model)\n",
+          "blanks": [
+            {
+              "id": "prefix",
+              "accept": [
+                "self"
+              ],
+              "caseSensitive": true,
+              "normalize": "trim"
+            }
+          ]
+        },
+        {
+          "type": "fix",
+          "id": "classes-basics/instance-vs-class/s06-06-fix-the-shared-default",
+          "xp": 4,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Delete `inventory = []` from the class body. Add an `__init__(self):` method that sets `self.inventory = []`.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Replace line 2 with: `def __init__(self):` then on the next line, indented, `self.inventory = []`. Each player now creates a fresh list.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 95,
+          "concept": "moving-mutable-into-init",
+          "brokenCode": "class Player:\n    inventory = []\n\n    def pick_up(self, item):\n        self.inventory.append(item)\n\nalex = Player()\nsam = Player()\n\nalex.pick_up(\"sword\")\nsam.pick_up(\"shield\")\n\nprint(alex.inventory, sam.inventory)\n",
+          "prompt": "Claude wrote a `Player` class with an `inventory = []` at the class\nlevel. Two players share the same inventory list. The output is\n`['sword', 'shield'] ['sword', 'shield']` instead of\n`['sword'] ['shield']`.\n\nMove the list into `__init__` so each player gets its own. After the\nfix the output should be:\n```\n['sword'] ['shield']\n```\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "['sword'] ['shield']",
+            "normalize": "collapse-trailing-newline"
+          },
+          "bugLines": [
+            2
+          ],
+          "revealAfter": 4
+        },
+        {
+          "type": "fix",
+          "id": "classes-basics/instance-vs-class/s07-07-fix-the-class-attr-typo",
+          "xp": 4,
+          "hint": [
+            {
+              "level": 1,
+              "body": "`self.x = ...` always creates an instance attribute. To update the class attribute, address the class itself: `Account.rate = ...`.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Change line 6 to `Account.rate = 0.05`. Now both `a.rate` and `b.rate` fall back to the (updated) class attribute and read `0.05`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 90,
+          "concept": "assigning-vs-shadowing",
+          "brokenCode": "class Account:\n    rate = 0.02\n\n    def bump_rate(self):\n        # supposed to bump the rate for ALL accounts:\n        self.rate = 0.05\n\na = Account()\nb = Account()\na.bump_rate()\n\nprint(a.rate, b.rate)\n",
+          "prompt": "AI tried to update a class-level constant from inside an instance\nmethod. The intent was to change the rate for *all* `Account`\ninstances. But `self.rate = 0.05` doesn't update the class attribute —\nit creates a *new* instance attribute that shadows the class one,\nonly on this instance.\n\nFix line 6 so it updates the class attribute directly. Use\n`Account.rate = 0.05` instead of `self.rate = 0.05`.\n\nExpected output (both accounts share the new rate):\n```\n0.05 0.05\n```\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "0.05 0.05",
+            "normalize": "collapse-trailing-newline"
+          },
+          "bugLines": [
+            6
+          ],
+          "revealAfter": 4
+        },
+        {
+          "type": "write",
+          "id": "classes-basics/instance-vs-class/s08-08-write-counter-class",
+          "xp": 5,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Three pieces: `__init__` sets `self.count = 0`, `increment` does `self.count += 1`, `value` returns `self.count`. Each method takes `self` as its first parameter.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "`class Counter:` then `def __init__(self): self.count = 0` then `def increment(self): self.count += 1` then `def value(self): return self.count`. Make sure `count = 0` is inside `__init__`, not at the class level.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 120,
+          "concept": "write-class-with-init",
+          "prompt": "Write a `Counter` class with:\n\n- An instance attribute `count` that starts at `0`.\n- A method `increment()` that adds 1 to `self.count`.\n- A method `value()` that returns `self.count`.\n\nMake sure the count is *per-instance* — two counters should not\nshare state.\n\nExpected output:\n```\n3\n1\n```\n",
+          "starter": "# define Counter below\n\na = Counter()\na.increment()\na.increment()\na.increment()\n\nb = Counter()\nb.increment()\n\nprint(a.value())\nprint(b.value())\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "3\n1\n",
+            "normalize": "collapse-trailing-newline"
+          },
+          "solution": "class Counter:\n    def __init__(self):\n        self.count = 0\n\n    def increment(self):\n        self.count += 1\n\n    def value(self):\n        return self.count\n\na = Counter()\na.increment()\na.increment()\na.increment()\n\nb = Counter()\nb.increment()\n\nprint(a.value())\nprint(b.value())\n",
+          "hiddenTests": []
+        },
+        {
+          "type": "checkpoint",
+          "id": "classes-basics/instance-vs-class/s09-09-checkpoint",
+          "xp": 8,
+          "hint": [
+            {
+              "level": 1,
+              "body": "`domain = \"example.com\"` at the class level. `username` and `permissions` inside `__init__` with `self.`. Two methods: `email` returns the formatted string, `grant` appends.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "If you put `permissions = []` at the class level by mistake, both users will share the list and you'll see `['read', 'read', 'write']` on both. The fix is `self.permissions = []` inside `__init__`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "check",
+          "estSeconds": 150,
+          "concept": "instance-vs-class-checkpoint",
+          "prompt": "Last drill. Build a `User` class that uses both buckets correctly:\n\n- Class attribute `domain = \"example.com\"` (a constant — same for\n  every user).\n- Instance attributes (assigned in `__init__`):\n  - `username` (passed in)\n  - `permissions` — an empty list (must be per-instance)\n- Method `email()` returns `f\"{self.username}@{self.domain}\"`.\n- Method `grant(perm)` appends `perm` to `self.permissions`.\n\nTwo users, distinct permission lists, shared domain string.\n\nExpected output:\n```\nmaya@example.com\nmarcus@example.com\n['read']\n['read', 'write']\n```\n",
+          "starter": "# define User below\n\nmaya = User(\"maya\")\nmarcus = User(\"marcus\")\n\nprint(maya.email())\nprint(marcus.email())\n\nmaya.grant(\"read\")\nmarcus.grant(\"read\")\nmarcus.grant(\"write\")\n\nprint(maya.permissions)\nprint(marcus.permissions)\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "maya@example.com\nmarcus@example.com\n['read']\n['read', 'write']\n",
+            "normalize": "collapse-trailing-newline"
+          },
+          "solution": "class User:\n    domain = \"example.com\"\n\n    def __init__(self, username):\n        self.username = username\n        self.permissions = []\n\n    def email(self):\n        return f\"{self.username}@{self.domain}\"\n\n    def grant(self, perm):\n        self.permissions.append(perm)\n\nmaya = User(\"maya\")\nmarcus = User(\"marcus\")\n\nprint(maya.email())\nprint(marcus.email())\n\nmaya.grant(\"read\")\nmarcus.grant(\"read\")\nmarcus.grant(\"write\")\n\nprint(maya.permissions)\nprint(marcus.permissions)\n",
+          "passThreshold": 0.66
+        }
+      ],
+      "xpTotal": 32
     }
   ],
-  "xpTotal": 32
+  "xpTotal": 64
 }
