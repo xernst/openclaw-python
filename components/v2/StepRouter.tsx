@@ -13,6 +13,7 @@ import type {
   UserProfile,
   WriteStep,
 } from "@/lib/content/schema";
+import type { RunResult } from "./PersistentIDE";
 
 /**
  * Every step view renders only the prompt panel. The IDE is owned by the
@@ -22,10 +23,18 @@ import type {
  * The router intentionally stays thin: it discriminates on `step.type` and
  * forwards a typed view-specific step to the matching view.
  */
+export type StepIDEBridge = {
+  /** Run the active editor file through Pyodide and return its result. */
+  run: () => Promise<RunResult | null>;
+  /** Read the current contents of the active editor file. */
+  getActiveCode: () => string;
+};
+
 export type StepViewProps<T extends Step = Step> = {
   step: T;
   profile: UserProfile;
   onAttempt: (attempt: StepAttempt) => void;
+  ide: StepIDEBridge;
 };
 
 type Props = StepViewProps<Step>;

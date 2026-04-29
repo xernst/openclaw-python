@@ -7,7 +7,7 @@ import PersistentIDE, {
   type IDEFile,
   type PersistentIDEHandle,
 } from "./PersistentIDE";
-import StepRouter from "./StepRouter";
+import StepRouter, { type StepIDEBridge } from "./StepRouter";
 import V2ChapterNav, { type ChapterNavTree } from "./ChapterNav";
 import type { Chapter, Lesson, Step, StepAttempt, UserProfile } from "@/lib/content/schema";
 import {
@@ -72,6 +72,14 @@ export default function LessonStepClient({
   const ideFiles = useMemo<IDEFile[]>(() => buildFilesForStep(step), [step]);
   const stepRunnable = useMemo(() => stepIsRunnable(step), [step]);
 
+  const ideBridge = useMemo<StepIDEBridge>(
+    () => ({
+      run: async () => ideRef.current?.run() ?? null,
+      getActiveCode: () => ideRef.current?.getActiveCode() ?? "",
+    }),
+    [],
+  );
+
   function handleAttempt(attempt: StepAttempt) {
     setLatestAttempt(attempt);
     setStepAttempt(step.id, attempt, { concept: step.concept });
@@ -120,7 +128,12 @@ export default function LessonStepClient({
         </div>
       }
       prompt={
-        <StepRouter step={step} profile={profile} onAttempt={handleAttempt} />
+        <StepRouter
+          step={step}
+          profile={profile}
+          onAttempt={handleAttempt}
+          ide={ideBridge}
+        />
       }
       footer={
         <div className="flex items-center justify-between">
