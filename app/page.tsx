@@ -3,6 +3,7 @@ import { getChapters } from "@/lib/content";
 import { getV2Toc, getV2Chapter } from "@/lib/content-v2";
 import HomeClient from "@/components/v2/HomeClient";
 import StreakWidget from "@/components/StreakWidget";
+import PyodidePreloader from "@/components/PyodidePreloader";
 
 export default async function Home() {
   const toc = getV2Toc();
@@ -33,6 +34,7 @@ export default async function Home() {
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-10 sm:py-16">
+      <PyodidePreloader />
       <header className="mb-12 flex items-end justify-between">
         <div>
           <div className="text-xs uppercase tracking-[0.2em] text-ember-500">

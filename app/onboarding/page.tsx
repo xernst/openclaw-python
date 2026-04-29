@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 import { setUserProfile } from "@/lib/storage";
 import { cn } from "@/lib/utils";
+import PyodidePreloader from "@/components/PyodidePreloader";
 
 // UX §3 — five screens, one schema saved.
 // Voice (Brand §3/§4): dry, adult, no exclamation marks. Skip is a small text
@@ -157,6 +158,7 @@ export default function OnboardingPage() {
 
   return (
     <main className="mx-auto flex min-h-screen max-w-3xl flex-col px-6 py-10 sm:py-16">
+      <PyodidePreloader />
       <header className="mb-10 flex items-center justify-between">
         <Link
           href="/"
