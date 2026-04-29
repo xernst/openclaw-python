@@ -1,0 +1,40 @@
+xp: 4
+estSeconds: 80
+concept: zip-truncation-bug
+prompt: |
+  Claude wrote a loop that pairs `names` with `roles`, but `roles` has
+  one fewer entry than `names`, so `riley` is silently dropped from the
+  output. The script should still print three lines — for any name with
+  no matching role, print `name: unknown`.
+
+  Replace the `zip` call so missing roles fall back to `"unknown"`.
+  Expected output:
+
+  ```
+  maya: founder
+  marcus: eng
+  riley: unknown
+  ```
+brokenCode: |
+  from itertools import zip_longest
+
+  names = ["maya", "marcus", "riley"]
+  roles = ["founder", "eng"]
+
+  for n, r in zip(names, roles):
+      print(f"{n}: {r}")
+bugLines:
+  - 6
+grader:
+  kind: stdout-equality
+  expected: |
+    maya: founder
+    marcus: eng
+    riley: unknown
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "`zip` stops at the shorter list. `zip_longest` (already imported) keeps going and lets you set a `fillvalue`."
+  - level: 2
+    body: "Replace the call with `zip_longest(names, roles, fillvalue=\"unknown\")`."
+revealAfter: 4

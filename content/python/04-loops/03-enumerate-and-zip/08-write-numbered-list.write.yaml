@@ -1,0 +1,34 @@
+xp: 5
+estSeconds: 100
+concept: write-enumerate-loop
+prompt: |
+  You have a list of three feature names. Write a loop that uses
+  `enumerate` (starting at `1`) to print each feature on its own line,
+  in the format:
+
+  ```
+  1. tabs
+  2. search
+  3. exports
+  ```
+starter: |
+  features = ["tabs", "search", "exports"]
+
+  # use enumerate to print "1. tabs", "2. search", "3. exports"
+grader:
+  kind: stdout-equality
+  expected: |
+    1. tabs
+    2. search
+    3. exports
+  normalize: collapse-trailing-newline
+solution: |
+  features = ["tabs", "search", "exports"]
+
+  for i, feature in enumerate(features, start=1):
+      print(f"{i}. {feature}")
+hint:
+  - level: 1
+    body: "`for i, feature in enumerate(features, start=1):` and inside, `print(f\"{i}. {feature}\")`."
+  - level: 2
+    body: "Don't forget the period and the space between `{i}.` and `{feature}` in the f-string."

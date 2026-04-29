@@ -1,0 +1,34 @@
+xp: 4
+estSeconds: 80
+concept: replace-range-len-with-enumerate
+prompt: |
+  AI wrote the C-style version with `range(len(...))` and `items[i]`.
+  Replace lines 3-4 with a single `for` loop using `enumerate` so the
+  output stays the same:
+
+  ```
+  0: apple
+  1: bread
+  2: steak
+  ```
+brokenCode: |
+  items = ["apple", "bread", "steak"]
+
+  for i in range(len(items)):
+      print(f"{i}: {items[i]}")
+bugLines:
+  - 3
+  - 4
+grader:
+  kind: stdout-equality
+  expected: |
+    0: apple
+    1: bread
+    2: steak
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "`enumerate` gives you the index and the value in one go."
+  - level: 2
+    body: "Replace lines 3-4 with `for i, item in enumerate(items):` and `    print(f\"{i}: {item}\")`."
+revealAfter: 4

@@ -1,0 +1,35 @@
+xp: 8
+estSeconds: 140
+concept: enumerate-zip-checkpoint
+prompt: |
+  Final drill. Combine `enumerate` and `zip` to print a numbered list
+  where each line shows position, name, and score:
+
+  Expected output:
+  ```
+  1. maya — 95
+  2. marcus — 88
+  3. riley — 71
+  ```
+
+  Hint: `enumerate(zip(names, scores), start=1)` gives you
+  `(1, ("maya", 95))`, `(2, ("marcus", 88))`, etc.
+starter: |
+  names = ["maya", "marcus", "riley"]
+  scores = [95, 88, 71]
+
+  # use enumerate + zip together
+grader:
+  kind: stdout-equality
+  expected: |
+    1. maya — 95
+    2. marcus — 88
+    3. riley — 71
+  normalize: collapse-trailing-newline
+solution: |
+  names = ["maya", "marcus", "riley"]
+  scores = [95, 88, 71]
+
+  for i, (name, score) in enumerate(zip(names, scores), start=1):
+      print(f"{i}. {name} — {score}")
+passThreshold: 0.66

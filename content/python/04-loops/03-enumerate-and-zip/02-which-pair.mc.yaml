@@ -1,0 +1,30 @@
+xp: 2
+estSeconds: 50
+concept: enumerate-vs-zip
+code: |
+  # enumerate(items)            -> (0, item0), (1, item1), ...
+  # zip(list_a, list_b)         -> (a0, b0), (a1, b1), ...
+  # zip stops at the SHORTER list.
+  names = ["maya", "marcus"]
+  scores = [95, 88, 71]
+
+  for n, s in zip(names, scores):
+      print(n, s)
+prompt: |
+  Cursor wrote a loop that needs to walk **two** lists side-by-side —
+  pairing each name with the score at the same position. Which built-in
+  is the right reach?
+options:
+  - id: a
+    label: "`enumerate`"
+    explain: "`enumerate` gives you `(index, value)` from one list. It can't pair two lists."
+  - id: b
+    label: "`zip`"
+  - id: c
+    label: "`range(len(...))`"
+    explain: "Works, but it's the long way. `zip` is what AI reaches for here."
+  - id: d
+    label: "`for n in names:` and a manual counter"
+    explain: "That works too, but it's more code than `zip` for the same job."
+answerIds:
+  - b

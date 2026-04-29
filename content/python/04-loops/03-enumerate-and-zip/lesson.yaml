@@ -1,0 +1,14 @@
+slug: enumerate-and-zip
+title: "enumerate and zip — the loops AI writes when it's not lazy"
+estMinutes: 6
+prerequisites: []
+order:
+  - 01-intro.read.md
+  - 02-which-pair.mc.yaml
+  - 03-zip-pairs.read.md
+  - 04-predict-enumerate.predict.yaml
+  - 05-fill-the-builtin.fill.yaml
+  - 06-fix-the-range-len.fix.yaml
+  - 07-fix-the-zip-mismatch.fix.yaml
+  - 08-write-numbered-list.write.yaml
+  - 09-checkpoint.checkpoint.yaml

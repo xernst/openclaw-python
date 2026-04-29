@@ -582,7 +582,257 @@
         }
       ],
       "xpTotal": 31
+    },
+    {
+      "slug": "enumerate-and-zip",
+      "title": "enumerate and zip — the loops AI writes when it's not lazy",
+      "estMinutes": 6,
+      "prerequisites": [],
+      "steps": [
+        {
+          "type": "read",
+          "id": "loops/enumerate-and-zip/s01-01-intro",
+          "xp": 1,
+          "hint": [],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 45,
+          "concept": "enumerate-introduction",
+          "body": "# `enumerate` — when AI needs the index too\n\nHalf the loops AI writes need both the value *and* its position: *the\nthird item*, *line 12 of the file*, *step 4 of the workflow*.\n\nBeginners (and a surprising amount of AI-generated code) reach for\n`for i in range(len(names)):` and then `names[i]` inside. That works,\nbut it's the C-flavored version. Python has a one-line built-in:\n\n```python\nfor i, value in enumerate(items):\n    ...\n```\n\n`enumerate` hands you both. By default, `i` starts at `0`. Pass\n`enumerate(items, start=1)` if you want it to start at `1` (for human\ndisplay).\n\nRun the editor. Three names, indexed `0`, `1`, `2`. No `range(len(...))`\nneeded.",
+          "cta": "Got it",
+          "code": "names = [\"maya\", \"marcus\", \"riley\"]\n\nfor i, name in enumerate(names):\n    print(i, name)\n",
+          "runnable": true
+        },
+        {
+          "type": "mc",
+          "id": "loops/enumerate-and-zip/s02-02-which-pair",
+          "xp": 2,
+          "hint": [],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 50,
+          "concept": "enumerate-vs-zip",
+          "prompt": "Cursor wrote a loop that needs to walk **two** lists side-by-side —\npairing each name with the score at the same position. Which built-in\nis the right reach?\n",
+          "options": [
+            {
+              "id": "a",
+              "label": "`enumerate`",
+              "explain": "`enumerate` gives you `(index, value)` from one list. It can't pair two lists."
+            },
+            {
+              "id": "b",
+              "label": "`zip`"
+            },
+            {
+              "id": "c",
+              "label": "`range(len(...))`",
+              "explain": "Works, but it's the long way. `zip` is what AI reaches for here."
+            },
+            {
+              "id": "d",
+              "label": "`for n in names:` and a manual counter",
+              "explain": "That works too, but it's more code than `zip` for the same job."
+            }
+          ],
+          "answerIds": [
+            "b"
+          ],
+          "shuffle": false,
+          "code": "# enumerate(items)            -> (0, item0), (1, item1), ...\n# zip(list_a, list_b)         -> (a0, b0), (a1, b1), ...\n# zip stops at the SHORTER list.\nnames = [\"maya\", \"marcus\"]\nscores = [95, 88, 71]\n\nfor n, s in zip(names, scores):\n    print(n, s)\n",
+          "runnable": true
+        },
+        {
+          "type": "read",
+          "id": "loops/enumerate-and-zip/s03-03-zip-pairs",
+          "xp": 2,
+          "hint": [],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 55,
+          "concept": "zip-pairs-and-mismatch",
+          "body": "# `zip` walks two lists in lockstep\n\n`zip(a, b)` builds tuples `(a[0], b[0])`, `(a[1], b[1])`, and so on.\nIt's how AI lines up parallel data: names + scores, columns + values,\ninputs + expected outputs.\n\nThe trap: **`zip` stops at the shorter list**. If `cities` has three\nentries and `zones` has two, you only get two iterations. The third\n`city` is silently dropped — no warning, no error.\n\nWhen AI writes `zip` over data of unknown length, this is the bug to look\nfor. If you need *every* element, check the lengths first or use\n`itertools.zip_longest`.\n\nRun the editor. Two iterations, even though `cities` has three items.",
+          "cta": "Got it",
+          "code": "cities = [\"austin\", \"berlin\", \"tokyo\"]\nzones = [\"CST\", \"CET\"]\n\n# zip stops at the shorter list — tokyo is silently dropped\nfor city, zone in zip(cities, zones):\n    print(city, zone)\n",
+          "runnable": true
+        },
+        {
+          "type": "predict",
+          "id": "loops/enumerate-and-zip/s04-04-predict-enumerate",
+          "xp": 3,
+          "hint": [
+            {
+              "level": 1,
+              "body": "`enumerate(steps, start=1)` makes the index start at 1 instead of 0. The format is `{i}. {step}`.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Three lines: `1. plan`, `2. build`, `3. ship`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 65,
+          "concept": "enumerate-with-start",
+          "code": "steps = [\"plan\", \"build\", \"ship\"]\n\nfor i, step in enumerate(steps, start=1):\n    print(f\"{i}. {step}\")\n",
+          "prompt": "Read the editor. Notice the `start=1` argument. What does this print?\n(Three lines.)\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "1. plan\n2. build\n3. ship\n",
+            "normalize": "collapse-trailing-newline"
+          }
+        },
+        {
+          "type": "fill",
+          "id": "loops/enumerate-and-zip/s05-05-fill-the-builtin",
+          "xp": 3,
+          "hint": [
+            {
+              "level": 1,
+              "body": "It's a three-letter built-in that takes two iterables and yields paired tuples.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "It's `zip`. `zip(keys, values)` yields `(\"name\", \"maya\")`, `(\"role\", \"founder\")`, etc.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 50,
+          "concept": "identifying-the-builtin",
+          "prompt": "Cursor wants to walk two lists in lockstep. Fill in the built-in on\nline 4 that pairs the elements of `keys` and `values`.\n\nBuilt-in: ___\n",
+          "code": "keys = [\"name\", \"role\", \"city\"]\nvalues = [\"maya\", \"founder\", \"austin\"]\n\nfor k, v in ___(keys, values):\n    print(f\"{k}: {v}\")\n",
+          "blanks": [
+            {
+              "id": "keyword",
+              "accept": [
+                "zip"
+              ],
+              "caseSensitive": true,
+              "normalize": "trim"
+            }
+          ]
+        },
+        {
+          "type": "fix",
+          "id": "loops/enumerate-and-zip/s06-06-fix-the-range-len",
+          "xp": 4,
+          "hint": [
+            {
+              "level": 1,
+              "body": "`enumerate` gives you the index and the value in one go.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Replace lines 3-4 with `for i, item in enumerate(items):` and `    print(f\"{i}: {item}\")`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 80,
+          "concept": "replace-range-len-with-enumerate",
+          "brokenCode": "items = [\"apple\", \"bread\", \"steak\"]\n\nfor i in range(len(items)):\n    print(f\"{i}: {items[i]}\")\n",
+          "prompt": "AI wrote the C-style version with `range(len(...))` and `items[i]`.\nReplace lines 3-4 with a single `for` loop using `enumerate` so the\noutput stays the same:\n\n```\n0: apple\n1: bread\n2: steak\n```\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "0: apple\n1: bread\n2: steak\n",
+            "normalize": "collapse-trailing-newline"
+          },
+          "bugLines": [
+            3,
+            4
+          ],
+          "revealAfter": 4
+        },
+        {
+          "type": "fix",
+          "id": "loops/enumerate-and-zip/s07-07-fix-the-zip-mismatch",
+          "xp": 4,
+          "hint": [
+            {
+              "level": 1,
+              "body": "`zip` stops at the shorter list. `zip_longest` (already imported) keeps going and lets you set a `fillvalue`.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Replace the call with `zip_longest(names, roles, fillvalue=\"unknown\")`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 80,
+          "concept": "zip-truncation-bug",
+          "brokenCode": "from itertools import zip_longest\n\nnames = [\"maya\", \"marcus\", \"riley\"]\nroles = [\"founder\", \"eng\"]\n\nfor n, r in zip(names, roles):\n    print(f\"{n}: {r}\")\n",
+          "prompt": "Claude wrote a loop that pairs `names` with `roles`, but `roles` has\none fewer entry than `names`, so `riley` is silently dropped from the\noutput. The script should still print three lines — for any name with\nno matching role, print `name: unknown`.\n\nReplace the `zip` call so missing roles fall back to `\"unknown\"`.\nExpected output:\n\n```\nmaya: founder\nmarcus: eng\nriley: unknown\n```\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "maya: founder\nmarcus: eng\nriley: unknown\n",
+            "normalize": "collapse-trailing-newline"
+          },
+          "bugLines": [
+            6
+          ],
+          "revealAfter": 4
+        },
+        {
+          "type": "write",
+          "id": "loops/enumerate-and-zip/s08-08-write-numbered-list",
+          "xp": 5,
+          "hint": [
+            {
+              "level": 1,
+              "body": "`for i, feature in enumerate(features, start=1):` and inside, `print(f\"{i}. {feature}\")`.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Don't forget the period and the space between `{i}.` and `{feature}` in the f-string.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 100,
+          "concept": "write-enumerate-loop",
+          "prompt": "You have a list of three feature names. Write a loop that uses\n`enumerate` (starting at `1`) to print each feature on its own line,\nin the format:\n\n```\n1. tabs\n2. search\n3. exports\n```\n",
+          "starter": "features = [\"tabs\", \"search\", \"exports\"]\n\n# use enumerate to print \"1. tabs\", \"2. search\", \"3. exports\"\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "1. tabs\n2. search\n3. exports\n",
+            "normalize": "collapse-trailing-newline"
+          },
+          "solution": "features = [\"tabs\", \"search\", \"exports\"]\n\nfor i, feature in enumerate(features, start=1):\n    print(f\"{i}. {feature}\")\n",
+          "hiddenTests": []
+        },
+        {
+          "type": "checkpoint",
+          "id": "loops/enumerate-and-zip/s09-09-checkpoint",
+          "xp": 8,
+          "hint": [],
+          "personalize": false,
+          "phase": "check",
+          "estSeconds": 140,
+          "concept": "enumerate-zip-checkpoint",
+          "prompt": "Final drill. Combine `enumerate` and `zip` to print a numbered list\nwhere each line shows position, name, and score:\n\nExpected output:\n```\n1. maya — 95\n2. marcus — 88\n3. riley — 71\n```\n\nHint: `enumerate(zip(names, scores), start=1)` gives you\n`(1, (\"maya\", 95))`, `(2, (\"marcus\", 88))`, etc.\n",
+          "starter": "names = [\"maya\", \"marcus\", \"riley\"]\nscores = [95, 88, 71]\n\n# use enumerate + zip together\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "1. maya — 95\n2. marcus — 88\n3. riley — 71\n",
+            "normalize": "collapse-trailing-newline"
+          },
+          "solution": "names = [\"maya\", \"marcus\", \"riley\"]\nscores = [95, 88, 71]\n\nfor i, (name, score) in enumerate(zip(names, scores), start=1):\n    print(f\"{i}. {name} — {score}\")\n",
+          "passThreshold": 0.66
+        }
+      ],
+      "xpTotal": 32
     }
   ],
-  "xpTotal": 65
+  "xpTotal": 97
 }

@@ -1,6 +1,6 @@
 {
   "version": "0.1.0",
-  "generatedAt": "2026-04-29T16:22:34.911Z",
+  "generatedAt": "2026-04-29T16:24:08.174Z",
   "chapters": [
     {
       "number": 1,
@@ -34,9 +34,9 @@
       "slug": "loops",
       "title": "Loops — predict the output",
       "blurb": "AI writes a loop every time you say *for each*. Half the time it's wrong by one. Read it before you trust it.",
-      "lessonCount": 2,
-      "stepCount": 19,
-      "xpTotal": 65
+      "lessonCount": 3,
+      "stepCount": 28,
+      "xpTotal": 97
     },
     {
       "number": 5,

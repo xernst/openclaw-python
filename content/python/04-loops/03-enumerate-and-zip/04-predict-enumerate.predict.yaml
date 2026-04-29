@@ -1,0 +1,23 @@
+xp: 3
+estSeconds: 65
+concept: enumerate-with-start
+code: |
+  steps = ["plan", "build", "ship"]
+
+  for i, step in enumerate(steps, start=1):
+      print(f"{i}. {step}")
+prompt: |
+  Read the editor. Notice the `start=1` argument. What does this print?
+  (Three lines.)
+grader:
+  kind: stdout-equality
+  expected: |
+    1. plan
+    2. build
+    3. ship
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "`enumerate(steps, start=1)` makes the index start at 1 instead of 0. The format is `{i}. {step}`."
+  - level: 2
+    body: "Three lines: `1. plan`, `2. build`, `3. ship`."

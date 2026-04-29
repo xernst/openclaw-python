@@ -1,0 +1,24 @@
+xp: 3
+estSeconds: 50
+concept: identifying-the-builtin
+prompt: |
+  Cursor wants to walk two lists in lockstep. Fill in the built-in on
+  line 4 that pairs the elements of `keys` and `values`.
+
+  Built-in: ___
+code: |
+  keys = ["name", "role", "city"]
+  values = ["maya", "founder", "austin"]
+
+  for k, v in ___(keys, values):
+      print(f"{k}: {v}")
+blanks:
+  - id: keyword
+    accept:
+      - zip
+    caseSensitive: true
+hint:
+  - level: 1
+    body: "It's a three-letter built-in that takes two iterables and yields paired tuples."
+  - level: 2
+    body: "It's `zip`. `zip(keys, values)` yields `(\"name\", \"maya\")`, `(\"role\", \"founder\")`, etc."

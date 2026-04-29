@@ -5,3 +5,4 @@ blurb: "AI writes a loop every time you say *for each*. Half the time it's wrong
 lessons:
   - 01-predict-the-output
   - 02-while-and-break
+  - 03-enumerate-and-zip
