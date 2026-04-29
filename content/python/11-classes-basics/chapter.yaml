@@ -5,3 +5,4 @@ blurb: "AI ships classes constantly: SQLAlchemy models, FastAPI schemas, custom 
 lessons:
   - 01-reading-a-class
   - 02-instance-vs-class
+  - 03-dataclasses

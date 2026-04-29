@@ -1,0 +1,37 @@
+xp: 2
+estSeconds: 50
+concept: dataclass-decorator-purpose
+code: |
+  from dataclasses import dataclass
+
+  @dataclass
+  class Order:
+      id: int
+      total: float
+      status: str = "pending"
+
+  a = Order(1, 49.99)
+  b = Order(1, 49.99)
+  print(a == b)
+prompt: |
+  This dataclass has three fields. Two `Order` instances are created
+  with the same values. What does `print(a == b)` produce, and why?
+options:
+  - id: a
+    label: "`False` — they're different objects in memory"
+    explain: "Without `@dataclass`, that's exactly what would happen — Python's default `==` checks identity. The decorator generates a value-based `__eq__` instead."
+  - id: b
+    label: "`True` — `@dataclass` generates `__eq__` based on field values"
+  - id: c
+    label: "`TypeError` — Python can't compare custom classes by default"
+    explain: "Comparing two custom objects with `==` doesn't raise — it just returns `False` by default. The decorator changes the behavior to value comparison."
+  - id: d
+    label: "`None` — `==` returns nothing for dataclasses"
+    explain: "`==` always returns a bool (or `NotImplemented`). It never returns `None`."
+answerIds:
+  - b
+hint:
+  - level: 1
+    body: "The decorator generates `__init__`, `__repr__`, and `__eq__`. The third one is the one this question is testing."
+  - level: 2
+    body: "`@dataclass` makes `==` compare field values, not memory addresses. Two `Order(1, 49.99)` instances with the same default for `status` are equal."

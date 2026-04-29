@@ -1,0 +1,73 @@
+xp: 8
+estSeconds: 150
+concept: dataclass-checkpoint
+prompt: |
+  Last drill. Build two dataclasses that fit together:
+
+  1. `Address` — a `frozen=True` dataclass with two fields:
+     - `street: str`
+     - `city: str`
+
+  2. `Customer` — a regular `@dataclass` with three fields:
+     - `name: str`
+     - `address: Address` (a nested dataclass — required)
+     - `orders: list` defaulting to `field(default_factory=list)`
+
+  Then create two customers sharing the same address (an `Address` is
+  immutable, so sharing is fine), append an order to each, and print
+  both.
+
+  Expected output:
+  ```
+  Customer(name='maya', address=Address(street='1 main st', city='oak'), orders=['#1'])
+  Customer(name='marcus', address=Address(street='1 main st', city='oak'), orders=['#2'])
+  ```
+starter: |
+  from dataclasses import dataclass, field
+
+  # define Address (frozen) and Customer below
+
+  hq = Address("1 main st", "oak")
+  maya = Customer("maya", hq)
+  marcus = Customer("marcus", hq)
+
+  maya.orders.append("#1")
+  marcus.orders.append("#2")
+
+  print(maya)
+  print(marcus)
+grader:
+  kind: stdout-equality
+  expected: |
+    Customer(name='maya', address=Address(street='1 main st', city='oak'), orders=['#1'])
+    Customer(name='marcus', address=Address(street='1 main st', city='oak'), orders=['#2'])
+  normalize: collapse-trailing-newline
+solution: |
+  from dataclasses import dataclass, field
+
+  @dataclass(frozen=True)
+  class Address:
+      street: str
+      city: str
+
+  @dataclass
+  class Customer:
+      name: str
+      address: Address
+      orders: list = field(default_factory=list)
+
+  hq = Address("1 main st", "oak")
+  maya = Customer("maya", hq)
+  marcus = Customer("marcus", hq)
+
+  maya.orders.append("#1")
+  marcus.orders.append("#2")
+
+  print(maya)
+  print(marcus)
+passThreshold: 0.66
+hint:
+  - level: 1
+    body: "`@dataclass(frozen=True)` for `Address`, plain `@dataclass` for `Customer`. `orders: list = field(default_factory=list)` for the per-instance list."
+  - level: 2
+    body: "If the customers' `orders` lists end up showing both `'#1'` and `'#2'` on each, you used a literal `[]` somewhere. Replace it with `field(default_factory=list)`."

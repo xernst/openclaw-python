@@ -523,7 +523,278 @@
         }
       ],
       "xpTotal": 32
+    },
+    {
+      "slug": "dataclasses",
+      "title": "@dataclass — the class shape AI ships in every modern Python project",
+      "estMinutes": 9,
+      "prerequisites": [],
+      "steps": [
+        {
+          "type": "read",
+          "id": "classes-basics/dataclasses/s01-01-intro",
+          "xp": 1,
+          "hint": [],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 110,
+          "concept": "dataclass-introduction",
+          "body": "# `@dataclass` — when AI doesn't want to write `__init__` by hand\n\nSpend ten minutes reading any modern Python codebase — FastAPI, an\nLLM agent, a data pipeline, anything written after 2018 — and you'll\nsee this shape over and over:\n\n```python\n@dataclass\nclass User:\n    name: str\n    age: int\n    role: str = \"viewer\"\n```\n\nThat's a *dataclass*. Five lines that replace what used to be\nfifteen. Cursor reaches for it on every \"make a class to hold these\nfields\" task because it removes a lot of boilerplate that everybody\nagreed was annoying. Reading AI code, you'll see this decorator on\nmaybe a third of the classes in any given file.\n\nThe job of this lesson: read a `@dataclass`, know exactly what it\ngenerates for you, and spot the two ways AI still gets it wrong.\n\n## What `@dataclass` actually does\n\nA decorator is a function that wraps another thing and returns a\nmodified version. `@dataclass` is a function from the standard\nlibrary that, applied to a class, *generates three methods for you\nautomatically*:\n\n1. `__init__` — the constructor. Takes one parameter per field, in\n   declaration order, and assigns them to `self`. So `User(\"maya\",\n   29)` works without you writing `def __init__(self, name, age):`.\n2. `__repr__` — what gets printed when you `print(user)`. Without\n   the decorator you'd see `<User object at 0x10ab...>`. With it,\n   you see `User(name='maya', age=29, role='viewer')`. That's a\n   massive debugging quality-of-life win.\n3. `__eq__` — what `==` does between two instances. Without it, two\n   `User`s with the same fields are not equal because they're\n   different objects. With it, equal *values* mean equal *users*.\n\nFive lines of decorator-and-fields gets you all three. The same\nclass without `@dataclass` would be:\n\n```python\nclass User:\n    def __init__(self, name, age, role=\"viewer\"):\n        self.name = name\n        self.age = age\n        self.role = role\n\n    def __repr__(self):\n        return f\"User(name={self.name!r}, age={self.age!r}, role={self.role!r})\"\n\n    def __eq__(self, other):\n        if not isinstance(other, User):\n            return NotImplemented\n        return (self.name, self.age, self.role) == (other.name, other.age, other.role)\n```\n\nFifteen lines, plus you've already had to remember `isinstance` and\n`NotImplemented` and `!r`. The decorator wins.\n\n## The mental model\n\nA dataclass is *a class that exists to hold fields*. The fields are\ndeclared at the top of the class body using **type annotations**:\n\n```python\nclass User:\n    name: str\n    age: int\n    role: str = \"viewer\"\n```\n\n`name: str` says \"there's a field called `name`, expected type\n`str`.\" Python doesn't *enforce* the type at runtime — you can pass\na number into `name` and Python won't complain. The annotation is\ndocumentation that tools (type checkers, editors, the dataclass\nmachinery itself) read.\n\nA field with `=` after it has a default. Same rule as functions:\ndefaulted fields come *after* required ones. `name` and `age` are\nrequired; `role` is optional and falls back to `\"viewer\"`.\n\n## A worked example\n\nThe editor on the right has the canonical dataclass:\n\n```python\nfrom dataclasses import dataclass\n\n@dataclass\nclass User:\n    name: str\n    age: int\n    role: str = \"viewer\"\n\nu = User(\"maya\", 29)\nprint(u)\nprint(u.name, u.age, u.role)\nprint(u == User(\"maya\", 29))\n```\n\nOutput:\n\n```\nUser(name='maya', age=29, role='viewer')\nmaya 29 viewer\nTrue\n```\n\nThree things you got for free: a constructor that took two\narguments and filled in the third from the default, a printable\nrepresentation that names every field, and equality based on field\nvalues rather than object identity.\n\n## Where AI specifically gets this wrong\n\nTwo patterns to flag in code Cursor writes you.\n\n**One: writing `__init__` by hand when a dataclass would do.** If\nyou read a class whose `__init__` does nothing but `self.x = x` for\neach parameter, that class should be a dataclass. AI sometimes\nforgets the decorator exists and writes the long-hand version\nbecause that's what most pre-2018 examples look like online.\n\n**Two: putting mutable defaults directly on dataclass fields.**\n`@dataclass` is *strict* about this and refuses to let you write\n`items: list = []`. We'll cover the right shape (`field(default_factory=list)`)\nin the next read step. AI has been known to write the broken shape\nand then add a comment that says \"TODO: figure out why this errors.\"\nIt's a fixable error, not a mystery.\n\nRun the editor. Three lines of free behavior — `print`, `==`,\nfield access — all from a five-line declaration.",
+          "cta": "Got it",
+          "code": "from dataclasses import dataclass\n\n@dataclass\nclass User:\n    name: str\n    age: int\n    role: str = \"viewer\"\n\nu = User(\"maya\", 29)\nprint(u)\nprint(u.name, u.age, u.role)\nprint(u == User(\"maya\", 29))\n",
+          "runnable": true
+        },
+        {
+          "type": "mc",
+          "id": "classes-basics/dataclasses/s02-02-which-decorator",
+          "xp": 2,
+          "hint": [
+            {
+              "level": 1,
+              "body": "The decorator generates `__init__`, `__repr__`, and `__eq__`. The third one is the one this question is testing.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "`@dataclass` makes `==` compare field values, not memory addresses. Two `Order(1, 49.99)` instances with the same default for `status` are equal.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 50,
+          "concept": "dataclass-decorator-purpose",
+          "prompt": "This dataclass has three fields. Two `Order` instances are created\nwith the same values. What does `print(a == b)` produce, and why?\n",
+          "options": [
+            {
+              "id": "a",
+              "label": "`False` — they're different objects in memory",
+              "explain": "Without `@dataclass`, that's exactly what would happen — Python's default `==` checks identity. The decorator generates a value-based `__eq__` instead."
+            },
+            {
+              "id": "b",
+              "label": "`True` — `@dataclass` generates `__eq__` based on field values"
+            },
+            {
+              "id": "c",
+              "label": "`TypeError` — Python can't compare custom classes by default",
+              "explain": "Comparing two custom objects with `==` doesn't raise — it just returns `False` by default. The decorator changes the behavior to value comparison."
+            },
+            {
+              "id": "d",
+              "label": "`None` — `==` returns nothing for dataclasses",
+              "explain": "`==` always returns a bool (or `NotImplemented`). It never returns `None`."
+            }
+          ],
+          "answerIds": [
+            "b"
+          ],
+          "shuffle": false,
+          "code": "from dataclasses import dataclass\n\n@dataclass\nclass Order:\n    id: int\n    total: float\n    status: str = \"pending\"\n\na = Order(1, 49.99)\nb = Order(1, 49.99)\nprint(a == b)\n",
+          "runnable": true
+        },
+        {
+          "type": "read",
+          "id": "classes-basics/dataclasses/s03-03-defaults-and-factories",
+          "xp": 2,
+          "hint": [],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 130,
+          "concept": "default-factory-and-frozen",
+          "body": "# `default_factory` and `frozen=True` — the two flags AI uses constantly\n\nThe intro covered the basic dataclass. Two more shapes you'll see in\nreal AI code, both of which solve real problems.\n\n## `default_factory` — the right way to default to an empty list\n\nTry this:\n\n```python\n@dataclass\nclass Cart:\n    items: list = []\n```\n\nPython raises a `ValueError` at class-definition time:\n\n```\nValueError: mutable default <class 'list'> for field items is not allowed\n```\n\nThis is the \"shared mutable\" footgun from the previous lesson.\nDataclasses refuse to let you make that mistake — if every `Cart()`\nshared the same `items` list, you'd hate your life.\n\nThe fix is `field(default_factory=...)`. You import `field` from the\nsame module and pass a *callable* that gets called to produce a\nfresh default each time:\n\n```python\nfrom dataclasses import dataclass, field\n\n@dataclass\nclass Cart:\n    owner: str\n    items: list = field(default_factory=list)\n```\n\n`list` (the type itself, no parens) is callable — calling it\nreturns a new empty list. Every `Cart()` call produces its own.\nThis is the shape AI ships when it remembers — and you'll see it\nconstantly in any class that holds a list, dict, or set.\n\nFor a non-empty default, pass a lambda:\n\n```python\nitems: list = field(default_factory=lambda: [\"welcome\"])\n```\n\nFor a dict:\n\n```python\nconfig: dict = field(default_factory=dict)\n```\n\nAnywhere you'd reach for `[]`, `{}`, or `set()` as a dataclass\ndefault, the right shape is `field(default_factory=...)`.\n\n## `frozen=True` — make the dataclass immutable\n\nBy default, dataclass fields are mutable — `user.age = 30`\nreassigns the attribute and Python is fine with it. Sometimes you\nwant the opposite: a value object that, once constructed, can never\nchange. `frozen=True` does that:\n\n```python\n@dataclass(frozen=True)\nclass Coord:\n    x: int\n    y: int\n\norigin = Coord(0, 0)\norigin.x = 5    # raises FrozenInstanceError\n```\n\nTwo things this buys you. **Bug prevention** — code that should\nnever be modifying these objects can't, by accident. **Hashability**\n— frozen dataclasses are hashable, which means you can use them as\ndict keys or put them in sets. Mutable dataclasses can't.\n\nWhen AI writes a dataclass for \"a value that represents a point in\ntime / a coordinate / an identifier / a config snapshot\", reach for\n`frozen=True`. When the class is genuinely a workspace that gets\nmutated (a cart, a buffer, a queue), leave it mutable.\n\n## A worked example\n\nThe editor on the right has both flags in action:\n\n```python\nfrom dataclasses import dataclass, field\n\n@dataclass\nclass Cart:\n    owner: str\n    items: list = field(default_factory=list)\n\nalex = Cart(\"alex\")\nsam = Cart(\"sam\")\nalex.items.append(\"apple\")\nsam.items.append(\"bread\")\n\nprint(alex)   # Cart(owner='alex', items=['apple'])\nprint(sam)    # Cart(owner='sam', items=['bread'])\n```\n\nEach cart gets its own list. The `default_factory=list` runs *per\ninstance*, generating a fresh empty list each time.\n\n```python\n@dataclass(frozen=True)\nclass Coord:\n    x: int\n    y: int\n\norigin = Coord(0, 0)\norigin.x = 5    # blocked\n```\n\nThe assignment fails with a `FrozenInstanceError`, which the example\ncatches and prints. You can't accidentally mutate a frozen\ndataclass.\n\n## Where AI specifically gets this wrong\n\nTwo patterns to flag.\n\n**One: `items: list = []` — the literal-mutable-default shape.**\nThis raises at class-definition time, but Cursor writes it anyway,\nsees the error, and sometimes \"fixes\" it by removing the default\nentirely (forcing the caller to pass an empty list every time —\nugly). The right fix is `field(default_factory=list)`. Always.\n\n**Two: forgetting `frozen=True` on identifier-like dataclasses.**\nIf you read a `UserId`, `OrderId`, `Coord`, `RequestKey`, or any\n\"this is a value, not a workspace\" dataclass that *doesn't* have\n`frozen=True`, that's a soft bug — code can mutate the value out\nfrom under you. Add the flag.\n\nRun the editor. Two carts with separate lists, one frozen\ncoordinate that refuses to be mutated.",
+          "cta": "Got it",
+          "code": "from dataclasses import dataclass, field\n\n@dataclass\nclass Cart:\n    owner: str\n    items: list = field(default_factory=list)\n\nalex = Cart(\"alex\")\nsam = Cart(\"sam\")\nalex.items.append(\"apple\")\nsam.items.append(\"bread\")\n\nprint(alex)\nprint(sam)\n\n@dataclass(frozen=True)\nclass Coord:\n    x: int\n    y: int\n\norigin = Coord(0, 0)\nprint(origin)\ntry:\n    origin.x = 5\nexcept Exception as err:\n    print(f\"blocked: {type(err).__name__}\")\n",
+          "runnable": true
+        },
+        {
+          "type": "predict",
+          "id": "classes-basics/dataclasses/s04-04-predict-the-repr",
+          "xp": 3,
+          "hint": [
+            {
+              "level": 1,
+              "body": "The format is `ClassName(field1=value1, field2=value2)`. String values are shown in single quotes (Python `repr`). Booleans aren't quoted.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Output: `Task(title='ship the docs', done=False)`. The quotes around `'ship the docs'` come from the auto-generated `__repr__` calling `repr(...)` on each field.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 65,
+          "concept": "dataclass-repr-format",
+          "code": "from dataclasses import dataclass\n\n@dataclass\nclass Task:\n    title: str\n    done: bool = False\n\nt = Task(\"ship the docs\")\nprint(t)\n",
+          "prompt": "The dataclass auto-generates a `__repr__` that prints the class name\nfollowed by every field with its name and value. What does\n`print(t)` produce?\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "Task(title='ship the docs', done=False)",
+            "normalize": "collapse-trailing-newline"
+          }
+        },
+        {
+          "type": "fill",
+          "id": "classes-basics/dataclasses/s05-05-fill-the-decorator",
+          "xp": 3,
+          "hint": [
+            {
+              "level": 1,
+              "body": "It's the same name as the module it comes from. Lowercase, one word.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "It's `dataclass` — `@dataclass` on the line above the class definition. The `@` is already there for you.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 55,
+          "concept": "dataclass-decorator-name",
+          "prompt": "Cursor wrote a class definition but forgot the decorator that turns\nit into a dataclass. Without it, the field-only shape doesn't get an\n`__init__`, and the call below would fail with\n`TypeError: Order() takes no arguments`.\n\nFill in the decorator name on line 3 (no `@` — just the word).\n\nDecorator: ___\n",
+          "code": "from dataclasses import dataclass\n\n@___\nclass Order:\n    id: int\n    total: float\n\nprint(Order(1, 49.99))\n",
+          "blanks": [
+            {
+              "id": "decorator",
+              "accept": [
+                "dataclass"
+              ],
+              "caseSensitive": true,
+              "normalize": "trim"
+            }
+          ]
+        },
+        {
+          "type": "fix",
+          "id": "classes-basics/dataclasses/s06-06-fix-the-default-list",
+          "xp": 4,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Replace the literal `[]` with a call to `field(...)` that uses `default_factory`. Pass `list` (the type — no parens) as the factory.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Change line 6 to `messages: list = field(default_factory=list)`. The factory runs once per instance, producing a fresh empty list each time.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 95,
+          "concept": "default-factory-fix",
+          "brokenCode": "from dataclasses import dataclass, field\n\n@dataclass\nclass Inbox:\n    owner: str\n    messages: list = []\n\nprint(Inbox(\"maya\"))\nprint(Inbox(\"marcus\"))\n",
+          "prompt": "Claude wrote a dataclass with a literal `[]` as a default. The class\ndefinition itself raises `ValueError: mutable default ...`. The fix\nis `field(default_factory=list)`.\n\n`field` is already imported on line 1. Replace the broken default on\nline 6 so the class defines successfully and the print at the bottom\nshows an empty list per instance.\n\nExpected output:\n```\nInbox(owner='maya', messages=[])\nInbox(owner='marcus', messages=[])\n```\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "Inbox(owner='maya', messages=[])\nInbox(owner='marcus', messages=[])\n",
+            "normalize": "collapse-trailing-newline"
+          },
+          "bugLines": [
+            6
+          ],
+          "revealAfter": 4
+        },
+        {
+          "type": "fix",
+          "id": "classes-basics/dataclasses/s07-07-fix-the-frozen-mutation",
+          "xp": 4,
+          "hint": [
+            {
+              "level": 1,
+              "body": "The decorator takes a keyword argument. Add `(frozen=True)` after `@dataclass`.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Change line 3 to `@dataclass(frozen=True)`. Now any attempt to mutate a `Coord` raises `FrozenInstanceError`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 90,
+          "concept": "frozen-vs-mutable",
+          "brokenCode": "from dataclasses import dataclass\n\n@dataclass\nclass Coord:\n    x: int\n    y: int\n\norigin = Coord(0, 0)\ntry:\n    origin.x = 999\n    print(f\"unblocked: x is now {origin.x}\")\nexcept Exception as err:\n    print(f\"blocked: {type(err).__name__}\")\n",
+          "prompt": "AI wrote a `Coord` dataclass meant to be a value object — never\nmutated after construction. The decorator is plain `@dataclass`,\nwhich leaves it mutable, so the line `origin.x = 999` silently\nsucceeds when it shouldn't.\n\nAdd `frozen=True` to the decorator on line 3 so the assignment\nraises `FrozenInstanceError`. The except block catches it and prints\nthe class name.\n\nExpected output:\n```\nblocked: FrozenInstanceError\n```\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "blocked: FrozenInstanceError",
+            "normalize": "collapse-trailing-newline"
+          },
+          "bugLines": [
+            3
+          ],
+          "revealAfter": 4
+        },
+        {
+          "type": "write",
+          "id": "classes-basics/dataclasses/s08-08-write-task-dataclass",
+          "xp": 5,
+          "hint": [
+            {
+              "level": 1,
+              "body": "`@dataclass` above the class. Three fields: `title: str`, `priority: int = 1`, `tags: list = field(default_factory=list)`. The decorator generates `__init__` and `__repr__`.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Required field first, defaulted ones after. `tags: list = field(default_factory=list)` is the right shape — never `tags: list = []`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 110,
+          "concept": "write-dataclass",
+          "prompt": "Write a `Task` dataclass with three fields:\n\n- `title: str` (required)\n- `priority: int` with default `1`\n- `tags: list` with `field(default_factory=list)`\n\nUse the `@dataclass` decorator. Don't write `__init__` by hand —\nlet the decorator generate it.\n\nThen create two tasks, append a tag to one of them, and print both\nto verify the lists are independent.\n\nExpected output:\n```\nTask(title='ship', priority=1, tags=['urgent'])\nTask(title='clean inbox', priority=3, tags=[])\n```\n",
+          "starter": "from dataclasses import dataclass, field\n\n# define Task below\n\na = Task(\"ship\")\nb = Task(\"clean inbox\", priority=3)\n\na.tags.append(\"urgent\")\n\nprint(a)\nprint(b)\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "Task(title='ship', priority=1, tags=['urgent'])\nTask(title='clean inbox', priority=3, tags=[])\n",
+            "normalize": "collapse-trailing-newline"
+          },
+          "solution": "from dataclasses import dataclass, field\n\n@dataclass\nclass Task:\n    title: str\n    priority: int = 1\n    tags: list = field(default_factory=list)\n\na = Task(\"ship\")\nb = Task(\"clean inbox\", priority=3)\n\na.tags.append(\"urgent\")\n\nprint(a)\nprint(b)\n",
+          "hiddenTests": []
+        },
+        {
+          "type": "checkpoint",
+          "id": "classes-basics/dataclasses/s09-09-checkpoint",
+          "xp": 8,
+          "hint": [
+            {
+              "level": 1,
+              "body": "`@dataclass(frozen=True)` for `Address`, plain `@dataclass` for `Customer`. `orders: list = field(default_factory=list)` for the per-instance list.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "If the customers' `orders` lists end up showing both `'#1'` and `'#2'` on each, you used a literal `[]` somewhere. Replace it with `field(default_factory=list)`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "check",
+          "estSeconds": 150,
+          "concept": "dataclass-checkpoint",
+          "prompt": "Last drill. Build two dataclasses that fit together:\n\n1. `Address` — a `frozen=True` dataclass with two fields:\n   - `street: str`\n   - `city: str`\n\n2. `Customer` — a regular `@dataclass` with three fields:\n   - `name: str`\n   - `address: Address` (a nested dataclass — required)\n   - `orders: list` defaulting to `field(default_factory=list)`\n\nThen create two customers sharing the same address (an `Address` is\nimmutable, so sharing is fine), append an order to each, and print\nboth.\n\nExpected output:\n```\nCustomer(name='maya', address=Address(street='1 main st', city='oak'), orders=['#1'])\nCustomer(name='marcus', address=Address(street='1 main st', city='oak'), orders=['#2'])\n```\n",
+          "starter": "from dataclasses import dataclass, field\n\n# define Address (frozen) and Customer below\n\nhq = Address(\"1 main st\", \"oak\")\nmaya = Customer(\"maya\", hq)\nmarcus = Customer(\"marcus\", hq)\n\nmaya.orders.append(\"#1\")\nmarcus.orders.append(\"#2\")\n\nprint(maya)\nprint(marcus)\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "Customer(name='maya', address=Address(street='1 main st', city='oak'), orders=['#1'])\nCustomer(name='marcus', address=Address(street='1 main st', city='oak'), orders=['#2'])\n",
+            "normalize": "collapse-trailing-newline"
+          },
+          "solution": "from dataclasses import dataclass, field\n\n@dataclass(frozen=True)\nclass Address:\n    street: str\n    city: str\n\n@dataclass\nclass Customer:\n    name: str\n    address: Address\n    orders: list = field(default_factory=list)\n\nhq = Address(\"1 main st\", \"oak\")\nmaya = Customer(\"maya\", hq)\nmarcus = Customer(\"marcus\", hq)\n\nmaya.orders.append(\"#1\")\nmarcus.orders.append(\"#2\")\n\nprint(maya)\nprint(marcus)\n",
+          "passThreshold": 0.66
+        }
+      ],
+      "xpTotal": 32
     }
   ],
-  "xpTotal": 64
+  "xpTotal": 96
 }

@@ -1,0 +1,60 @@
+xp: 5
+estSeconds: 110
+concept: write-dataclass
+prompt: |
+  Write a `Task` dataclass with three fields:
+
+  - `title: str` (required)
+  - `priority: int` with default `1`
+  - `tags: list` with `field(default_factory=list)`
+
+  Use the `@dataclass` decorator. Don't write `__init__` by hand —
+  let the decorator generate it.
+
+  Then create two tasks, append a tag to one of them, and print both
+  to verify the lists are independent.
+
+  Expected output:
+  ```
+  Task(title='ship', priority=1, tags=['urgent'])
+  Task(title='clean inbox', priority=3, tags=[])
+  ```
+starter: |
+  from dataclasses import dataclass, field
+
+  # define Task below
+
+  a = Task("ship")
+  b = Task("clean inbox", priority=3)
+
+  a.tags.append("urgent")
+
+  print(a)
+  print(b)
+grader:
+  kind: stdout-equality
+  expected: |
+    Task(title='ship', priority=1, tags=['urgent'])
+    Task(title='clean inbox', priority=3, tags=[])
+  normalize: collapse-trailing-newline
+solution: |
+  from dataclasses import dataclass, field
+
+  @dataclass
+  class Task:
+      title: str
+      priority: int = 1
+      tags: list = field(default_factory=list)
+
+  a = Task("ship")
+  b = Task("clean inbox", priority=3)
+
+  a.tags.append("urgent")
+
+  print(a)
+  print(b)
+hint:
+  - level: 1
+    body: "`@dataclass` above the class. Three fields: `title: str`, `priority: int = 1`, `tags: list = field(default_factory=list)`. The decorator generates `__init__` and `__repr__`."
+  - level: 2
+    body: "Required field first, defaulted ones after. `tags: list = field(default_factory=list)` is the right shape — never `tags: list = []`."

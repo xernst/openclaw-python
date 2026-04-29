@@ -1,0 +1,14 @@
+slug: dataclasses
+title: "@dataclass — the class shape AI ships in every modern Python project"
+estMinutes: 9
+prerequisites: []
+order:
+  - 01-intro.read.md
+  - 02-which-decorator.mc.yaml
+  - 03-defaults-and-factories.read.md
+  - 04-predict-the-repr.predict.yaml
+  - 05-fill-the-decorator.fill.yaml
+  - 06-fix-the-default-list.fix.yaml
+  - 07-fix-the-frozen-mutation.fix.yaml
+  - 08-write-task-dataclass.write.yaml
+  - 09-checkpoint.checkpoint.yaml

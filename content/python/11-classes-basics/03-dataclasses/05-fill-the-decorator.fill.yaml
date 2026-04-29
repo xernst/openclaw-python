@@ -1,0 +1,31 @@
+xp: 3
+estSeconds: 55
+concept: dataclass-decorator-name
+prompt: |
+  Cursor wrote a class definition but forgot the decorator that turns
+  it into a dataclass. Without it, the field-only shape doesn't get an
+  `__init__`, and the call below would fail with
+  `TypeError: Order() takes no arguments`.
+
+  Fill in the decorator name on line 3 (no `@` — just the word).
+
+  Decorator: ___
+code: |
+  from dataclasses import dataclass
+
+  @___
+  class Order:
+      id: int
+      total: float
+
+  print(Order(1, 49.99))
+blanks:
+  - id: decorator
+    accept:
+      - dataclass
+    caseSensitive: true
+hint:
+  - level: 1
+    body: "It's the same name as the module it comes from. Lowercase, one word."
+  - level: 2
+    body: "It's `dataclass` — `@dataclass` on the line above the class definition. The `@` is already there for you."

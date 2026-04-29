@@ -1,0 +1,41 @@
+xp: 4
+estSeconds: 95
+concept: default-factory-fix
+prompt: |
+  Claude wrote a dataclass with a literal `[]` as a default. The class
+  definition itself raises `ValueError: mutable default ...`. The fix
+  is `field(default_factory=list)`.
+
+  `field` is already imported on line 1. Replace the broken default on
+  line 6 so the class defines successfully and the print at the bottom
+  shows an empty list per instance.
+
+  Expected output:
+  ```
+  Inbox(owner='maya', messages=[])
+  Inbox(owner='marcus', messages=[])
+  ```
+brokenCode: |
+  from dataclasses import dataclass, field
+
+  @dataclass
+  class Inbox:
+      owner: str
+      messages: list = []
+
+  print(Inbox("maya"))
+  print(Inbox("marcus"))
+bugLines:
+  - 6
+grader:
+  kind: stdout-equality
+  expected: |
+    Inbox(owner='maya', messages=[])
+    Inbox(owner='marcus', messages=[])
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "Replace the literal `[]` with a call to `field(...)` that uses `default_factory`. Pass `list` (the type — no parens) as the factory."
+  - level: 2
+    body: "Change line 6 to `messages: list = field(default_factory=list)`. The factory runs once per instance, producing a fresh empty list each time."
+revealAfter: 4

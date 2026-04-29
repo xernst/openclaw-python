@@ -1,0 +1,26 @@
+xp: 3
+estSeconds: 65
+concept: dataclass-repr-format
+code: |
+  from dataclasses import dataclass
+
+  @dataclass
+  class Task:
+      title: str
+      done: bool = False
+
+  t = Task("ship the docs")
+  print(t)
+prompt: |
+  The dataclass auto-generates a `__repr__` that prints the class name
+  followed by every field with its name and value. What does
+  `print(t)` produce?
+grader:
+  kind: stdout-equality
+  expected: "Task(title='ship the docs', done=False)"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "The format is `ClassName(field1=value1, field2=value2)`. String values are shown in single quotes (Python `repr`). Booleans aren't quoted."
+  - level: 2
+    body: "Output: `Task(title='ship the docs', done=False)`. The quotes around `'ship the docs'` come from the auto-generated `__repr__` calling `repr(...)` on each field."

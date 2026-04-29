@@ -1,0 +1,43 @@
+xp: 4
+estSeconds: 90
+concept: frozen-vs-mutable
+prompt: |
+  AI wrote a `Coord` dataclass meant to be a value object — never
+  mutated after construction. The decorator is plain `@dataclass`,
+  which leaves it mutable, so the line `origin.x = 999` silently
+  succeeds when it shouldn't.
+
+  Add `frozen=True` to the decorator on line 3 so the assignment
+  raises `FrozenInstanceError`. The except block catches it and prints
+  the class name.
+
+  Expected output:
+  ```
+  blocked: FrozenInstanceError
+  ```
+brokenCode: |
+  from dataclasses import dataclass
+
+  @dataclass
+  class Coord:
+      x: int
+      y: int
+
+  origin = Coord(0, 0)
+  try:
+      origin.x = 999
+      print(f"unblocked: x is now {origin.x}")
+  except Exception as err:
+      print(f"blocked: {type(err).__name__}")
+bugLines:
+  - 3
+grader:
+  kind: stdout-equality
+  expected: "blocked: FrozenInstanceError"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "The decorator takes a keyword argument. Add `(frozen=True)` after `@dataclass`."
+  - level: 2
+    body: "Change line 3 to `@dataclass(frozen=True)`. Now any attempt to mutate a `Coord` raises `FrozenInstanceError`."
+revealAfter: 4
