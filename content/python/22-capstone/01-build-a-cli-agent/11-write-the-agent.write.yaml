@@ -1,0 +1,97 @@
+xp: 7
+estSeconds: 200
+concept: full-agent-loop
+prompt: |
+  Build the full agent loop. The starter has:
+
+  - `fake_llm(messages)` — returns hardcoded responses based on history
+    length (1 message → tool_use, 3 messages → end_turn).
+  - `run_tool(name, args)` — handles tool dispatch.
+  - `MAX_TURNS = 5` — the loop guardrail.
+  - `messages = [...]` — initial user prompt.
+
+  Write the agent loop that:
+
+  1. Runs at most `MAX_TURNS` iterations.
+  2. Calls `fake_llm(messages)`.
+  3. If `stop_reason == "end_turn"`, prints the text and breaks.
+  4. If `stop_reason == "tool_use"`, runs the tool, then appends
+     **two** messages — the assistant's tool_use, and a user message
+     wrapping the tool_result.
+
+  Expected output:
+  ```
+  done. todos: write tests
+  ```
+starter: |
+  def fake_llm(messages):
+      if len(messages) == 1:
+          return {
+              "stop_reason": "tool_use",
+              "content": [{
+                  "type": "tool_use", "id": "tu_1",
+                  "name": "read_file",
+                  "input": {"path": "todo.txt"},
+              }],
+          }
+      return {
+          "stop_reason": "end_turn",
+          "content": [{"type": "text", "text": "done. todos: write tests"}],
+      }
+
+  def run_tool(name, args):
+      if name == "read_file":
+          return "write tests"
+      return "unknown tool"
+
+  MAX_TURNS = 5
+  messages = [{"role": "user", "content": "what's on my todo?"}]
+
+  # write the agent loop below
+
+grader:
+  kind: stdout-equality
+  expected: "done. todos: write tests"
+  normalize: collapse-trailing-newline
+solution: |
+  def fake_llm(messages):
+      if len(messages) == 1:
+          return {
+              "stop_reason": "tool_use",
+              "content": [{
+                  "type": "tool_use", "id": "tu_1",
+                  "name": "read_file",
+                  "input": {"path": "todo.txt"},
+              }],
+          }
+      return {
+          "stop_reason": "end_turn",
+          "content": [{"type": "text", "text": "done. todos: write tests"}],
+      }
+
+  def run_tool(name, args):
+      if name == "read_file":
+          return "write tests"
+      return "unknown tool"
+
+  MAX_TURNS = 5
+  messages = [{"role": "user", "content": "what's on my todo?"}]
+
+  for _ in range(MAX_TURNS):
+      response = fake_llm(messages)
+      if response["stop_reason"] == "end_turn":
+          print(response["content"][0]["text"])
+          break
+      block = response["content"][0]
+      result = run_tool(block["name"], block["input"])
+      messages.append({"role": "assistant", "content": response["content"]})
+      messages.append({"role": "user", "content": [
+          {"type": "tool_result",
+           "tool_use_id": block["id"],
+           "content": result},
+      ]})
+hint:
+  - level: 1
+    body: "The loop is `for _ in range(MAX_TURNS):`. Inside: call `fake_llm`, branch on stop_reason. On `end_turn`, print and break. On `tool_use`, run the tool and append both messages."
+  - level: 2
+    body: "Don't forget BOTH appends on the tool path. Assistant message is `{\"role\": \"assistant\", \"content\": response[\"content\"]}`. Tool result is wrapped in a user-role message: `{\"role\": \"user\", \"content\": [{\"type\": \"tool_result\", \"tool_use_id\": block[\"id\"], \"content\": result}]}`."

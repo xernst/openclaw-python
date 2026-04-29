@@ -1,0 +1,45 @@
+xp: 4
+estSeconds: 100
+concept: message-append-pair
+prompt: |
+  Claude wrote a tool round-trip that drops the assistant's tool_use
+  message before sending the next request. The script counts how many
+  messages should be in the history after one tool call (it should be 3:
+  user prompt, assistant tool_use, user tool_result). Right now it's 2.
+  Add the missing append on line 14 so the count is exactly 3.
+
+  Expected output:
+  ```
+  3
+  ```
+brokenCode: |
+  response = {
+      "stop_reason": "tool_use",
+      "content": [{
+          "type": "tool_use", "id": "tu_1",
+          "name": "ping", "input": {},
+      }],
+  }
+  block = response["content"][0]
+  tool_result = "pong"
+
+  messages = [{"role": "user", "content": "ping"}]
+
+  # missing: append the assistant's tool_use message here
+  messages.append({"role": "user", "content": [
+      {"type": "tool_result", "tool_use_id": block["id"], "content": tool_result},
+  ]})
+
+  print(len(messages))
+bugLines:
+  - 13
+grader:
+  kind: stdout-equality
+  expected: "3"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "On a tool round-trip, you append two messages: the assistant's tool_use AND the user's tool_result. The first one is missing."
+  - level: 2
+    body: "Before the existing append, add: `messages.append({\"role\": \"assistant\", \"content\": response[\"content\"]})`."
+revealAfter: 5

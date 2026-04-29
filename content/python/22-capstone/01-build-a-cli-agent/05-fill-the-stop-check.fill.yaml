@@ -1,0 +1,30 @@
+xp: 3
+estSeconds: 60
+concept: end-turn-stop-reason
+prompt: |
+  Cursor wrote a loop body but the stop-condition check is missing the
+  string it should compare against. Fill in the value — the stop
+  reason that means "the LLM is done; show the answer."
+
+  Stop reason value (string, no quotes — just the word): ___
+code: |
+  def fake_llm():
+      return {"stop_reason": "end_turn",
+              "content": [{"type": "text", "text": "done"}]}
+
+  def main():
+      response = fake_llm()
+      if response["stop_reason"] == "___":
+          print(response["content"][0]["text"])
+
+  main()
+blanks:
+  - id: stop
+    accept:
+      - end_turn
+    caseSensitive: true
+hint:
+  - level: 1
+    body: "Two stop reasons matter inside the loop: one for tool calls, one for the final answer. You want the one that means 'finished.'"
+  - level: 2
+    body: "It's `end_turn`. The check becomes `response[\"stop_reason\"] == \"end_turn\"`."

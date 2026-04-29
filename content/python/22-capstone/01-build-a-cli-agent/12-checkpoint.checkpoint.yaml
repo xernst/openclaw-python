@@ -1,0 +1,127 @@
+xp: 10
+estSeconds: 180
+concept: capstone-recap
+prompt: |
+  Last one. The starter has a complete agent — fake LLM, tool registry,
+  the loop, and a `log_lines` list for the trace. The loop is wired to
+  exit after the LLM returns `end_turn`. Right now the script prints
+  the final answer but doesn't log a single thing — `log_lines` ends
+  empty.
+
+  Add **two** `log_lines.append(...)` calls inside the loop so that:
+
+  1. After every LLM response, you append a JSON string of
+     `{"turn": turn, "stop_reason": response["stop_reason"]}`.
+  2. After every successful tool call, you append a JSON string of
+     `{"turn": turn, "tool": block["name"], "result": result}`.
+
+  Then the script prints the count of log entries.
+
+  Expected output:
+  ```
+  done. todos: write tests
+  log entries: 3
+  ```
+starter: |
+  import json
+
+  def fake_llm(messages):
+      if len(messages) == 1:
+          return {
+              "stop_reason": "tool_use",
+              "content": [{
+                  "type": "tool_use", "id": "tu_1",
+                  "name": "read_file",
+                  "input": {"path": "todo.txt"},
+              }],
+          }
+      return {
+          "stop_reason": "end_turn",
+          "content": [{"type": "text", "text": "done. todos: write tests"}],
+      }
+
+  def run_tool(name, args):
+      if name == "read_file":
+          return "write tests"
+      return "unknown tool"
+
+  MAX_TURNS = 5
+  messages = [{"role": "user", "content": "what's on my todo?"}]
+  log_lines = []
+
+  for turn in range(MAX_TURNS):
+      response = fake_llm(messages)
+      # add log_lines.append for the response here
+
+      if response["stop_reason"] == "end_turn":
+          print(response["content"][0]["text"])
+          break
+      block = response["content"][0]
+      result = run_tool(block["name"], block["input"])
+      # add log_lines.append for the tool call here
+
+      messages.append({"role": "assistant", "content": response["content"]})
+      messages.append({"role": "user", "content": [
+          {"type": "tool_result",
+           "tool_use_id": block["id"],
+           "content": result},
+      ]})
+
+  print(f"log entries: {len(log_lines)}")
+grader:
+  kind: stdout-equality
+  expected: |
+    done. todos: write tests
+    log entries: 3
+  normalize: collapse-trailing-newline
+solution: |
+  import json
+
+  def fake_llm(messages):
+      if len(messages) == 1:
+          return {
+              "stop_reason": "tool_use",
+              "content": [{
+                  "type": "tool_use", "id": "tu_1",
+                  "name": "read_file",
+                  "input": {"path": "todo.txt"},
+              }],
+          }
+      return {
+          "stop_reason": "end_turn",
+          "content": [{"type": "text", "text": "done. todos: write tests"}],
+      }
+
+  def run_tool(name, args):
+      if name == "read_file":
+          return "write tests"
+      return "unknown tool"
+
+  MAX_TURNS = 5
+  messages = [{"role": "user", "content": "what's on my todo?"}]
+  log_lines = []
+
+  for turn in range(MAX_TURNS):
+      response = fake_llm(messages)
+      log_lines.append(json.dumps(
+          {"turn": turn, "stop_reason": response["stop_reason"]}
+      ))
+
+      if response["stop_reason"] == "end_turn":
+          print(response["content"][0]["text"])
+          break
+      block = response["content"][0]
+      result = run_tool(block["name"], block["input"])
+      log_lines.append(json.dumps(
+          {"turn": turn, "tool": block["name"], "result": result}
+      ))
+
+      messages.append({"role": "assistant", "content": response["content"]})
+      messages.append({"role": "user", "content": [
+          {"type": "tool_result",
+           "tool_use_id": block["id"],
+           "content": result},
+      ]})
+
+  print(f"log entries: {len(log_lines)}")
+passThreshold: 0.66

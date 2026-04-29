@@ -1,0 +1,6 @@
+number: 22
+slug: capstone
+title: "Capstone — a small CLI agent"
+blurb: "Wire it all together. Read a prompt, call an LLM, run tools, loop until done, log every turn. The agent is small; the patterns scale to whatever you build next."
+lessons:
+  - 01-build-a-cli-agent

@@ -1,0 +1,38 @@
+xp: 2
+estSeconds: 55
+concept: agent-architecture-pieces
+code: |
+  # the four core ingredients of a working agent.
+  ingredients = {
+      "llm_call": True,
+      "tool_registry": True,
+      "loop": True,
+      "stop_condition": False,   # missing
+  }
+
+  for k, v in ingredients.items():
+      print(f"{k}: {'ok' if v else 'missing'}")
+prompt: |
+  Cursor scaffolded an agent and asked you to review it. Three of the
+  four core pieces are in place; one is missing. Without that piece,
+  the agent runs forever or stops at the wrong moment. Which piece is
+  missing?
+options:
+  - id: a
+    label: "The LLM call"
+    explain: "It's listed as `True` in the dict — already in place."
+  - id: b
+    label: "The tool registry"
+    explain: "Also `True`. The agent knows which tools exist."
+  - id: c
+    label: "The loop"
+    explain: "Also `True`. The skeleton has a `while`."
+  - id: d
+    label: "The stop condition"
+answerIds:
+  - d
+hint:
+  - level: 1
+    body: "Scan the dict for the only `False`."
+  - level: 2
+    body: "It's `stop_condition`. An agent without one will spin or terminate prematurely. Usually checks `stop_reason == \"end_turn\"` or a max-turns guard."

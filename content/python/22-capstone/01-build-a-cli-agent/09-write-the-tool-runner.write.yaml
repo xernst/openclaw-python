@@ -1,0 +1,47 @@
+xp: 5
+estSeconds: 150
+concept: build-tool-registry
+prompt: |
+  Build the tool runner. The starter has a `tools` dict mapping tool
+  names to functions. Write a function `run_tool(name, args)` that:
+
+  - Returns `"unknown tool"` if `name` is not in `tools`.
+  - Otherwise calls `tools[name](args)` and returns the result.
+
+  Then call `run_tool("read_file", {"path": "todo.txt"})` and print
+  the result.
+
+  Expected output:
+  ```
+  contents of todo.txt
+  ```
+starter: |
+  tools = {
+      "read_file": lambda args: f"contents of {args['path']}",
+      "write_file": lambda args: "wrote file",
+  }
+
+  # define run_tool below
+
+  print(run_tool("read_file", {"path": "todo.txt"}))
+grader:
+  kind: stdout-equality
+  expected: "contents of todo.txt"
+  normalize: collapse-trailing-newline
+solution: |
+  tools = {
+      "read_file": lambda args: f"contents of {args['path']}",
+      "write_file": lambda args: "wrote file",
+  }
+
+  def run_tool(name, args):
+      if name not in tools:
+          return "unknown tool"
+      return tools[name](args)
+
+  print(run_tool("read_file", {"path": "todo.txt"}))
+hint:
+  - level: 1
+    body: "Two-line function. Guard for unknown name first, then call."
+  - level: 2
+    body: "`if name not in tools: return \"unknown tool\"` then `return tools[name](args)`."

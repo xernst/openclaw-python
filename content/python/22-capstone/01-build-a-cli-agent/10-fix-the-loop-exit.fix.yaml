@@ -1,0 +1,50 @@
+xp: 4
+estSeconds: 100
+concept: max-turns-guard
+prompt: |
+  Cursor wrote an agent loop without a max-turns guard. The fake LLM in
+  this snippet always returns `tool_use` (it never produces an
+  `end_turn`), so the loop would run forever in real life. Convert the
+  `while True` on line 14 into a bounded loop that stops after exactly
+  3 turns and prints the turn count.
+
+  Expected output:
+  ```
+  bailed after 3 turns
+  ```
+brokenCode: |
+  def fake_llm():
+      # always asks for another tool — simulates a runaway model
+      return {
+          "stop_reason": "tool_use",
+          "content": [{"type": "tool_use", "id": "tu",
+                       "name": "noop", "input": {}}],
+      }
+
+  def run_tool(name, args):
+      return "ok"
+
+  turn = 0
+  messages = []
+  while True:
+      response = fake_llm()
+      if response["stop_reason"] == "end_turn":
+          print(response["content"][0]["text"])
+          break
+      block = response["content"][0]
+      run_tool(block["name"], block["input"])
+      turn += 1
+
+  print(f"bailed after {turn} turns")
+bugLines:
+  - 14
+grader:
+  kind: stdout-equality
+  expected: "bailed after 3 turns"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "Replace `while True` with a `while turn < 3` so the loop bails after three turns regardless of stop_reason."
+  - level: 2
+    body: "Change line 14 to `while turn < 3:`. The print at the bottom will report `bailed after 3 turns`."
+revealAfter: 5

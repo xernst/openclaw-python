@@ -1,0 +1,47 @@
+xp: 3
+estSeconds: 80
+concept: agent-loop-output
+code: |
+  def fake_llm(messages):
+      if len(messages) == 1:
+          return {
+              "stop_reason": "tool_use",
+              "content": [{
+                  "type": "tool_use", "id": "tu_1",
+                  "name": "get_weather",
+                  "input": {"city": "boston"},
+              }],
+          }
+      return {
+          "stop_reason": "end_turn",
+          "content": [{"type": "text", "text": "boston: 52F and clear"}],
+      }
+
+  def get_weather(city):
+      return f"{city}: 52F and clear"
+
+  messages = [{"role": "user", "content": "weather in boston?"}]
+
+  for _ in range(3):
+      r = fake_llm(messages)
+      if r["stop_reason"] == "end_turn":
+          print(r["content"][0]["text"])
+          break
+      blk = r["content"][0]
+      result = get_weather(blk["input"]["city"])
+      messages.append({"role": "assistant", "content": r["content"]})
+      messages.append({"role": "user", "content": [
+          {"type": "tool_result", "tool_use_id": blk["id"], "content": result},
+      ]})
+prompt: |
+  Read the agent loop on the right. The fake LLM returns a `tool_use` on
+  the first turn and an `end_turn` on the second. What gets printed?
+grader:
+  kind: stdout-equality
+  expected: "boston: 52F and clear"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "Trace the two turns. Turn 1: tool_use, run tool, append. Turn 2: end_turn, print the text."
+  - level: 2
+    body: "On turn 2 the loop hits the `end_turn` branch and prints `r[\"content\"][0][\"text\"]`, which is `boston: 52F and clear`."

@@ -1,0 +1,17 @@
+slug: build-a-cli-agent
+title: "Wire it all together — a CLI agent in 12 steps"
+estMinutes: 14
+prerequisites: []
+order:
+  - 01-intro.read.md
+  - 02-which-piece-is-missing.mc.yaml
+  - 03-the-tool-loop.read.md
+  - 04-predict-the-final-answer.predict.yaml
+  - 05-fill-the-stop-check.fill.yaml
+  - 06-fix-the-tool-dispatch.fix.yaml
+  - 07-fix-the-message-append.fix.yaml
+  - 08-the-logging-pattern.read.md
+  - 09-write-the-tool-runner.write.yaml
+  - 10-fix-the-loop-exit.fix.yaml
+  - 11-write-the-agent.write.yaml
+  - 12-checkpoint.checkpoint.yaml

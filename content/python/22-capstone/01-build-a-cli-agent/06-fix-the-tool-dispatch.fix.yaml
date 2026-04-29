@@ -1,0 +1,35 @@
+xp: 4
+estSeconds: 90
+concept: tool-registry-dispatch
+prompt: |
+  Cursor wrote a tool dispatcher that looks up a tool by name and calls
+  it. The bug is on line 6 — when the tool isn't in the registry, the
+  dispatcher crashes with a `KeyError`. Fix it so an unknown tool name
+  returns the string `"unknown tool"` instead.
+
+  Expected output:
+  ```
+  unknown tool
+  ```
+brokenCode: |
+  registry = {
+      "read_file": lambda args: f"contents of {args['path']}",
+      "write_file": lambda args: "ok",
+  }
+
+  def dispatch(name, args):
+      return registry[name](args)
+
+  print(dispatch("send_email", {"to": "x"}))
+bugLines:
+  - 7
+grader:
+  kind: stdout-equality
+  expected: "unknown tool"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "Check whether `name` is in the registry before calling it. Return `\"unknown tool\"` when it isn't."
+  - level: 2
+    body: "Replace the body with `if name not in registry: return \"unknown tool\"` and then `return registry[name](args)`."
+revealAfter: 4
