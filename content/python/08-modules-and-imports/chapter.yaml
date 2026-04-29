@@ -1,0 +1,6 @@
+number: 8
+slug: modules-and-imports
+title: "Modules, imports, and why your venv hates you"
+blurb: "Half of `pip install x` failures are environment confusion, not Python bugs. Learn what `import` actually does, what a virtual env is for, and why your script can't find the package you just installed."
+lessons:
+  - 01-why-venv-hates-you

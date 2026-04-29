@@ -1,0 +1,19 @@
+xp: 3
+estSeconds: 60
+concept: import-evaluation
+code: |
+  from math import sqrt
+
+  result = sqrt(81)
+  print(result)
+prompt: |
+  This script imports just one thing from `math` and uses it. What does it print?
+grader:
+  kind: stdout-equality
+  expected: "9.0"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "`sqrt(81)` is the square root of 81. It returns a float, not an int."
+  - level: 2
+    body: "The square root of 81 is 9. Python's `math.sqrt` always returns a float, so it prints `9.0`."

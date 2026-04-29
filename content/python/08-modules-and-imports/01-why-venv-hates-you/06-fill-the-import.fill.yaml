@@ -1,0 +1,22 @@
+xp: 3
+estSeconds: 50
+concept: from-import-syntax
+prompt: |
+  Cursor wants to use `dumps` from the `json` module to turn a dict into a
+  string. The import line is missing a keyword. Fill in the blank.
+  ```python
+  ___ json import dumps
+
+  user = {"name": "{{user.name}}", "score": 92}
+  print(dumps(user))
+  ```
+blanks:
+  - id: keyword
+    accept:
+      - from
+    caseSensitive: true
+hint:
+  - level: 1
+    body: "The shape is `from <module> import <name>`. The first word is the missing one."
+  - level: 2
+    body: "It's `from`. `from json import dumps`."

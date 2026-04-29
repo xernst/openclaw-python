@@ -1,0 +1,25 @@
+xp: 4
+estSeconds: 75
+concept: import-name-mismatch
+prompt: |
+  Claude wrote this and it crashes with `NameError: name 'sqrt' is not defined`.
+  The `math` module is imported fine on line 1, but line 3 calls `sqrt(25)`
+  without saying *which* module it came from.
+
+  Fix line 3 so the script prints `5.0`.
+brokenCode: |
+  import math
+
+  print(sqrt(25))
+bugLines:
+  - 3
+grader:
+  kind: stdout-equality
+  expected: "5.0"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "`import math` makes the module available as `math.xxx`. To use `sqrt`, you have to prefix it."
+  - level: 2
+    body: "Change `sqrt(25)` to `math.sqrt(25)` on line 3."
+revealAfter: 4

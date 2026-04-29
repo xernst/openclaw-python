@@ -1,0 +1,29 @@
+xp: 2
+estSeconds: 40
+concept: import-syntax
+code: |
+  # Three ways AI imports things in Python:
+  #
+  #   import math              -> use as math.pi, math.sqrt(...)
+  #   from math import sqrt    -> use as sqrt(...) (no math. prefix)
+  #   import math as m         -> use as m.pi, m.sqrt(...)
+prompt: |
+  Cursor wants to use `pi` from the `math` module without the `math.` prefix
+  every time. Which import line lets you write just `pi`?
+options:
+  - id: a
+    label: "`import math`"
+    explain: "That works, but you'd have to write `math.pi`. The prompt asked for just `pi`."
+  - id: b
+    label: "`from math import pi`"
+  - id: c
+    label: "`import pi from math`"
+    explain: "That's not Python syntax. The keywords are `from` then `import`, in that order."
+  - id: d
+    label: "`include math.pi`"
+    explain: "Python doesn't have `include`. That's C++."
+answerIds:
+  - b
+hint:
+  - level: 1
+    body: "The shape is `from <module> import <name>`. Two keywords, in that order."

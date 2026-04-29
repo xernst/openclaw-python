@@ -1,0 +1,36 @@
+xp: 8
+estSeconds: 130
+concept: imports-recap
+prompt: |
+  One last thing. The starter script is supposed to use `pi` from the `math`
+  module to compute the area of a circle with radius 5. The import line and
+  the math line are both missing.
+
+  Finish lines 1 and 4 so the script prints `area: 78.53981633974483`.
+
+  Use `from math import pi` so you can write just `pi` without the `math.` prefix.
+starter: |
+  # import line goes here:
+
+  radius = 5
+  # area = pi * radius * radius
+  area =
+
+  print(f"area: {area}")
+grader:
+  kind: stdout-equality
+  expected: "area: 78.53981633974483"
+  normalize: collapse-trailing-newline
+solution: |
+  from math import pi
+
+  radius = 5
+  area = pi * radius * radius
+
+  print(f"area: {area}")
+passThreshold: 0.66
+hint:
+  - level: 1
+    body: "Two lines. Line 1 imports `pi` from `math`. Line 4 multiplies `pi * radius * radius`."
+  - level: 2
+    body: "`from math import pi` then `area = pi * radius * radius`."

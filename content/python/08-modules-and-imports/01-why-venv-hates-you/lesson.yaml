@@ -1,0 +1,13 @@
+slug: why-venv-hates-you
+title: "Imports, pip, and the venv that can't see your package"
+estMinutes: 8
+prerequisites: []
+order:
+  - 01-what-import-does.read.md
+  - 02-which-import-works.mc.yaml
+  - 03-from-import.read.md
+  - 04-predict-the-import.predict.yaml
+  - 05-venv-explained.read.md
+  - 06-fill-the-import.fill.yaml
+  - 07-fix-the-import.fix.yaml
+  - 08-checkpoint.checkpoint.yaml
