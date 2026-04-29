@@ -135,7 +135,8 @@
           "phase": "build",
           "estSeconds": 50,
           "concept": "return-keyword",
-          "prompt": "Cursor wrote a function that's supposed to hand back a greeting string,\nbut the keyword on line 2 is missing. Fill in the blank.\n```python\ndef greet(name):\n    ___ f\"hi, {name}\"\n\nprint(greet(\"{{user.name}}\"))\n```\n",
+          "prompt": "Look at the editor. Cursor wrote a function that's supposed to hand back a\ngreeting string, but the keyword on line 2 is missing.\n\nKeyword: ___\n",
+          "code": "def greet(name):\n    ___ f\"hi, {name}\"\n\nprint(greet(\"{{user.name}}\"))\n",
           "blanks": [
             {
               "id": "keyword",
@@ -405,7 +406,8 @@
           "phase": "build",
           "estSeconds": 55,
           "concept": "keyword-argument-syntax",
-          "prompt": "Cursor wrote a function with three parameters. The first call uses positional\narguments. The second call wants to skip the middle one and only set the\nlast one. Fill in the missing keyword name on line 6.\n```python\ndef log(message, level=\"info\", source=\"app\"):\n    print(f\"[{level}] {source}: {message}\")\n\nlog(\"started\", \"warn\", \"auth\")\n\nlog(\"started\", ___=\"auth\")\n```\n",
+          "prompt": "Cursor wrote a function with three parameters (see the editor). The first\ncall uses positional arguments. The second call wants to skip the middle\nparameter and only set the last one. Fill in the missing keyword name on\nline 6.\n\nKeyword: ___\n",
+          "code": "def log(message, level=\"info\", source=\"app\"):\n    print(f\"[{level}] {source}: {message}\")\n\nlog(\"started\", \"warn\", \"auth\")\n\nlog(\"started\", ___=\"auth\")\n",
           "blanks": [
             {
               "id": "keyword",

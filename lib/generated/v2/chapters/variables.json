@@ -124,7 +124,8 @@
           "phase": "build",
           "estSeconds": 50,
           "concept": "f-string-interpolation",
-          "prompt": "Cursor wrote this snippet for a greeting feature. The variable was defined on line 1.\nFill in the blank on line 2 so the print statement actually uses it.\n```python\nuser_name = \"Maya\"\nprint(f\"hi, {___}\")\n```\n",
+          "prompt": "Look at the editor on the right. Cursor wrote a greeting snippet — the\nvariable was defined on line 1, but the f-string on line 2 has a blank\nwhere the variable name should go.\n\nVariable name: ___\n",
+          "code": "user_name = \"Maya\"\nprint(f\"hi, {___}\")\n",
           "blanks": [
             {
               "id": "name",

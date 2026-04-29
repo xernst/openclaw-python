@@ -158,7 +158,8 @@
           "phase": "build",
           "estSeconds": 50,
           "concept": "dict-items-iteration",
-          "prompt": "Cursor wrote a loop that walks through a dict and prints each name and score.\nThe loop header is missing the second loop variable. Fill it in.\n```python\nscores = {\"maya\": 92, \"marcus\": 78}\nfor name, ___ in scores.items():\n    print(f\"{name}: {___}\")\n```\nBoth blanks take the same name.\n",
+          "prompt": "Cursor wrote a loop that walks through a dict and prints each name and\nscore. The loop header is missing the second loop variable, and the\nf-string on the next line uses the same name. Both blanks take the same\nword.\n\nVariable name (line 2): ___\nSame name in f-string (line 3): ___\n",
+          "code": "scores = {\"maya\": 92, \"marcus\": 78}\nfor name, ___ in scores.items():\n    print(f\"{name}: {___}\")\n",
           "blanks": [
             {
               "id": "var1",
@@ -442,7 +443,8 @@
           "phase": "build",
           "estSeconds": 55,
           "concept": "while-keyword",
-          "prompt": "Cursor wrote a loop that should run as long as `attempts` is less than `3`.\nThe loop keyword is missing. Fill it in.\n```python\nattempts = 0\n___ attempts < 3:\n    print(f\"attempt {attempts + 1}\")\n    attempts += 1\n```\n",
+          "prompt": "Cursor wrote a loop that should run as long as `attempts` is less than `3`.\nThe loop keyword is missing.\n\nKeyword: ___\n",
+          "code": "attempts = 0\n___ attempts < 3:\n    print(f\"attempt {attempts + 1}\")\n    attempts += 1\n",
           "blanks": [
             {
               "id": "keyword",

@@ -144,7 +144,8 @@
           "phase": "build",
           "estSeconds": 50,
           "concept": "from-import-syntax",
-          "prompt": "Cursor wants to use `dumps` from the `json` module to turn a dict into a\nstring. The import line is missing a keyword. Fill in the blank.\n```python\n___ json import dumps\n\nuser = {\"name\": \"{{user.name}}\", \"score\": 92}\nprint(dumps(user))\n```\n",
+          "prompt": "Cursor wants to use `dumps` from the `json` module to turn a dict into a\nstring. The import line is missing a keyword.\n\nKeyword: ___\n",
+          "code": "___ json import dumps\n\nuser = {\"name\": \"{{user.name}}\", \"score\": 92}\nprint(dumps(user))\n",
           "blanks": [
             {
               "id": "keyword",
@@ -352,7 +353,8 @@
           "phase": "build",
           "estSeconds": 55,
           "concept": "as-keyword",
-          "prompt": "Cursor wrote a data-science snippet and aliased `pandas` as `pd` — the\nindustry-standard rename. The keyword that does the renaming is missing\non line 1. Fill it in.\n```python\nimport pandas ___ pd\n\n# later in the file:\n# df = pd.DataFrame(rows)\n```\n",
+          "prompt": "Cursor wrote a data-science snippet and aliased `pandas` as `pd` — the\nindustry-standard rename. The keyword that does the renaming is missing\non line 1.\n\nKeyword (two letters): ___\n",
+          "code": "import pandas ___ pd\n\n# later in the file:\n# df = pd.DataFrame(rows)\n",
           "blanks": [
             {
               "id": "keyword",

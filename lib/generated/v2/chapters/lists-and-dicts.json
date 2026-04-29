@@ -130,7 +130,8 @@
           "phase": "build",
           "estSeconds": 50,
           "concept": "dict-key-access",
-          "prompt": "Cursor wrote a quick lookup of a user's email. It defined the dict on line 1\nand tried to reach for the email on line 2, but it left a blank where the\nkey should go. Fill it in.\n```python\nuser = {\"name\": \"{{user.name}}\", \"email\": \"you@example.com\", \"score\": 92}\nprint(user[___])\n```\nThe script should print the email address.\n",
+          "prompt": "Cursor wrote a quick lookup of a user's email (see the editor). It defined\nthe dict on line 1 and tried to reach for the email on line 2 — but it\nleft a blank where the key should go. The script should print the email\naddress.\n\nKey: ___\n",
+          "code": "user = {\"name\": \"{{user.name}}\", \"email\": \"you@example.com\", \"score\": 92}\nprint(user[___])\n",
           "blanks": [
             {
               "id": "key",
@@ -401,7 +402,8 @@
           "phase": "build",
           "estSeconds": 55,
           "concept": "comprehension-keyword",
-          "prompt": "Cursor wrote a comprehension that should walk through `words` and produce\na list of their lengths. The keyword on line 2 is missing. Fill it in.\n```python\nwords = [\"hi\", \"hello\", \"hey\"]\nlengths = [len(w) ___ w in words]\nprint(lengths)\n```\n",
+          "prompt": "Cursor wrote a comprehension that should walk through `words` and produce\na list of their lengths. The keyword on line 2 is missing.\n\nKeyword: ___\n",
+          "code": "words = [\"hi\", \"hello\", \"hey\"]\nlengths = [len(w) ___ w in words]\nprint(lengths)\n",
           "blanks": [
             {
               "id": "keyword",

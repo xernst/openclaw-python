@@ -130,7 +130,8 @@
           "phase": "build",
           "estSeconds": 50,
           "concept": "none-check",
-          "prompt": "Cursor wrote a function that should print `no result yet` when the value is\n`None` and `got it: <value>` otherwise. The condition on line 4 is missing\nthe right comparison.\n\nFill in the blank with the correct keyword (one word).\n```python\nresult = None\n\nif result ___ None:\n    print(\"no result yet\")\nelse:\n    print(f\"got it: {result}\")\n```\n",
+          "prompt": "Cursor wrote a function that should print `no result yet` when the value\nis `None` and `got it: <value>` otherwise. The condition on line 3 is\nmissing the right comparison.\n\nComparison keyword (one word): ___\n",
+          "code": "result = None\n\nif result ___ None:\n    print(\"no result yet\")\nelse:\n    print(f\"got it: {result}\")\n",
           "blanks": [
             {
               "id": "comparator",
@@ -370,7 +371,8 @@
           "phase": "build",
           "estSeconds": 55,
           "concept": "elif-keyword",
-          "prompt": "Cursor wrote a three-branch chain. The middle keyword is missing — it's the\none that means \"otherwise, check this.\" Fill it in.\n```python\nweather = \"rain\"\n\nif weather == \"sun\":\n    print(\"shades\")\n___ weather == \"rain\":\n    print(\"umbrella\")\nelse:\n    print(\"just go\")\n```\n",
+          "prompt": "Cursor wrote a three-branch chain (see the editor). The middle keyword is\nmissing — it's the one that means \"otherwise, check this.\"\n\nKeyword: ___\n",
+          "code": "weather = \"rain\"\n\nif weather == \"sun\":\n    print(\"shades\")\n___ weather == \"rain\":\n    print(\"umbrella\")\nelse:\n    print(\"just go\")\n",
           "blanks": [
             {
               "id": "keyword",
