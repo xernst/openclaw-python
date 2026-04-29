@@ -1,0 +1,29 @@
+xp: 5
+estSeconds: 90
+concept: list-append
+prompt: |
+  Start with the list `pets = ["luna", "moose"]`. Add `"biscuit"` to the end of
+  it using the `.append` method, then print the whole list.
+
+  Expected output:
+  ```
+  ['luna', 'moose', 'biscuit']
+  ```
+starter: |
+  pets = ["luna", "moose"]
+  # add "biscuit" to the end:
+
+  # print the list:
+grader:
+  kind: stdout-equality
+  expected: "['luna', 'moose', 'biscuit']"
+  normalize: collapse-trailing-newline
+solution: |
+  pets = ["luna", "moose"]
+  pets.append("biscuit")
+  print(pets)
+hint:
+  - level: 1
+    body: "`.append` is a method you call on the list itself. Two lines: one append, one print."
+  - level: 2
+    body: "`pets.append(\"biscuit\")` then `print(pets)`."

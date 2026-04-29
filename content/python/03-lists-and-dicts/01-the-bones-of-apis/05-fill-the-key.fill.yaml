@@ -1,0 +1,23 @@
+xp: 3
+estSeconds: 50
+concept: dict-key-access
+prompt: |
+  Cursor wrote a quick lookup of a user's email. It defined the dict on line 1
+  and tried to reach for the email on line 2, but it left a blank where the
+  key should go. Fill it in.
+  ```python
+  user = {"name": "{{user.name}}", "email": "you@example.com", "score": 92}
+  print(user[___])
+  ```
+  The script should print the email address.
+blanks:
+  - id: key
+    accept:
+      - '"email"'
+      - "'email'"
+    caseSensitive: true
+hint:
+  - level: 1
+    body: "Dict keys go inside square brackets. The key here is the string `\"email\"`."
+  - level: 2
+    body: "`user[\"email\"]` — quotes around the key, because it's a string."

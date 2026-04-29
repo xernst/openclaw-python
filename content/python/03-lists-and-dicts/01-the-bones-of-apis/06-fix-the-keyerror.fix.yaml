@@ -1,0 +1,23 @@
+xp: 4
+estSeconds: 75
+concept: keyerror-debugging
+prompt: |
+  Claude generated this and it crashes with a `KeyError: 'username'`. That's the
+  error Python throws when you ask a dict for a key it doesn't have.
+
+  Fix the code so it prints `hi, maya`.
+brokenCode: |
+  user = {"name": "maya", "score": 92}
+  print(f"hi, {user['username']}")
+bugLines:
+  - 2
+grader:
+  kind: stdout-equality
+  expected: "hi, maya"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "`KeyError` means the dict has no key by that name. Look at line 1 — what's the actual key?"
+  - level: 2
+    body: "The key on line 1 is `\"name\"`, not `\"username\"`. Change the lookup on line 2 to match."
+revealAfter: 4

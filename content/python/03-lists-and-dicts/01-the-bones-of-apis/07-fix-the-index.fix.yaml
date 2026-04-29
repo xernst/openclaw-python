@@ -1,0 +1,27 @@
+xp: 4
+estSeconds: 75
+concept: index-off-by-one
+prompt: |
+  Cursor wrote a script to print the first user's name. It uses `users[1]`, which
+  is wrong — that's the *second* user. The output is `marcus` and it should be `maya`.
+
+  Fix line 6 so the script prints `first user: maya`.
+brokenCode: |
+  users = [
+      {"name": "maya"},
+      {"name": "marcus"},
+      {"name": "priya"},
+  ]
+  print(f"first user: {users[1]['name']}")
+bugLines:
+  - 6
+grader:
+  kind: stdout-equality
+  expected: "first user: maya"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "Lists count from zero. Which index is the first item?"
+  - level: 2
+    body: "Change `users[1]` to `users[0]` on line 6."
+revealAfter: 4

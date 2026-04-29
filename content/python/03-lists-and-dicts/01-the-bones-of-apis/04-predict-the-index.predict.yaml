@@ -1,0 +1,20 @@
+xp: 3
+estSeconds: 60
+concept: nested-indexing
+code: |
+  users = [
+      {"name": "maya", "score": 92},
+      {"name": "marcus", "score": 78},
+  ]
+  print(users[1]["name"])
+prompt: |
+  This is the shape every API hands back: a list of dicts. What does line 5 print?
+grader:
+  kind: stdout-equality
+  expected: "marcus"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "Read it left to right. `users[1]` is the second user. Then `[\"name\"]` reaches into that user's dict."
+  - level: 2
+    body: "`users[1]` is `{\"name\": \"marcus\", \"score\": 78}`. Then `[\"name\"]` is `marcus`."

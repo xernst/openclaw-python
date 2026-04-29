@@ -1,0 +1,27 @@
+xp: 2
+estSeconds: 35
+concept: list-vs-dict
+code: |
+  a = ["maya", "marcus", "priya"]
+  b = {"maya": 92, "marcus": 78, "priya": 88}
+  c = ("maya", "marcus")
+  d = {"maya", "marcus"}
+prompt: |
+  Four shapes. Which one would Cursor reach for if you asked it to *map each user to their score*?
+options:
+  - id: a
+    label: "`a` — the list"
+    explain: "A list keeps order but has no labels. You can't ask it for `a[\"maya\"]`."
+  - id: b
+    label: "`b` — the dict"
+  - id: c
+    label: "`c` — the tuple"
+    explain: "A tuple is like a list but you can't change it. Still no labels."
+  - id: d
+    label: "`d` — the set"
+    explain: "A set is unordered, no duplicates, no labels. Useful, but not for mapping users to scores."
+answerIds:
+  - b
+hint:
+  - level: 1
+    body: "*Map each X to Y* is the giveaway phrase. You need labels."

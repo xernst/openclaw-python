@@ -1,0 +1,30 @@
+xp: 8
+estSeconds: 120
+concept: lists-and-dicts-recap
+prompt: |
+  One last thing. AI handed back a list of two users from a fake API. Your job:
+  print the second user's score.
+
+  The starter has the data. Finish line 6 so the script prints `second user score: 78`.
+starter: |
+  users = [
+      {"name": "maya", "score": 92},
+      {"name": "marcus", "score": 78},
+  ]
+  # your code on the next line — print the second user's score using an f-string:
+grader:
+  kind: stdout-equality
+  expected: "second user score: 78"
+  normalize: collapse-trailing-newline
+solution: |
+  users = [
+      {"name": "maya", "score": 92},
+      {"name": "marcus", "score": 78},
+  ]
+  print(f"second user score: {users[1]['score']}")
+passThreshold: 0.66
+hint:
+  - level: 1
+    body: "Two reaches stacked. First the index of the second user, then the `score` key."
+  - level: 2
+    body: "`users[1][\"score\"]` is `78`. Wrap that in an f-string: `print(f\"second user score: {users[1]['score']}\")`."

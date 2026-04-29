@@ -1,0 +1,14 @@
+slug: the-bones-of-apis
+title: "Lists, dicts, and the shape of an API response"
+estMinutes: 7
+prerequisites: []
+order:
+  - 01-intro.read.md
+  - 02-which-is-which.mc.yaml
+  - 03-indexing.read.md
+  - 04-predict-the-index.predict.yaml
+  - 05-fill-the-key.fill.yaml
+  - 06-fix-the-keyerror.fix.yaml
+  - 07-fix-the-index.fix.yaml
+  - 08-write-append.write.yaml
+  - 09-checkpoint.checkpoint.yaml
