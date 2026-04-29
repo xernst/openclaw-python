@@ -1,0 +1,14 @@
+slug: the-five-error-classes
+title: "Diagnose any crash in one read"
+estMinutes: 7
+prerequisites: []
+order:
+  - 01-intro.read.md
+  - 02-which-error-fits.mc.yaml
+  - 03-zero-division-and-value.read.md
+  - 04-predict-the-class.predict.yaml
+  - 05-fix-zerodivision.fix.yaml
+  - 06-fix-valueerror.fix.yaml
+  - 07-fix-indexerror.fix.yaml
+  - 08-write-defensive.write.yaml
+  - 09-checkpoint.checkpoint.yaml

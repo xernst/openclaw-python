@@ -1,0 +1,36 @@
+xp: 4
+estSeconds: 75
+concept: indexerror-source
+prompt: |
+  Claude wrote this loop and the last iteration crashes with `IndexError:
+  list index out of range`. The off-by-one is on line 3 — `range(len(words) + 1)`
+  walks one past the end of the list.
+
+  Fix the off-by-one so the script prints each word, one per line, with no
+  crash. Expected output:
+
+  ```
+  hello
+  world
+  fine
+  ```
+brokenCode: |
+  words = ["hello", "world", "fine"]
+
+  for i in range(len(words) + 1):
+      print(words[i])
+bugLines:
+  - 3
+grader:
+  kind: stdout-equality
+  expected: |
+    hello
+    world
+    fine
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "`len(words)` is `3`. `range(len(words) + 1)` produces `0, 1, 2, 3`. There's no index `3` in a 3-item list."
+  - level: 2
+    body: "Drop the `+ 1` on line 3. `range(len(words))` gives `0, 1, 2` — exactly the valid indexes."
+revealAfter: 4

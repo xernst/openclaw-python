@@ -1,0 +1,57 @@
+xp: 8
+estSeconds: 130
+concept: error-classes-recap
+prompt: |
+  Last one. Cursor wrote a function `get_price` that pulls the `"price"` field
+  out of an item dict and converts it to a float. Right now it crashes on
+  three different inputs:
+
+  - missing `"price"` key → `KeyError`
+  - empty string for the price → `ValueError`
+  - the dict is `None` → `AttributeError` from the `.get` call
+
+  Rewrite the function so it returns `0.0` for any of those cases, and
+  returns the parsed float when the value is valid. The script should print:
+
+  ```
+  29.99
+  0.0
+  0.0
+  0.0
+  ```
+starter: |
+  def get_price(item):
+      # handle missing key, empty string, and None safely:
+      return float(item["price"])
+
+  print(get_price({"price": "29.99"}))
+  print(get_price({"name": "widget"}))
+  print(get_price({"price": ""}))
+  print(get_price(None))
+grader:
+  kind: stdout-equality
+  expected: |
+    29.99
+    0.0
+    0.0
+    0.0
+  normalize: collapse-trailing-newline
+solution: |
+  def get_price(item):
+      if item is None:
+          return 0.0
+      raw = item.get("price", "")
+      if raw == "":
+          return 0.0
+      return float(raw)
+
+  print(get_price({"price": "29.99"}))
+  print(get_price({"name": "widget"}))
+  print(get_price({"price": ""}))
+  print(get_price(None))
+passThreshold: 0.66
+hint:
+  - level: 1
+    body: "Three guards. First: `if item is None: return 0.0`. Second: `.get(\"price\", \"\")` to avoid `KeyError`. Third: check the result is non-empty before `float()`."
+  - level: 2
+    body: "Start with `if item is None: return 0.0`. Then `raw = item.get(\"price\", \"\")`. Then `if raw == \"\": return 0.0`. Finally `return float(raw)`."

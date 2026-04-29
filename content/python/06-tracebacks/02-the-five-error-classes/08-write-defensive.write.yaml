@@ -1,0 +1,44 @@
+xp: 5
+estSeconds: 100
+concept: defensive-dict-access
+prompt: |
+  Write a function `safe_get` that takes a dict and a key. If the key exists,
+  return the value. If the key is missing, return the string `"missing"`
+  instead of crashing with `KeyError`.
+
+  Two calls happen at the bottom — they should print:
+
+  ```
+  alex
+  missing
+  ```
+starter: |
+  user = {"name": "alex", "age": 34}
+
+  def safe_get(d, key):
+      # your defensive lookup below:
+      pass
+
+  print(safe_get(user, "name"))
+  print(safe_get(user, "email"))
+grader:
+  kind: stdout-equality
+  expected: |
+    alex
+    missing
+  normalize: collapse-trailing-newline
+solution: |
+  user = {"name": "alex", "age": 34}
+
+  def safe_get(d, key):
+      if key in d:
+          return d[key]
+      return "missing"
+
+  print(safe_get(user, "name"))
+  print(safe_get(user, "email"))
+hint:
+  - level: 1
+    body: "`key in d` is the membership check that doesn't crash. Use it before reaching for `d[key]`."
+  - level: 2
+    body: "`if key in d: return d[key]` then below it, `return \"missing\"`. The early return handles the present case."

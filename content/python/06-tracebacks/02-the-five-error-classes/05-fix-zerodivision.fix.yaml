@@ -1,0 +1,27 @@
+xp: 4
+estSeconds: 75
+concept: zero-division-guard
+prompt: |
+  Cursor wrote a function that computes the average revenue per order. When
+  there are no orders yet, it crashes with `ZeroDivisionError`.
+
+  Add a one-line guard so that when `orders` is `0`, the function returns
+  `0` instead of crashing. The script should print `avg: 0`.
+brokenCode: |
+  def average_revenue(revenue, orders):
+      return revenue / orders
+
+  result = average_revenue(1000, 0)
+  print(f"avg: {result}")
+bugLines:
+  - 2
+grader:
+  kind: stdout-equality
+  expected: "avg: 0"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "Before dividing, check if the denominator is `0` and return `0` early. Two lines instead of one."
+  - level: 2
+    body: "Replace line 2 with: `if orders == 0: return 0` then a new line `return revenue / orders`. The guard runs first."
+revealAfter: 4

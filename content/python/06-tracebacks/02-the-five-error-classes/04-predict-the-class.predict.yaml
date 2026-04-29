@@ -1,0 +1,28 @@
+xp: 3
+estSeconds: 60
+concept: predict-error-class
+code: |
+  user = {"name": "alex", "age": 34}
+
+  try:
+      print(user["email"])
+  except KeyError:
+      print("KeyError")
+  except IndexError:
+      print("IndexError")
+  except TypeError:
+      print("TypeError")
+  except AttributeError:
+      print("AttributeError")
+prompt: |
+  The dict has no `"email"` key. Which error class fires? The `try/except`
+  block prints the class name. What does this print?
+grader:
+  kind: stdout-equality
+  expected: "KeyError"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "A dict missing a key raises one specific class. Match it to the table from earlier."
+  - level: 2
+    body: "Asking a dict for a key it doesn't have is `KeyError`. The script prints `KeyError`."

@@ -1,0 +1,30 @@
+xp: 2
+estSeconds: 45
+concept: error-class-matching
+prompt: |
+  Cursor wrote a script and the traceback ends with this line:
+
+  ```
+  TypeError: unsupported operand type(s) for +: 'int' and 'str'
+  ```
+
+  Which line of code is the most likely cause?
+options:
+  - id: a
+    label: "`name = users[5]` (when `users` has 3 entries)"
+    explain: "That would be an `IndexError`, not a `TypeError`."
+  - id: b
+    label: "`total = age + name` (where `age` is `30` and `name` is `\"alex\"`)"
+  - id: c
+    label: "`config[\"port\"]` (when `config` has no `\"port\"` key)"
+    explain: "That would be a `KeyError`."
+  - id: d
+    label: "`response.json()` (when `response` is `None`)"
+    explain: "That would be an `AttributeError` — `None` has no `.json()` method."
+answerIds:
+  - b
+hint:
+  - level: 1
+    body: "The error message names the two types: `int` and `str`. Find the line where those two types collide on a `+`."
+  - level: 2
+    body: "`age + name` is `int + str`. That's the textbook `TypeError`. The other options each map to a different error class."

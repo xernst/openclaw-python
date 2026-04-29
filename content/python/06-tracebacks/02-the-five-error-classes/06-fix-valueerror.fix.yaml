@@ -1,0 +1,29 @@
+xp: 4
+estSeconds: 75
+concept: valueerror-source
+prompt: |
+  Cursor wrote this and the traceback ends with
+  `ValueError: invalid literal for int() with base 10: '7 dollars'`.
+
+  The variable `price_text` has the dollar amount along with extra text. The
+  fix is to pull just the number out before calling `int()`. Use `.split()`
+  to grab the first token, then convert that.
+
+  The script should print `price doubled: 14`.
+brokenCode: |
+  price_text = "7 dollars"
+  price = int(price_text)
+
+  print(f"price doubled: {price * 2}")
+bugLines:
+  - 2
+grader:
+  kind: stdout-equality
+  expected: "price doubled: 14"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "`int(\"7 dollars\")` fails because the string has the word `dollars` in it. Split on the space and take the first piece."
+  - level: 2
+    body: "Change line 2 to `price = int(price_text.split()[0])`. `.split()` returns `[\"7\", \"dollars\"]`, and `[0]` grabs the `\"7\"`."
+revealAfter: 4
