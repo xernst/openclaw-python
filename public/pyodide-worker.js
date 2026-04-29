@@ -5,7 +5,10 @@
 // Boot.dev's blog post on the same pattern:
 // https://www.boot.dev/blog/python/python-in-the-browser/
 
-importScripts("https://cdn.jsdelivr.net/pyodide/v0.28.4/full/pyodide.js");
+// Self-hosted Pyodide. Copied from node_modules/pyodide/ to /public/pyodide/
+// by scripts/copy-pyodide.mjs (runs on predev + prebuild). Same-origin
+// loading works even when jsdelivr is blocked / unreachable.
+importScripts("/pyodide/pyodide.js");
 
 let pyodide = null;
 let loading = null;
@@ -16,7 +19,7 @@ async function ensurePyodide() {
   loading = (async () => {
     self.postMessage({ type: "status", payload: "loading" });
     pyodide = await self.loadPyodide({
-      indexURL: "https://cdn.jsdelivr.net/pyodide/v0.28.4/full/",
+      indexURL: "/pyodide/",
     });
     pyodide.runPython(`
 import sys, io, traceback

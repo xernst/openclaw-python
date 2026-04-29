@@ -84,3 +84,4 @@ LAUNCH.sh
 LAUNCH_TWEETS.md
 >>>>>>> openclaw/main
 lib/generated/manifest.json
+public/pyodide/
