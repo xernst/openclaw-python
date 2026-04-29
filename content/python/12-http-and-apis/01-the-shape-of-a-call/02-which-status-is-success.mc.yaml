@@ -1,0 +1,33 @@
+xp: 2
+estSeconds: 45
+concept: http-status-codes
+code: |
+  # status code cheat sheet:
+  # 200  -> OK (the one you want)
+  # 201  -> Created (after POST)
+  # 401  -> Unauthorized (missing/bad API key)
+  # 404  -> Not Found
+  # 429  -> Rate limited
+  # 500  -> Server error (their fault)
+  status_code = 200
+  if 200 <= status_code < 300:
+      print("ok")
+  else:
+      print("something went wrong")
+prompt: |
+  AI shipped a script that fetches user data and the response came back
+  with status `404`. What does that mean?
+options:
+  - id: a
+    label: "The server is broken on their end"
+    explain: "That's a 5xx code (typically 500). 404 is on the client side — the URL or ID was wrong."
+  - id: b
+    label: "The resource at that URL doesn't exist"
+  - id: c
+    label: "Authentication failed"
+    explain: "That's `401 Unauthorized`. 404 means the URL/path is invalid or the resource isn't there."
+  - id: d
+    label: "The request worked"
+    explain: "Successful responses are `2xx` (200, 201, etc.). 404 is a failure code."
+answerIds:
+  - b

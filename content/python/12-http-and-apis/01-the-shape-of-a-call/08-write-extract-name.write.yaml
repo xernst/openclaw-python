@@ -1,0 +1,39 @@
+xp: 5
+estSeconds: 110
+concept: extract-from-mock-response
+prompt: |
+  We've stubbed an API response below. Write a function called
+  `get_user_name` that takes the response dict, returns the value at
+  `response["data"]["user"]["name"]`, and then call it once on the
+  provided `mock` and print the result.
+
+  Expected output:
+  ```
+  maya
+  ```
+starter: |
+  mock = {
+      "ok": True,
+      "data": {"user": {"id": 7, "name": "maya"}},
+  }
+
+  # define get_user_name(response), then call print(get_user_name(mock))
+grader:
+  kind: stdout-equality
+  expected: "maya"
+  normalize: collapse-trailing-newline
+solution: |
+  mock = {
+      "ok": True,
+      "data": {"user": {"id": 7, "name": "maya"}},
+  }
+
+  def get_user_name(response):
+      return response["data"]["user"]["name"]
+
+  print(get_user_name(mock))
+hint:
+  - level: 1
+    body: "One-line function body: `return response[\"data\"][\"user\"][\"name\"]`."
+  - level: 2
+    body: "After defining it, the call is `print(get_user_name(mock))`. That's the whole script."

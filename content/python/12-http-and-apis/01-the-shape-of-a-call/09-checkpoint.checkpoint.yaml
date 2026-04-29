@@ -1,0 +1,51 @@
+xp: 8
+estSeconds: 150
+concept: api-checkpoint
+prompt: |
+  Final drill. Below is a function `fetch` that simulates an API call —
+  it returns a `(status_code, body)` tuple. Write a function `safe_fetch`
+  that:
+
+  - Calls `fetch(user_id)`.
+  - If the status is `200`, returns `body["name"]`.
+  - For any other status, returns the string `"error"`.
+
+  Then the script will call `safe_fetch(7)` and `safe_fetch(404)` and
+  print both. Expected output:
+
+  ```
+  maya
+  error
+  ```
+starter: |
+  def fetch(user_id):
+      # stand-in for an httpx.get call
+      if user_id == 7:
+          return (200, {"name": "maya"})
+      return (404, {"error": "not found"})
+
+  # define safe_fetch(user_id) below
+
+  print(safe_fetch(7))
+  print(safe_fetch(404))
+grader:
+  kind: stdout-equality
+  expected: |
+    maya
+    error
+  normalize: collapse-trailing-newline
+solution: |
+  def fetch(user_id):
+      if user_id == 7:
+          return (200, {"name": "maya"})
+      return (404, {"error": "not found"})
+
+  def safe_fetch(user_id):
+      status, body = fetch(user_id)
+      if status == 200:
+          return body["name"]
+      return "error"
+
+  print(safe_fetch(7))
+  print(safe_fetch(404))
+passThreshold: 0.66

@@ -1,0 +1,26 @@
+xp: 3
+estSeconds: 70
+concept: dict-key-extraction
+code: |
+  # imagine this came back from response.json()
+  api_response = {
+      "ok": True,
+      "data": {
+          "user": {"id": 42, "name": "marcus"},
+          "session_id": "abc123",
+      },
+  }
+
+  print(api_response["data"]["user"]["name"])
+prompt: |
+  Read the editor. The response is a nested dict, three layers deep.
+  What does the print line output?
+grader:
+  kind: stdout-equality
+  expected: "marcus"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "Walk the keys left to right. `api_response[\"data\"]` → inner dict. `[\"user\"]` → another dict. `[\"name\"]` → the string."
+  - level: 2
+    body: "It prints `marcus`. That's `api_response[\"data\"][\"user\"][\"name\"]`."

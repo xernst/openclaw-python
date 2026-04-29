@@ -1,0 +1,258 @@
+{
+  "number": 12,
+  "slug": "http-and-apis",
+  "title": "HTTP and APIs — making the call",
+  "blurb": "Every AI script eventually calls an API. Learn the shape of `httpx.get`, what a status code means, and how to pull a value out of the JSON that comes back.",
+  "lessons": [
+    {
+      "slug": "the-shape-of-a-call",
+      "title": "GET, status, JSON — the call AI makes 100 times a day",
+      "estMinutes": 7,
+      "prerequisites": [],
+      "steps": [
+        {
+          "type": "read",
+          "id": "http-and-apis/the-shape-of-a-call/s01-01-intro",
+          "xp": 1,
+          "hint": [],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 50,
+          "concept": "http-call-shape",
+          "body": "# The shape of an API call\n\nEvery AI-generated script that talks to a service does roughly this:\n\n```python\nimport httpx\n\nresponse = httpx.get(\"https://api.example.com/users/7\")\nresponse.raise_for_status()        # crash on 4xx/5xx\ndata = response.json()              # parse the body as JSON\nprint(data[\"name\"])\n```\n\nFour lines. AI writes them on autopilot. Your job is to read them and\ncatch the two places it breaks: forgetting the status check, and\nindexing into the JSON with the wrong key.\n\n> **A note on this chapter:** the browser can't make real network calls.\n> So instead of hitting a real URL, we'll work with hardcoded JSON shapes\n> that match what an API would actually return. The pattern is the same;\n> we just skip the wire.\n\nRun the editor. We'll start by reading from a fake response.",
+          "cta": "Got it",
+          "code": "# this is the shape AI reaches for. we can't run real http calls in\n# the browser, so we'll use a hardcoded response below for the rest\n# of the lesson.\nfake_response_json = {\n    \"id\": 7,\n    \"name\": \"maya\",\n    \"email\": \"maya@pyloft.dev\",\n}\n\nprint(fake_response_json[\"name\"])\n",
+          "runnable": true
+        },
+        {
+          "type": "mc",
+          "id": "http-and-apis/the-shape-of-a-call/s02-02-which-status-is-success",
+          "xp": 2,
+          "hint": [],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 45,
+          "concept": "http-status-codes",
+          "prompt": "AI shipped a script that fetches user data and the response came back\nwith status `404`. What does that mean?\n",
+          "options": [
+            {
+              "id": "a",
+              "label": "The server is broken on their end",
+              "explain": "That's a 5xx code (typically 500). 404 is on the client side — the URL or ID was wrong."
+            },
+            {
+              "id": "b",
+              "label": "The resource at that URL doesn't exist"
+            },
+            {
+              "id": "c",
+              "label": "Authentication failed",
+              "explain": "That's `401 Unauthorized`. 404 means the URL/path is invalid or the resource isn't there."
+            },
+            {
+              "id": "d",
+              "label": "The request worked",
+              "explain": "Successful responses are `2xx` (200, 201, etc.). 404 is a failure code."
+            }
+          ],
+          "answerIds": [
+            "b"
+          ],
+          "shuffle": false,
+          "code": "# status code cheat sheet:\n# 200  -> OK (the one you want)\n# 201  -> Created (after POST)\n# 401  -> Unauthorized (missing/bad API key)\n# 404  -> Not Found\n# 429  -> Rate limited\n# 500  -> Server error (their fault)\nstatus_code = 200\nif 200 <= status_code < 300:\n    print(\"ok\")\nelse:\n    print(\"something went wrong\")\n",
+          "runnable": true
+        },
+        {
+          "type": "read",
+          "id": "http-and-apis/the-shape-of-a-call/s03-03-parsing-the-json",
+          "xp": 2,
+          "hint": [],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 60,
+          "concept": "response-json-as-dict",
+          "body": "# `response.json()` is just a Python dict\n\nEvery real API call ends the same way: you parse the body and dig into a\nnested dict.\n\nThe pattern AI uses constantly:\n\n- `data[\"name\"]` — top-level field\n- `data[\"roles\"][0]` — first item of a list field\n- `data[\"org\"][\"slug\"]` — nested dict access\n\nIf the field is missing, you get a `KeyError`. If a list is empty, you\nget an `IndexError`. Both are common in the wild — APIs add and remove\nfields between versions, and AI code rarely accounts for that.\n\nRun the editor. Three different access patterns on the same `user` shape.",
+          "cta": "Got it",
+          "code": "# what `response.json()` would return for a typical user endpoint —\n# nested dict + list, exactly like the real API response shape.\nuser = {\n    \"id\": 7,\n    \"name\": \"maya\",\n    \"email\": \"maya@pyloft.dev\",\n    \"roles\": [\"admin\", \"billing\"],\n    \"org\": {\"slug\": \"pyloft\", \"tier\": \"pro\"},\n}\n\nprint(user[\"name\"])\nprint(user[\"roles\"][0])\nprint(user[\"org\"][\"slug\"])\n",
+          "runnable": true
+        },
+        {
+          "type": "predict",
+          "id": "http-and-apis/the-shape-of-a-call/s04-04-predict-the-key",
+          "xp": 3,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Walk the keys left to right. `api_response[\"data\"]` → inner dict. `[\"user\"]` → another dict. `[\"name\"]` → the string.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "It prints `marcus`. That's `api_response[\"data\"][\"user\"][\"name\"]`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 70,
+          "concept": "dict-key-extraction",
+          "code": "# imagine this came back from response.json()\napi_response = {\n    \"ok\": True,\n    \"data\": {\n        \"user\": {\"id\": 42, \"name\": \"marcus\"},\n        \"session_id\": \"abc123\",\n    },\n}\n\nprint(api_response[\"data\"][\"user\"][\"name\"])\n",
+          "prompt": "Read the editor. The response is a nested dict, three layers deep.\nWhat does the print line output?\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "marcus",
+            "normalize": "collapse-trailing-newline"
+          }
+        },
+        {
+          "type": "fill",
+          "id": "http-and-apis/the-shape-of-a-call/s05-05-fill-the-method",
+          "xp": 3,
+          "hint": [
+            {
+              "level": 1,
+              "body": "It's the JSON-string-to-dict function. Sibling of `json.dump`/`json.load`, but it takes a string.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "`json.loads(...)` — the trailing `s` is for *string*. `json.load` takes a file object; `json.loads` takes a string.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 50,
+          "concept": "response-json-method",
+          "prompt": "Cursor wrote a wrapper that simulates an API call. The variable\n`response_body` is a JSON string. Fill in the standard library function\non line 4 that turns a JSON string into a Python dict.\n\nFunction: ___\n",
+          "code": "import json\n\nresponse_body = '{\"name\": \"maya\", \"score\": 12}'\ndata = json.___(response_body)\nprint(data[\"name\"])\n",
+          "blanks": [
+            {
+              "id": "keyword",
+              "accept": [
+                "loads"
+              ],
+              "caseSensitive": true,
+              "normalize": "trim"
+            }
+          ]
+        },
+        {
+          "type": "fix",
+          "id": "http-and-apis/the-shape-of-a-call/s06-06-fix-the-status-check",
+          "xp": 4,
+          "hint": [
+            {
+              "level": 1,
+              "body": "In Python, `=` assigns. To *compare* two values, use a different operator.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Change `if status = 200:` to `if status == 200:`. Two equals signs.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 80,
+          "concept": "status-code-comparison",
+          "brokenCode": "# pretend this came from response.status_code\nstatus = 200\n\nif status = 200:\n    print(\"ok\")\nelse:\n    print(\"not ok\")\n",
+          "prompt": "Claude wrote this and the success check is wrong. It uses `=` (assignment)\ninstead of `==` (comparison), so the line tries to assign to `status` and\nraises a `SyntaxError`. Fix line 4 so the script prints `ok`.\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "ok",
+            "normalize": "collapse-trailing-newline"
+          },
+          "bugLines": [
+            4
+          ],
+          "revealAfter": 4
+        },
+        {
+          "type": "fix",
+          "id": "http-and-apis/the-shape-of-a-call/s07-07-fix-the-key-access",
+          "xp": 4,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Look at the dict on lines 2-6. The key Cursor wanted does not match the key the API actually uses.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Replace `data[\"username\"]` with `data[\"name\"]` on line 9.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 85,
+          "concept": "nested-key-access",
+          "brokenCode": "# this is what response.json() returned — note the actual key name\ndata = {\n    \"id\": 7,\n    \"name\": \"maya\",\n    \"email\": \"maya@pyloft.dev\",\n}\n\n# Cursor wrote the wrong key\nprint(data[\"username\"])\n",
+          "prompt": "AI thought the API returned `data[\"username\"]` but the real shape uses\n`data[\"name\"]`. The script crashes with a `KeyError`. Fix the access\non line 9 so the script prints `maya`.\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "maya",
+            "normalize": "collapse-trailing-newline"
+          },
+          "bugLines": [
+            9
+          ],
+          "revealAfter": 4
+        },
+        {
+          "type": "write",
+          "id": "http-and-apis/the-shape-of-a-call/s08-08-write-extract-name",
+          "xp": 5,
+          "hint": [
+            {
+              "level": 1,
+              "body": "One-line function body: `return response[\"data\"][\"user\"][\"name\"]`.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "After defining it, the call is `print(get_user_name(mock))`. That's the whole script.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 110,
+          "concept": "extract-from-mock-response",
+          "prompt": "We've stubbed an API response below. Write a function called\n`get_user_name` that takes the response dict, returns the value at\n`response[\"data\"][\"user\"][\"name\"]`, and then call it once on the\nprovided `mock` and print the result.\n\nExpected output:\n```\nmaya\n```\n",
+          "starter": "mock = {\n    \"ok\": True,\n    \"data\": {\"user\": {\"id\": 7, \"name\": \"maya\"}},\n}\n\n# define get_user_name(response), then call print(get_user_name(mock))\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "maya",
+            "normalize": "collapse-trailing-newline"
+          },
+          "solution": "mock = {\n    \"ok\": True,\n    \"data\": {\"user\": {\"id\": 7, \"name\": \"maya\"}},\n}\n\ndef get_user_name(response):\n    return response[\"data\"][\"user\"][\"name\"]\n\nprint(get_user_name(mock))\n",
+          "hiddenTests": []
+        },
+        {
+          "type": "checkpoint",
+          "id": "http-and-apis/the-shape-of-a-call/s09-09-checkpoint",
+          "xp": 8,
+          "hint": [],
+          "personalize": false,
+          "phase": "check",
+          "estSeconds": 150,
+          "concept": "api-checkpoint",
+          "prompt": "Final drill. Below is a function `fetch` that simulates an API call —\nit returns a `(status_code, body)` tuple. Write a function `safe_fetch`\nthat:\n\n- Calls `fetch(user_id)`.\n- If the status is `200`, returns `body[\"name\"]`.\n- For any other status, returns the string `\"error\"`.\n\nThen the script will call `safe_fetch(7)` and `safe_fetch(404)` and\nprint both. Expected output:\n\n```\nmaya\nerror\n```\n",
+          "starter": "def fetch(user_id):\n    # stand-in for an httpx.get call\n    if user_id == 7:\n        return (200, {\"name\": \"maya\"})\n    return (404, {\"error\": \"not found\"})\n\n# define safe_fetch(user_id) below\n\nprint(safe_fetch(7))\nprint(safe_fetch(404))\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "maya\nerror\n",
+            "normalize": "collapse-trailing-newline"
+          },
+          "solution": "def fetch(user_id):\n    if user_id == 7:\n        return (200, {\"name\": \"maya\"})\n    return (404, {\"error\": \"not found\"})\n\ndef safe_fetch(user_id):\n    status, body = fetch(user_id)\n    if status == 200:\n        return body[\"name\"]\n    return \"error\"\n\nprint(safe_fetch(7))\nprint(safe_fetch(404))\n",
+          "passThreshold": 0.66
+        }
+      ],
+      "xpTotal": 32
+    }
+  ],
+  "xpTotal": 32
+}

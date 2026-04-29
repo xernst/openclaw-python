@@ -1,0 +1,14 @@
+slug: the-shape-of-a-call
+title: "GET, status, JSON — the call AI makes 100 times a day"
+estMinutes: 7
+prerequisites: []
+order:
+  - 01-intro.read.md
+  - 02-which-status-is-success.mc.yaml
+  - 03-parsing-the-json.read.md
+  - 04-predict-the-key.predict.yaml
+  - 05-fill-the-method.fill.yaml
+  - 06-fix-the-status-check.fix.yaml
+  - 07-fix-the-key-access.fix.yaml
+  - 08-write-extract-name.write.yaml
+  - 09-checkpoint.checkpoint.yaml

@@ -1,0 +1,27 @@
+xp: 4
+estSeconds: 80
+concept: status-code-comparison
+prompt: |
+  Claude wrote this and the success check is wrong. It uses `=` (assignment)
+  instead of `==` (comparison), so the line tries to assign to `status` and
+  raises a `SyntaxError`. Fix line 4 so the script prints `ok`.
+brokenCode: |
+  # pretend this came from response.status_code
+  status = 200
+
+  if status = 200:
+      print("ok")
+  else:
+      print("not ok")
+bugLines:
+  - 4
+grader:
+  kind: stdout-equality
+  expected: "ok"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "In Python, `=` assigns. To *compare* two values, use a different operator."
+  - level: 2
+    body: "Change `if status = 200:` to `if status == 200:`. Two equals signs."
+revealAfter: 4

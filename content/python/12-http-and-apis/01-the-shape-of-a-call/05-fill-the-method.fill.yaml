@@ -1,0 +1,25 @@
+xp: 3
+estSeconds: 50
+concept: response-json-method
+prompt: |
+  Cursor wrote a wrapper that simulates an API call. The variable
+  `response_body` is a JSON string. Fill in the standard library function
+  on line 4 that turns a JSON string into a Python dict.
+
+  Function: ___
+code: |
+  import json
+
+  response_body = '{"name": "maya", "score": 12}'
+  data = json.___(response_body)
+  print(data["name"])
+blanks:
+  - id: keyword
+    accept:
+      - loads
+    caseSensitive: true
+hint:
+  - level: 1
+    body: "It's the JSON-string-to-dict function. Sibling of `json.dump`/`json.load`, but it takes a string."
+  - level: 2
+    body: "`json.loads(...)` — the trailing `s` is for *string*. `json.load` takes a file object; `json.loads` takes a string."

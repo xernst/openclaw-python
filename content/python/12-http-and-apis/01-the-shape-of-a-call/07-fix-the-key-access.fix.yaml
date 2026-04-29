@@ -1,0 +1,29 @@
+xp: 4
+estSeconds: 85
+concept: nested-key-access
+prompt: |
+  AI thought the API returned `data["username"]` but the real shape uses
+  `data["name"]`. The script crashes with a `KeyError`. Fix the access
+  on line 9 so the script prints `maya`.
+brokenCode: |
+  # this is what response.json() returned — note the actual key name
+  data = {
+      "id": 7,
+      "name": "maya",
+      "email": "maya@pyloft.dev",
+  }
+
+  # Cursor wrote the wrong key
+  print(data["username"])
+bugLines:
+  - 9
+grader:
+  kind: stdout-equality
+  expected: "maya"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "Look at the dict on lines 2-6. The key Cursor wanted does not match the key the API actually uses."
+  - level: 2
+    body: "Replace `data[\"username\"]` with `data[\"name\"]` on line 9."
+revealAfter: 4

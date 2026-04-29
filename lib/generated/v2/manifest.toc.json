@@ -1,6 +1,6 @@
 {
   "version": "0.1.0",
-  "generatedAt": "2026-04-29T16:17:43.888Z",
+  "generatedAt": "2026-04-29T16:19:33.364Z",
   "chapters": [
     {
       "number": 1,
@@ -97,6 +97,15 @@
       "slug": "classes-basics",
       "title": "Classes — reading what AI just wrote you",
       "blurb": "AI ships classes constantly: SQLAlchemy models, FastAPI schemas, custom exceptions. You don't need to design them. You need to read one without flinching.",
+      "lessonCount": 1,
+      "stepCount": 9,
+      "xpTotal": 32
+    },
+    {
+      "number": 12,
+      "slug": "http-and-apis",
+      "title": "HTTP and APIs — making the call",
+      "blurb": "Every AI script eventually calls an API. Learn the shape of `httpx.get`, what a status code means, and how to pull a value out of the JSON that comes back.",
       "lessonCount": 1,
       "stepCount": 9,
       "xpTotal": 32
