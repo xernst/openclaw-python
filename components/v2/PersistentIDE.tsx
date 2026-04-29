@@ -28,6 +28,7 @@ export type RunResult = {
   ok: boolean;
   stdout: string;
   stderr: string;
+  durationMs?: number;
 };
 
 export type PersistentIDEHandle = {
@@ -109,6 +110,10 @@ const PersistentIDE = forwardRef<PersistentIDEHandle, Props>(function Persistent
   const [running, setRunning] = useState(false);
   const [stdout, setStdout] = useState("");
   const [stderr, setStderr] = useState("");
+  const [lastRun, setLastRun] = useState<{
+    durationMs: number;
+    at: number;
+  } | null>(null);
 
   const lastStepIdRef = useRef(stepId);
 
@@ -129,6 +134,7 @@ const PersistentIDE = forwardRef<PersistentIDEHandle, Props>(function Persistent
     );
     setStdout("");
     setStderr("");
+    setLastRun(null);
   }, [stepId, files]);
 
   const activeFile = useMemo(
@@ -153,10 +159,17 @@ const PersistentIDE = forwardRef<PersistentIDEHandle, Props>(function Persistent
     // internally, so the run queues and resolves once Python finishes booting.
     // The user sees "Running…" instead of "Editor isn't ready yet."
     setRunning(true);
+    setStdout("");
+    setStderr("");
+    const startedAt = performance.now();
     const code = drafts[activeFile.name] ?? activeFile.body;
     const result = await run(code);
     setStdout(result.stdout);
     setStderr(result.stderr);
+    setLastRun({
+      durationMs: result.durationMs ?? Math.round(performance.now() - startedAt),
+      at: Date.now(),
+    });
     setRunning(false);
     onResult?.(result);
     return result;
@@ -184,6 +197,7 @@ const PersistentIDE = forwardRef<PersistentIDEHandle, Props>(function Persistent
         setDrafts(seedDrafts(files));
         setStdout("");
         setStderr("");
+        setLastRun(null);
       },
     }),
     [activeFile, drafts, files, handleRun],
@@ -202,6 +216,7 @@ const PersistentIDE = forwardRef<PersistentIDEHandle, Props>(function Persistent
 
   const ready = status === "ready";
   const hasOutput = stdout.length > 0 || stderr.length > 0;
+  const ranEmpty = !running && lastRun !== null && !hasOutput;
 
   return (
     <div className="flex h-full min-h-0 flex-col bg-ink-950">
@@ -289,6 +304,17 @@ const PersistentIDE = forwardRef<PersistentIDEHandle, Props>(function Persistent
           <div className="inline-flex items-center gap-1.5 text-[11px] uppercase tracking-wide text-ink-500">
             <Terminal size={11} />
             Output
+            {lastRun && !running && (
+              <span className="ml-2 font-mono text-[10px] normal-case tracking-normal text-ink-600">
+                {stderr ? "✗" : "✓"} ran in {lastRun.durationMs}ms
+              </span>
+            )}
+            {running && (
+              <span className="ml-2 inline-flex items-center gap-1 font-mono text-[10px] normal-case tracking-normal text-ember-400">
+                <Loader2 size={10} className="animate-spin motion-reduce:animate-none" />
+                running…
+              </span>
+            )}
           </div>
           {outputBadge}
         </div>
@@ -296,9 +322,20 @@ const PersistentIDE = forwardRef<PersistentIDEHandle, Props>(function Persistent
           aria-live="polite"
           className="flex-1 overflow-auto p-3 font-mono text-[12.5px] leading-relaxed"
         >
-          {!hasOutput && !outputExtra && (
+          {!hasOutput && !outputExtra && !ranEmpty && !running && (
             <div className="italic text-ink-600">
               Run your code to see output here.
+            </div>
+          )}
+          {running && (
+            <div className="italic text-ink-500">Running your code…</div>
+          )}
+          {ranEmpty && (
+            <div className="text-ink-500">
+              <span className="text-emerald-400">✓</span> Ran with no output.
+              <span className="ml-1 text-ink-600">
+                Add a <code className="rounded bg-ink-900 px-1 text-ink-400">print(…)</code> to see something.
+              </span>
             </div>
           )}
           {stdout && <pre className="whitespace-pre-wrap text-ink-200">{stdout}</pre>}

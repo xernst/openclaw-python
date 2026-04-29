@@ -1,7 +1,12 @@
 "use client";
 import { useEffect, useRef, useState, useCallback } from "react";
 
-type RunResult = { ok: boolean; stdout: string; stderr: string };
+type RunResult = {
+  ok: boolean;
+  stdout: string;
+  stderr: string;
+  durationMs?: number;
+};
 type WorkerMsg =
   | { type: "status"; payload: "loading" | "ready" }
   | { type: "result"; id: number; payload: RunResult };
@@ -29,6 +34,9 @@ export function usePyodide() {
       if (msg.type === "status") {
         setStatus(msg.payload === "ready" ? "ready" : "loading");
       } else if (msg.type === "result") {
+        // Init result (id: -1) doubles as a ready signal — covers the case
+        // where the worker was already warm and never broadcast another status.
+        if (msg.id === -1) setStatus("ready");
         const cb = pendingRef.current.get(msg.id);
         if (cb) {
           pendingRef.current.delete(msg.id);

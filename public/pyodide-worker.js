@@ -14,8 +14,18 @@ let pyodide = null;
 let loading = null;
 
 async function ensurePyodide() {
-  if (pyodide) return pyodide;
-  if (loading) return loading;
+  // Always echo current state so a freshly-mounted hook gets a status reply,
+  // even when the worker is already warm. Without this, soft navigations land
+  // on a page whose Run button stays disabled because the hook sent `init` but
+  // the worker (already loaded) had no new status to broadcast.
+  if (pyodide) {
+    self.postMessage({ type: "status", payload: "ready" });
+    return pyodide;
+  }
+  if (loading) {
+    self.postMessage({ type: "status", payload: "loading" });
+    return loading;
+  }
   loading = (async () => {
     self.postMessage({ type: "status", payload: "loading" });
     pyodide = await self.loadPyodide({
@@ -48,12 +58,18 @@ def __ck_run(code):
 
 async function runCode(id, code) {
   const py = await ensurePyodide();
+  const t0 = performance.now();
   const result = py.globals.get("__ck_run")(code);
   const ok = result.get(0);
   const stdout = result.get(1);
   const stderr = result.get(2);
   result.destroy();
-  self.postMessage({ type: "result", id, payload: { ok, stdout, stderr } });
+  const durationMs = Math.round(performance.now() - t0);
+  self.postMessage({
+    type: "result",
+    id,
+    payload: { ok, stdout, stderr, durationMs },
+  });
 }
 
 self.addEventListener("message", async (e) => {
