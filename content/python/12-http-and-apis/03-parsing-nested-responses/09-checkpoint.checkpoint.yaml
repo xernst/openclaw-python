@@ -1,0 +1,75 @@
+xp: 8
+estSeconds: 160
+concept: nested-response-checkpoint
+prompt: |
+  Last drill of the chapter. Write a function
+  `summarize_search(response)` that takes a GitHub-shaped search
+  response and returns a list of strings, one per repo, in this format:
+
+  ```
+  <name> (★<stars>) — <owner>
+  ```
+
+  Walk the response defensively:
+  - If `items` is missing or empty, return `[]`.
+  - For each repo, default `name` to `"<unnamed>"`, `stargazers_count`
+    to `0`, and the owner's `login` to `"<unknown>"`.
+
+  The starter has a response with two complete repos and one repo
+  missing its `owner`. Use the bottom loop as-is.
+
+  Expected output:
+  ```
+  fastapi (★70000) — tiangolo
+  httpx (★12000) — encode
+  mystery-repo (★5) — <unknown>
+  ```
+starter: |
+  # define summarize_search below
+
+  response = {
+      "total_count": 3,
+      "items": [
+          {"name": "fastapi", "owner": {"login": "tiangolo"}, "stargazers_count": 70000},
+          {"name": "httpx", "owner": {"login": "encode"}, "stargazers_count": 12000},
+          {"name": "mystery-repo", "stargazers_count": 5},
+      ],
+  }
+
+  for line in summarize_search(response):
+      print(line)
+grader:
+  kind: stdout-equality
+  expected: |
+    fastapi (★70000) — tiangolo
+    httpx (★12000) — encode
+    mystery-repo (★5) — <unknown>
+  normalize: collapse-trailing-newline
+solution: |
+  def summarize_search(response):
+      items = response.get("items", [])
+      lines = []
+      for repo in items:
+          name = repo.get("name", "<unnamed>")
+          stars = repo.get("stargazers_count", 0)
+          owner = repo.get("owner", {}).get("login", "<unknown>")
+          lines.append(f"{name} (★{stars}) — {owner}")
+      return lines
+
+  response = {
+      "total_count": 3,
+      "items": [
+          {"name": "fastapi", "owner": {"login": "tiangolo"}, "stargazers_count": 70000},
+          {"name": "httpx", "owner": {"login": "encode"}, "stargazers_count": 12000},
+          {"name": "mystery-repo", "stargazers_count": 5},
+      ],
+  }
+
+  for line in summarize_search(response):
+      print(line)
+passThreshold: 0.66
+hint:
+  - level: 1
+    body: "Outer loop over `response.get(\"items\", [])`. Per repo, three `.get`s with defaults: `name`, `stargazers_count`, and the chained `owner.login`. Format with an f-string and append to a list."
+  - level: 2
+    body: "The owner chain is the key one: `repo.get(\"owner\", {}).get(\"login\", \"<unknown>\")`. The `{}` default is what makes the second `.get` safe when `owner` is missing entirely."

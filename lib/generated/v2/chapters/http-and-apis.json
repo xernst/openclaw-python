@@ -524,7 +524,284 @@
         }
       ],
       "xpTotal": 32
+    },
+    {
+      "slug": "parsing-nested-responses",
+      "title": "Parsing nested API responses — without crashing on a missing key",
+      "estMinutes": 9,
+      "prerequisites": [],
+      "steps": [
+        {
+          "type": "read",
+          "id": "http-and-apis/parsing-nested-responses/s01-01-intro",
+          "xp": 1,
+          "hint": [],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 110,
+          "concept": "nested-response-shapes",
+          "body": "# Nested API responses — the bracket chains AI scripts are made of\n\nEvery meaningful API on the internet returns nested JSON. OpenAI\nhides the assistant's text three levels deep (`choices[0]\n.message.content`). Anthropic does it slightly differently\n(`content[0].text`). GitHub returns a `repository` inside a\n`repositories` array inside a `search_result`. Stripe wraps every\npayment in a `data` array inside an `object: list` envelope.\n\nReading AI code, you'll see chains like\n`response[\"choices\"][0][\"message\"][\"content\"]` constantly. Knowing\nhow to read these chains, *and how to make them safe when a key\nmight be missing*, is what separates an AI script that survives\nreal traffic from one that crashes once a day on edge cases.\n\n## The mental model\n\nA nested response is a tree. Each `[...]` step takes you one level\ndeeper:\n\n- `response[\"choices\"]` — first step, you're now inside the list of\n  choices.\n- `response[\"choices\"][0]` — second step, you're now inside the\n  first choice (a dict).\n- `response[\"choices\"][0][\"message\"]` — third step, you're inside\n  the message dict.\n- `response[\"choices\"][0][\"message\"][\"content\"]` — fourth step,\n  you have the string.\n\nEach step assumes the level above succeeded. If `choices` is missing\nentirely, the second step crashes with a `KeyError`. If `choices`\nis an empty list, the `[0]` step crashes with `IndexError`. Four\nlevels of nesting means four chances to crash.\n\n## Two ways to access — and they fail differently\n\nThere are two ways to pull a value out of a dict in Python, and\nthey have meaningfully different failure modes:\n\n```python\nresponse[\"choices\"]            # dict[key] — KeyError if missing\nresponse.get(\"choices\")        # dict.get(key) — returns None if missing\nresponse.get(\"choices\", [])    # dict.get(key, default) — returns the default\n```\n\n`response[\"choices\"]` is *strict*. If the key isn't there, the\nprogram crashes loudly. That's the right shape when the field is\n*supposed* to be there and a missing one is a real bug.\n\n`response.get(\"choices\")` is *forgiving*. If the key isn't there,\nit returns `None` and execution continues. That's the right shape\nwhen the field is *optional* — for example, Anthropic only includes\na `usage` field on completed responses, never on streaming chunks.\n\n`response.get(\"choices\", [])` returns the default you specify\ninstead of `None`. This is useful when the next step is a list\noperation — the default is an empty list, so `for choice in\nresponse.get(\"choices\", [])` works even when `choices` is missing.\n\n## A worked example\n\nThe editor on the right has a real OpenAI/Anthropic-shaped response\nand pulls the assistant text out with the standard four-step chain:\n\n```python\nresponse = {\n    \"choices\": [\n        {\n            \"message\": {\"role\": \"assistant\", \"content\": \"the answer is 42\"},\n            \"finish_reason\": \"stop\"\n        }\n    ],\n    ...\n}\n\ntext = response[\"choices\"][0][\"message\"][\"content\"]\nprint(text)\n```\n\nThe chain reads left-to-right: get the `choices` list, take the\nfirst item, drill into `message`, pull out `content`. That's the\nexact line AI ships in any wrapper it writes around an LLM call.\nOutput: `the answer is 42`.\n\n## Where AI specifically gets this wrong\n\nThree patterns to flag in code Cursor writes you.\n\n**One: deep `[]` chains with no protection.** Code like\n`response[\"choices\"][0][\"message\"][\"content\"]` *assumes* every\nlevel exists. Real production traffic includes weird edge cases:\nempty `choices` (a content-filtered response), missing `message`\n(an old API version), missing `content` (a tool call instead). One\nbad response and the script crashes. We'll cover the safe shape in\nthe next read step.\n\n**Two: using `.get()` *and* indexing the result.**\n`response.get(\"choices\")[0]` is worse than the strict version. If\n`choices` is missing, `.get` returns `None`, then `None[0]` raises\n`TypeError: 'NoneType' object is not subscriptable`. You traded a\nclear `KeyError` for a confusing `TypeError` and called it\n\"defensive.\" The right shape is `.get(\"choices\", [])` — return a\nlist either way.\n\n**Three: mixing `.get()` and `[]` randomly.** In a single chain you\neither commit to strict (`[]` everywhere) or defensive (`.get()`\nwith sensible defaults). AI mixes them, which gives you all the\ndisadvantages: chains that *might* crash and *might* return `None`,\nwith no way to predict which until it does. Pick a posture per\nchain. Strict for required fields, defensive for optional ones.\n\nRun the editor. Four levels of nesting, one clean string out the\nother side.",
+          "cta": "Got it",
+          "code": "# the shape of a real LLM response (hardcoded — Pyodide can't make\n# a live API call, but the JSON below is the actual shape from\n# OpenAI/Anthropic chat completions):\n\nresponse = {\n    \"id\": \"chatcmpl-abc123\",\n    \"model\": \"gpt-4o-mini\",\n    \"choices\": [\n        {\n            \"index\": 0,\n            \"message\": {\n                \"role\": \"assistant\",\n                \"content\": \"the answer is 42\"\n            },\n            \"finish_reason\": \"stop\"\n        }\n    ],\n    \"usage\": {\"prompt_tokens\": 12, \"completion_tokens\": 8}\n}\n\ntext = response[\"choices\"][0][\"message\"][\"content\"]\nprint(text)\n",
+          "runnable": true
+        },
+        {
+          "type": "mc",
+          "id": "http-and-apis/parsing-nested-responses/s02-02-which-access-is-safe",
+          "xp": 2,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Plain `response[key]` raises `KeyError` if the key is missing. The other three all check or default before reading.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Option A is the only strict access. The other three protect against the missing key in different ways.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 55,
+          "concept": "get-vs-bracket-access",
+          "prompt": "The response dict has no `\"name\"` key. Four lines try to read it.\nThree of them work without crashing. Which one *crashes* with\n`KeyError`?\n",
+          "options": [
+            {
+              "id": "a",
+              "label": "`a = response[\"name\"]`"
+            },
+            {
+              "id": "b",
+              "label": "`b = response.get(\"name\")`",
+              "explain": "`.get(key)` returns `None` for missing keys, doesn't raise. Safe."
+            },
+            {
+              "id": "c",
+              "label": "`c = response.get(\"name\", \"anonymous\")`",
+              "explain": "`.get(key, default)` returns the default for missing keys. Safe."
+            },
+            {
+              "id": "d",
+              "label": "`d = response[\"name\"] if \"name\" in response else \"anonymous\"`",
+              "explain": "The `in` check happens *before* the `[]`, so the dangerous bracket access never runs when the key is missing. Safe."
+            }
+          ],
+          "answerIds": [
+            "a"
+          ],
+          "shuffle": false,
+          "code": "response = {\"id\": 7}    # no \"name\" key\n\n# four ways to read response[\"name\"]:\na = response[\"name\"]\nb = response.get(\"name\")\nc = response.get(\"name\", \"anonymous\")\nd = response[\"name\"] if \"name\" in response else \"anonymous\"\n",
+          "runnable": true
+        },
+        {
+          "type": "read",
+          "id": "http-and-apis/parsing-nested-responses/s03-03-walking-lists-and-dicts",
+          "xp": 2,
+          "hint": [],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 130,
+          "concept": "defensive-nested-walk",
+          "body": "# Walking lists and dicts safely — the patterns AI should ship\n\nThe intro covered single-level access. Real responses are deeper —\nlists of dicts of dicts of lists. This step covers the patterns\nAI *should* be using when it walks them, and the trap to watch for\nwhen it doesn't.\n\n## The chained `.get(...)` pattern\n\nThe single most useful trick: `.get` on a dict returns a value\n*you can call `.get` on again* — as long as you give it a dict-shaped\ndefault:\n\n```python\nowner = repo.get(\"owner\", {}).get(\"login\", \"<unknown>\")\n```\n\nTwo `.get`s, two defaults. If `owner` is missing, the first `.get`\nreturns `{}` (an empty dict), and the second `.get` runs on *that*,\nreturning `\"<unknown>\"`. If `owner` is present but doesn't have a\n`login`, the second `.get` returns `\"<unknown>\"` directly. Either\nway, no crash.\n\nThe rule for chains: **make sure the default at each step matches\nthe shape of the next step.** Dict next? Default to `{}`. List\nnext? Default to `[]`. Walking ends in a value? Default to whatever\nmakes sense (`\"\"`, `0`, `None`).\n\n## Loops over `.get(..., [])`\n\nWhen the next step in the chain is \"iterate,\" default to an empty\nlist:\n\n```python\nfor repo in response.get(\"items\", []):\n    ...\n```\n\nIf `items` is missing or `None`, the loop body simply doesn't\nexecute — nothing crashes. Compare to the unsafe version:\n\n```python\nfor repo in response[\"items\"]:    # KeyError if missing\n    ...\n\nfor repo in response.get(\"items\"):  # TypeError if missing (None is not iterable)\n    ...\n```\n\nThe first crashes loudly on missing `items`. The second crashes\n*even louder* and points at the wrong line — the `for` rather than\nthe access. The `.get(..., [])` shape avoids both failure modes.\n\n## When to be strict and when to be forgiving\n\nThe temptation is to slap `.get` on everything. Don't. **Strict\naccess is right when the field is required** — for example, the\n`id` field on an OpenAI response. If `id` is missing, the response\nis so broken that \"default to None\" is hiding a real problem.\nCrash, log it, fix the upstream.\n\n**Forgiving access is right when the field is genuinely optional**\n— `usage` (only on final responses), `tool_calls` (only when the\nmodel called a tool), `images` (only on multimodal responses). For\nthese, `.get(..., default)` is the right shape because absence is\nan expected state.\n\nThe rule of thumb: read the API docs (or one good response) and\nmark each field as required or optional. Strict access for\nrequired, defensive for optional. Mixing them randomly is what\ngives you the worst of both worlds.\n\n## A worked example\n\nThe editor on the right walks a GitHub-shaped search response with\nthe chained `.get` pattern:\n\n```python\nfor repo in github_response.get(\"items\", []):\n    name = repo.get(\"name\", \"<unnamed>\")\n    owner = repo.get(\"owner\", {}).get(\"login\", \"<unknown>\")\n    stars = repo.get(\"stargazers_count\", 0)\n    print(f\"{name} by {owner}: {stars}\")\n```\n\nThree things to notice:\n\n1. The outer `for` defaults to `[]`. If the response was missing\n   `items` entirely, the loop simply doesn't run.\n2. `owner` is a nested dict — the default `{}` lets the next `.get`\n   work whether or not `owner` is present.\n3. Each leaf field has a sensible default for its type:\n   `\"<unnamed>\"` for strings, `0` for numbers.\n\nOutput:\n```\nfastapi by tiangolo: 70000\nhttpx by encode: 12000\n```\n\nIf you removed the `owner` field from the second item entirely,\nthe code still runs — it would print `httpx by <unknown>: 12000`.\n\n## Where AI specifically gets this wrong\n\nThree patterns to flag.\n\n**One: `.get(...)` with no default and then chaining.** Already\ncovered, but it's the single most common parse bug AI ships. If you\nsee `.get(\"items\")[0]` anywhere, that's a `TypeError` waiting for\nthe first response that omits `items`.\n\n**Two: forgetting that *list* indexing is unsafe too.** Even with\nchained `.get`s on dicts, `choices[0]` blows up if `choices` is an\nempty list. The defensive version: `choices = response.get(\"choices\",\n[])` then `if not choices: return None` then `choices[0]`. We'll\npractice this in the fix step.\n\n**Three: silent `None` propagation.** If the chain returns `None`\nfrom a missing field, and the caller doesn't check, the `None`\nflows downstream and crashes somewhere unrelated. Always handle the\n\"missing\" case at the parse site — log it, return a sentinel, raise\na custom exception. Don't let `None` leak.\n\nRun the editor. The walk handles two complete repos cleanly, but\nthe same code would gracefully handle a response missing any of the\nnested fields.",
+          "cta": "Got it",
+          "code": "# GitHub search API response shape (simplified):\ngithub_response = {\n    \"total_count\": 2,\n    \"items\": [\n        {\n            \"name\": \"fastapi\",\n            \"owner\": {\"login\": \"tiangolo\"},\n            \"stargazers_count\": 70000,\n        },\n        {\n            \"name\": \"httpx\",\n            \"owner\": {\"login\": \"encode\"},\n            \"stargazers_count\": 12000,\n        },\n    ],\n}\n\n# the safe walk: default to [] for the list, .get for nested fields\nfor repo in github_response.get(\"items\", []):\n    name = repo.get(\"name\", \"<unnamed>\")\n    owner = repo.get(\"owner\", {}).get(\"login\", \"<unknown>\")\n    stars = repo.get(\"stargazers_count\", 0)\n    print(f\"{name} by {owner}: {stars}\")\n",
+          "runnable": true
+        },
+        {
+          "type": "predict",
+          "id": "http-and-apis/parsing-nested-responses/s04-04-predict-the-deep-key",
+          "xp": 3,
+          "hint": [
+            {
+              "level": 1,
+              "body": "First response: full chain works. Second: `choices` is `[]`, so the `if not choices:` branch fires. Third: `r.get(\"choices\", [])` returns `[]` again, same branch fires.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Outputs: `hi`, `(no content)`, `(no content)`. The `not choices` check covers both the empty-list case and the missing-key case in one line.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 70,
+          "concept": "chained-get-output",
+          "code": "responses = [\n    {\"choices\": [{\"message\": {\"content\": \"hi\"}}]},\n    {\"choices\": []},\n    {},\n]\n\nfor r in responses:\n    choices = r.get(\"choices\", [])\n    if not choices:\n        print(\"(no content)\")\n        continue\n    content = choices[0].get(\"message\", {}).get(\"content\", \"(missing)\")\n    print(content)\n",
+          "prompt": "Three responses, each with a different shape: full, empty `choices`\nlist, and totally missing. The loop walks each defensively. What does\nit print? (Three lines, in order.)\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "hi\n(no content)\n(no content)\n",
+            "normalize": "collapse-trailing-newline"
+          }
+        },
+        {
+          "type": "fill",
+          "id": "http-and-apis/parsing-nested-responses/s05-05-fill-the-get-default",
+          "xp": 3,
+          "hint": [
+            {
+              "level": 1,
+              "body": "The default needs to be an empty iterable. Two characters.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "It's `[]` — an empty list. `r.get(\"tags\", [])` returns the tags list when present, an empty list when missing. The `for` loop simply doesn't iterate over an empty list.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 60,
+          "concept": "get-with-list-default",
+          "prompt": "Cursor wrote a loop that iterates a possibly-missing `tags` field on\na response. To loop safely whether `tags` is present or not, the\ndefault needs to be an iterable.\n\nFill in the default value passed to `.get` on line 4 so the loop\ndoesn't crash when `tags` is missing. The result for the first\nresponse should print nothing (no tags), and the second should print\n`python` and `api` on two lines.\n\nDefault value: ___\n",
+          "code": "responses = [{\"id\": 1}, {\"id\": 2, \"tags\": [\"python\", \"api\"]}]\n\nfor r in responses:\n    for tag in r.get(\"tags\", ___):\n        print(tag)\n",
+          "blanks": [
+            {
+              "id": "default",
+              "accept": [
+                "[]",
+                "list()"
+              ],
+              "caseSensitive": true,
+              "normalize": "trim"
+            }
+          ]
+        },
+        {
+          "type": "fix",
+          "id": "http-and-apis/parsing-nested-responses/s06-06-fix-the-keyerror-chain",
+          "xp": 4,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Replace the function body with: `choices = response.get(\"choices\", [])`, then `if not choices: return \"(blocked)\"`, then `return choices[0].get(\"message\", {}).get(\"content\", \"(missing)\")`.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Three-line body: `choices = response.get(\"choices\", [])`. `if not choices: return \"(blocked)\"`. `return choices[0].get(\"message\", {}).get(\"content\", \"(missing)\")`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 95,
+          "concept": "replacing-strict-chain",
+          "brokenCode": "def extract_text(response):\n    return response[\"choices\"][0][\"message\"][\"content\"]\n\nblocked_response = {\"id\": \"abc\", \"model\": \"gpt-4o-mini\"}\n\nprint(extract_text(blocked_response))\n",
+          "prompt": "Claude wrote a parser that pulls the assistant text out of a fake\nLLM response. The chain uses strict `[]` access at every level. If\nthe response was filtered (no `choices`), the parser crashes with\n`KeyError`.\n\nReplace the strict chain on line 6 with the safe pattern: default\n`choices` to `[]`, return the string `\"(blocked)\"` if the list is\nempty, otherwise pull `message.content` out with chained `.get`s.\n\nThe starter has a content-filtered response (no `choices` key).\nExpected output:\n```\n(blocked)\n```\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "(blocked)",
+            "normalize": "collapse-trailing-newline"
+          },
+          "bugLines": [
+            2
+          ],
+          "revealAfter": 4
+        },
+        {
+          "type": "fix",
+          "id": "http-and-apis/parsing-nested-responses/s07-07-fix-the-silent-none",
+          "xp": 4,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Replace the silent chain with explicit checks. `choices = response.get(\"choices\")`. `if not choices: raise ValueError(\"missing field: choices\")`. Then check each subsequent level the same way.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Final shape: get each level into a variable, raise `ValueError(f\"missing field: {field}\")` if it's None or empty. Then change the bottom to `try: print(extract_text(partial_response))` followed by `except ValueError as err: print(err)`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 100,
+          "concept": "handling-missing-fields-loudly",
+          "brokenCode": "def extract_text(response):\n    return (\n        response.get(\"choices\", [{}])[0]\n        .get(\"message\", {})\n        .get(\"content\")\n    )\n\npartial_response = {\n    \"choices\": [{\"message\": {\"role\": \"assistant\"}}]\n}\n\nprint(extract_text(partial_response))\n",
+          "prompt": "AI wrote a parser that uses chained `.get` *without defaults*. When a\nfield is missing, the chain returns `None` and the function quietly\nreturns `None`. The caller has no idea anything went wrong, so the\nbug surfaces somewhere unrelated.\n\nFix the function to *raise `ValueError(f\"missing field: {field}\")`*\nwhenever the field can't be found. Specifically:\n\n- If `choices` is missing or the list is empty, raise with field\n  `\"choices\"`.\n- If `message` is missing on the first choice, raise with field\n  `\"message\"`.\n- If `content` is missing, raise with field `\"content\"`.\n\nThe starter has a response missing `content`. Wrap the call in\n`try/except ValueError as err: print(err)`.\n\nExpected output:\n```\nmissing field: content\n```\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "missing field: content",
+            "normalize": "collapse-trailing-newline"
+          },
+          "bugLines": [
+            2,
+            3,
+            4,
+            5,
+            6,
+            11
+          ],
+          "revealAfter": 4
+        },
+        {
+          "type": "write",
+          "id": "http-and-apis/parsing-nested-responses/s08-08-write-extract-content",
+          "xp": 5,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Three checkpoints, each with a default-then-check shape: get the value, check if it's missing or empty, return the appropriate sentinel. Otherwise drill deeper.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "`choices = response.get(\"choices\", [])` then `if not choices: return \"(no choices)\"`. `message = choices[0].get(\"message\")` then `if message is None: return \"(no message)\"`. Same for `content`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 120,
+          "concept": "write-defensive-parser",
+          "prompt": "Write a function `extract_content(response)` that pulls the\nassistant's reply text out of an OpenAI/Anthropic-shaped response.\n\nThe chain you want is roughly:\n`response[\"choices\"][0][\"message\"][\"content\"]`\n\nMake it defensive:\n- If `choices` is missing or empty, return the string `\"(no choices)\"`.\n- If `message` is missing on the first choice, return `\"(no message)\"`.\n- If `content` is missing, return `\"(no content)\"`.\n- Otherwise return the actual content string.\n\nThe starter has three test responses. Print the result for each.\n\nExpected output:\n```\nhello world\n(no choices)\n(no content)\n```\n",
+          "starter": "# define extract_content below\n\nresponses = [\n    {\"choices\": [{\"message\": {\"role\": \"assistant\", \"content\": \"hello world\"}}]},\n    {\"choices\": []},\n    {\"choices\": [{\"message\": {\"role\": \"assistant\"}}]},\n]\n\nfor r in responses:\n    print(extract_content(r))\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "hello world\n(no choices)\n(no content)\n",
+            "normalize": "collapse-trailing-newline"
+          },
+          "solution": "def extract_content(response):\n    choices = response.get(\"choices\", [])\n    if not choices:\n        return \"(no choices)\"\n    message = choices[0].get(\"message\")\n    if message is None:\n        return \"(no message)\"\n    content = message.get(\"content\")\n    if content is None:\n        return \"(no content)\"\n    return content\n\nresponses = [\n    {\"choices\": [{\"message\": {\"role\": \"assistant\", \"content\": \"hello world\"}}]},\n    {\"choices\": []},\n    {\"choices\": [{\"message\": {\"role\": \"assistant\"}}]},\n]\n\nfor r in responses:\n    print(extract_content(r))\n",
+          "hiddenTests": []
+        },
+        {
+          "type": "checkpoint",
+          "id": "http-and-apis/parsing-nested-responses/s09-09-checkpoint",
+          "xp": 8,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Outer loop over `response.get(\"items\", [])`. Per repo, three `.get`s with defaults: `name`, `stargazers_count`, and the chained `owner.login`. Format with an f-string and append to a list.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "The owner chain is the key one: `repo.get(\"owner\", {}).get(\"login\", \"<unknown>\")`. The `{}` default is what makes the second `.get` safe when `owner` is missing entirely.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "check",
+          "estSeconds": 160,
+          "concept": "nested-response-checkpoint",
+          "prompt": "Last drill of the chapter. Write a function\n`summarize_search(response)` that takes a GitHub-shaped search\nresponse and returns a list of strings, one per repo, in this format:\n\n```\n<name> (★<stars>) — <owner>\n```\n\nWalk the response defensively:\n- If `items` is missing or empty, return `[]`.\n- For each repo, default `name` to `\"<unnamed>\"`, `stargazers_count`\n  to `0`, and the owner's `login` to `\"<unknown>\"`.\n\nThe starter has a response with two complete repos and one repo\nmissing its `owner`. Use the bottom loop as-is.\n\nExpected output:\n```\nfastapi (★70000) — tiangolo\nhttpx (★12000) — encode\nmystery-repo (★5) — <unknown>\n```\n",
+          "starter": "# define summarize_search below\n\nresponse = {\n    \"total_count\": 3,\n    \"items\": [\n        {\"name\": \"fastapi\", \"owner\": {\"login\": \"tiangolo\"}, \"stargazers_count\": 70000},\n        {\"name\": \"httpx\", \"owner\": {\"login\": \"encode\"}, \"stargazers_count\": 12000},\n        {\"name\": \"mystery-repo\", \"stargazers_count\": 5},\n    ],\n}\n\nfor line in summarize_search(response):\n    print(line)\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "fastapi (★70000) — tiangolo\nhttpx (★12000) — encode\nmystery-repo (★5) — <unknown>\n",
+            "normalize": "collapse-trailing-newline"
+          },
+          "solution": "def summarize_search(response):\n    items = response.get(\"items\", [])\n    lines = []\n    for repo in items:\n        name = repo.get(\"name\", \"<unnamed>\")\n        stars = repo.get(\"stargazers_count\", 0)\n        owner = repo.get(\"owner\", {}).get(\"login\", \"<unknown>\")\n        lines.append(f\"{name} (★{stars}) — {owner}\")\n    return lines\n\nresponse = {\n    \"total_count\": 3,\n    \"items\": [\n        {\"name\": \"fastapi\", \"owner\": {\"login\": \"tiangolo\"}, \"stargazers_count\": 70000},\n        {\"name\": \"httpx\", \"owner\": {\"login\": \"encode\"}, \"stargazers_count\": 12000},\n        {\"name\": \"mystery-repo\", \"stargazers_count\": 5},\n    ],\n}\n\nfor line in summarize_search(response):\n    print(line)\n",
+          "passThreshold": 0.66
+        }
+      ],
+      "xpTotal": 32
     }
   ],
-  "xpTotal": 64
+  "xpTotal": 96
 }

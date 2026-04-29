@@ -1,0 +1,33 @@
+xp: 3
+estSeconds: 70
+concept: chained-get-output
+code: |
+  responses = [
+      {"choices": [{"message": {"content": "hi"}}]},
+      {"choices": []},
+      {},
+  ]
+
+  for r in responses:
+      choices = r.get("choices", [])
+      if not choices:
+          print("(no content)")
+          continue
+      content = choices[0].get("message", {}).get("content", "(missing)")
+      print(content)
+prompt: |
+  Three responses, each with a different shape: full, empty `choices`
+  list, and totally missing. The loop walks each defensively. What does
+  it print? (Three lines, in order.)
+grader:
+  kind: stdout-equality
+  expected: |
+    hi
+    (no content)
+    (no content)
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "First response: full chain works. Second: `choices` is `[]`, so the `if not choices:` branch fires. Third: `r.get(\"choices\", [])` returns `[]` again, same branch fires."
+  - level: 2
+    body: "Outputs: `hi`, `(no content)`, `(no content)`. The `not choices` check covers both the empty-list case and the missing-key case in one line."

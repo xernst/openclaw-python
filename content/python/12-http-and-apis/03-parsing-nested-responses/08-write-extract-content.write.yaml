@@ -1,0 +1,68 @@
+xp: 5
+estSeconds: 120
+concept: write-defensive-parser
+prompt: |
+  Write a function `extract_content(response)` that pulls the
+  assistant's reply text out of an OpenAI/Anthropic-shaped response.
+
+  The chain you want is roughly:
+  `response["choices"][0]["message"]["content"]`
+
+  Make it defensive:
+  - If `choices` is missing or empty, return the string `"(no choices)"`.
+  - If `message` is missing on the first choice, return `"(no message)"`.
+  - If `content` is missing, return `"(no content)"`.
+  - Otherwise return the actual content string.
+
+  The starter has three test responses. Print the result for each.
+
+  Expected output:
+  ```
+  hello world
+  (no choices)
+  (no content)
+  ```
+starter: |
+  # define extract_content below
+
+  responses = [
+      {"choices": [{"message": {"role": "assistant", "content": "hello world"}}]},
+      {"choices": []},
+      {"choices": [{"message": {"role": "assistant"}}]},
+  ]
+
+  for r in responses:
+      print(extract_content(r))
+grader:
+  kind: stdout-equality
+  expected: |
+    hello world
+    (no choices)
+    (no content)
+  normalize: collapse-trailing-newline
+solution: |
+  def extract_content(response):
+      choices = response.get("choices", [])
+      if not choices:
+          return "(no choices)"
+      message = choices[0].get("message")
+      if message is None:
+          return "(no message)"
+      content = message.get("content")
+      if content is None:
+          return "(no content)"
+      return content
+
+  responses = [
+      {"choices": [{"message": {"role": "assistant", "content": "hello world"}}]},
+      {"choices": []},
+      {"choices": [{"message": {"role": "assistant"}}]},
+  ]
+
+  for r in responses:
+      print(extract_content(r))
+hint:
+  - level: 1
+    body: "Three checkpoints, each with a default-then-check shape: get the value, check if it's missing or empty, return the appropriate sentinel. Otherwise drill deeper."
+  - level: 2
+    body: "`choices = response.get(\"choices\", [])` then `if not choices: return \"(no choices)\"`. `message = choices[0].get(\"message\")` then `if message is None: return \"(no message)\"`. Same for `content`."

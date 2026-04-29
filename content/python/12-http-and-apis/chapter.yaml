@@ -5,3 +5,4 @@ blurb: "Every AI script eventually calls an API. Learn the shape of `httpx.get`,
 lessons:
   - 01-the-shape-of-a-call
   - 02-status-and-errors
+  - 03-parsing-nested-responses

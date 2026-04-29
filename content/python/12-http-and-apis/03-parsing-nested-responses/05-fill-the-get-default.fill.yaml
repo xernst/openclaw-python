@@ -1,0 +1,31 @@
+xp: 3
+estSeconds: 60
+concept: get-with-list-default
+prompt: |
+  Cursor wrote a loop that iterates a possibly-missing `tags` field on
+  a response. To loop safely whether `tags` is present or not, the
+  default needs to be an iterable.
+
+  Fill in the default value passed to `.get` on line 4 so the loop
+  doesn't crash when `tags` is missing. The result for the first
+  response should print nothing (no tags), and the second should print
+  `python` and `api` on two lines.
+
+  Default value: ___
+code: |
+  responses = [{"id": 1}, {"id": 2, "tags": ["python", "api"]}]
+
+  for r in responses:
+      for tag in r.get("tags", ___):
+          print(tag)
+blanks:
+  - id: default
+    accept:
+      - "[]"
+      - "list()"
+    caseSensitive: true
+hint:
+  - level: 1
+    body: "The default needs to be an empty iterable. Two characters."
+  - level: 2
+    body: "It's `[]` — an empty list. `r.get(\"tags\", [])` returns the tags list when present, an empty list when missing. The `for` loop simply doesn't iterate over an empty list."

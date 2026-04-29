@@ -1,0 +1,14 @@
+slug: parsing-nested-responses
+title: "Parsing nested API responses — without crashing on a missing key"
+estMinutes: 9
+prerequisites: []
+order:
+  - 01-intro.read.md
+  - 02-which-access-is-safe.mc.yaml
+  - 03-walking-lists-and-dicts.read.md
+  - 04-predict-the-deep-key.predict.yaml
+  - 05-fill-the-get-default.fill.yaml
+  - 06-fix-the-keyerror-chain.fix.yaml
+  - 07-fix-the-silent-none.fix.yaml
+  - 08-write-extract-content.write.yaml
+  - 09-checkpoint.checkpoint.yaml

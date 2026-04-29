@@ -1,0 +1,55 @@
+xp: 4
+estSeconds: 100
+concept: handling-missing-fields-loudly
+prompt: |
+  AI wrote a parser that uses chained `.get` *without defaults*. When a
+  field is missing, the chain returns `None` and the function quietly
+  returns `None`. The caller has no idea anything went wrong, so the
+  bug surfaces somewhere unrelated.
+
+  Fix the function to *raise `ValueError(f"missing field: {field}")`*
+  whenever the field can't be found. Specifically:
+
+  - If `choices` is missing or the list is empty, raise with field
+    `"choices"`.
+  - If `message` is missing on the first choice, raise with field
+    `"message"`.
+  - If `content` is missing, raise with field `"content"`.
+
+  The starter has a response missing `content`. Wrap the call in
+  `try/except ValueError as err: print(err)`.
+
+  Expected output:
+  ```
+  missing field: content
+  ```
+brokenCode: |
+  def extract_text(response):
+      return (
+          response.get("choices", [{}])[0]
+          .get("message", {})
+          .get("content")
+      )
+
+  partial_response = {
+      "choices": [{"message": {"role": "assistant"}}]
+  }
+
+  print(extract_text(partial_response))
+bugLines:
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 11
+grader:
+  kind: stdout-equality
+  expected: "missing field: content"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "Replace the silent chain with explicit checks. `choices = response.get(\"choices\")`. `if not choices: raise ValueError(\"missing field: choices\")`. Then check each subsequent level the same way."
+  - level: 2
+    body: "Final shape: get each level into a variable, raise `ValueError(f\"missing field: {field}\")` if it's None or empty. Then change the bottom to `try: print(extract_text(partial_response))` followed by `except ValueError as err: print(err)`."
+revealAfter: 4

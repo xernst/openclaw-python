@@ -1,0 +1,37 @@
+xp: 4
+estSeconds: 95
+concept: replacing-strict-chain
+prompt: |
+  Claude wrote a parser that pulls the assistant text out of a fake
+  LLM response. The chain uses strict `[]` access at every level. If
+  the response was filtered (no `choices`), the parser crashes with
+  `KeyError`.
+
+  Replace the strict chain on line 6 with the safe pattern: default
+  `choices` to `[]`, return the string `"(blocked)"` if the list is
+  empty, otherwise pull `message.content` out with chained `.get`s.
+
+  The starter has a content-filtered response (no `choices` key).
+  Expected output:
+  ```
+  (blocked)
+  ```
+brokenCode: |
+  def extract_text(response):
+      return response["choices"][0]["message"]["content"]
+
+  blocked_response = {"id": "abc", "model": "gpt-4o-mini"}
+
+  print(extract_text(blocked_response))
+bugLines:
+  - 2
+grader:
+  kind: stdout-equality
+  expected: "(blocked)"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "Replace the function body with: `choices = response.get(\"choices\", [])`, then `if not choices: return \"(blocked)\"`, then `return choices[0].get(\"message\", {}).get(\"content\", \"(missing)\")`."
+  - level: 2
+    body: "Three-line body: `choices = response.get(\"choices\", [])`. `if not choices: return \"(blocked)\"`. `return choices[0].get(\"message\", {}).get(\"content\", \"(missing)\")`."
+revealAfter: 4

@@ -1,0 +1,34 @@
+xp: 2
+estSeconds: 55
+concept: get-vs-bracket-access
+code: |
+  response = {"id": 7}    # no "name" key
+
+  # four ways to read response["name"]:
+  a = response["name"]
+  b = response.get("name")
+  c = response.get("name", "anonymous")
+  d = response["name"] if "name" in response else "anonymous"
+prompt: |
+  The response dict has no `"name"` key. Four lines try to read it.
+  Three of them work without crashing. Which one *crashes* with
+  `KeyError`?
+options:
+  - id: a
+    label: "`a = response[\"name\"]`"
+  - id: b
+    label: "`b = response.get(\"name\")`"
+    explain: "`.get(key)` returns `None` for missing keys, doesn't raise. Safe."
+  - id: c
+    label: "`c = response.get(\"name\", \"anonymous\")`"
+    explain: "`.get(key, default)` returns the default for missing keys. Safe."
+  - id: d
+    label: "`d = response[\"name\"] if \"name\" in response else \"anonymous\"`"
+    explain: "The `in` check happens *before* the `[]`, so the dangerous bracket access never runs when the key is missing. Safe."
+answerIds:
+  - a
+hint:
+  - level: 1
+    body: "Plain `response[key]` raises `KeyError` if the key is missing. The other three all check or default before reading."
+  - level: 2
+    body: "Option A is the only strict access. The other three protect against the missing key in different ways."
