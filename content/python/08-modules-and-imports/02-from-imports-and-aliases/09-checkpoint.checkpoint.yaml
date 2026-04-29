@@ -1,0 +1,36 @@
+xp: 8
+estSeconds: 130
+concept: imports-recap
+prompt: |
+  Last one. Cursor wrote a one-page script that's supposed to print today's
+  year using `datetime`, but the imports are wrong. Three things to fix:
+
+  1. The first line uses `import datetime as dt` but then later calls
+     `datetime.now()` directly — those don't match.
+  2. The second line `from datetime import *` is the antipattern. Replace
+     it with a targeted `from datetime import datetime`.
+  3. After fixing the first two, the third line works on its own — but
+     remove the redundant first line entirely. You only need one of the two
+     ways to reach `datetime.now()`.
+
+  After the fix, the script should print the current year (a 4-digit number).
+  We'll grade by checking the output is `2026` (matches the current year).
+starter: |
+  import datetime as dt
+  from datetime import *
+
+  print(datetime.now().year)
+grader:
+  kind: stdout-equality
+  expected: "2026"
+  normalize: collapse-trailing-newline
+solution: |
+  from datetime import datetime
+
+  print(datetime.now().year)
+passThreshold: 0.66
+hint:
+  - level: 1
+    body: "The cleanest fix is one line: `from datetime import datetime`. That gives you `datetime.now()` without the alias and without the star import."
+  - level: 2
+    body: "Replace lines 1-2 with a single `from datetime import datetime`. Line 3 (`print(datetime.now().year)`) stays as-is."

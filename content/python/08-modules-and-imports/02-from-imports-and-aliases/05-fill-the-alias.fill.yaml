@@ -1,0 +1,23 @@
+xp: 3
+estSeconds: 55
+concept: as-keyword
+prompt: |
+  Cursor wrote a data-science snippet and aliased `pandas` as `pd` — the
+  industry-standard rename. The keyword that does the renaming is missing
+  on line 1. Fill it in.
+  ```python
+  import pandas ___ pd
+
+  # later in the file:
+  # df = pd.DataFrame(rows)
+  ```
+blanks:
+  - id: keyword
+    accept:
+      - as
+    caseSensitive: true
+hint:
+  - level: 1
+    body: "There's exactly one Python keyword that renames an import inline. Two letters."
+  - level: 2
+    body: "It's `as`. The full line reads `import pandas as pd`. You'll see this exact line at the top of half of all AI-generated Python."

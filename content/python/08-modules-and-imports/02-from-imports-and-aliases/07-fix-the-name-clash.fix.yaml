@@ -1,0 +1,41 @@
+xp: 4
+estSeconds: 75
+concept: from-import-shadowing
+prompt: |
+  Cursor wrote this and `sum` no longer works the way it should. The bug:
+  `from math import *` pulled in everything from `math`, including
+  `math.fsum`, but more importantly the user *also* defined a local variable
+  called `sum`, which silently shadows Python's built-in `sum()` function.
+
+  Replace the star import on line 1 with a targeted import that only brings
+  in `pi` and `sqrt`. After that, `sum([1, 2, 3])` works again. The script
+  should print:
+  ```
+  3.141592653589793
+  9.0
+  6
+  ```
+brokenCode: |
+  from math import *
+
+  sum = 99   # shadows the built-in (don't do this)
+
+  print(pi)
+  print(sqrt(81))
+  print(sum([1, 2, 3]))
+bugLines:
+  - 1
+  - 3
+grader:
+  kind: stdout-equality
+  expected: |
+    3.141592653589793
+    9.0
+    6
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "Two fixes. Replace `from math import *` with a targeted import. Then drop the line that reassigns `sum`."
+  - level: 2
+    body: "Line 1: `from math import pi, sqrt`. Delete line 3 (`sum = 99`) entirely so the built-in `sum` stays available."
+revealAfter: 4

@@ -1,0 +1,23 @@
+xp: 3
+estSeconds: 55
+concept: alias-resolution
+code: |
+  import math as m
+  from math import pi as PI
+
+  print(round(m.pi, 2))
+  print(round(PI, 2))
+prompt: |
+  Two ways of getting at `math.pi`. One uses the module alias, one renames
+  the constant directly. What does this print?
+grader:
+  kind: stdout-equality
+  expected: |
+    3.14
+    3.14
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "Both reach the same value, just via different local names. `round(x, 2)` rounds to 2 decimal places."
+  - level: 2
+    body: "`m.pi` and `PI` both equal `math.pi`. Each one rounded to 2 decimals is `3.14`. Two lines, both `3.14`."

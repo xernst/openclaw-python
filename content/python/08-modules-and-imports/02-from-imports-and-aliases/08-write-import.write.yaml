@@ -1,0 +1,40 @@
+xp: 5
+estSeconds: 90
+concept: write-aliased-import
+prompt: |
+  Write the imports and code so:
+
+  1. `json` is imported normally (no alias)
+  2. `dumps` and `loads` are pulled out of `json` directly (`from json import ...`)
+  3. The script encodes the dict `{"city": "boston"}` to a JSON string with
+     `dumps`, then decodes it back to a dict with `loads`, and prints the
+     decoded city.
+
+  Expected output:
+  ```
+  boston
+  ```
+starter: |
+  # imports go here:
+
+  data = {"city": "boston"}
+
+  # encode then decode:
+grader:
+  kind: stdout-equality
+  expected: "boston"
+  normalize: collapse-trailing-newline
+solution: |
+  import json
+  from json import dumps, loads
+
+  data = {"city": "boston"}
+
+  encoded = dumps(data)
+  decoded = loads(encoded)
+  print(decoded["city"])
+hint:
+  - level: 1
+    body: "Two import lines: `import json` and `from json import dumps, loads`. Then `dumps(data)` produces a string, `loads(...)` reads it back."
+  - level: 2
+    body: "`encoded = dumps(data)` then `decoded = loads(encoded)` then `print(decoded[\"city\"])`. The two import lines come first."

@@ -1,0 +1,25 @@
+xp: 2
+estSeconds: 40
+concept: alias-syntax
+prompt: |
+  Cursor offered four ways to import `numpy` as `np`. Only one is the
+  standard, working syntax. Which one?
+options:
+  - id: a
+    label: "`import numpy as np`"
+  - id: b
+    label: "`import np = numpy`"
+    explain: "Python isn't JavaScript. There's no `=` in an import statement."
+  - id: c
+    label: "`from numpy import np`"
+    explain: "That tries to pull a name called `np` *out of* numpy. There isn't one — `np` is the local alias, not a thing inside the library."
+  - id: d
+    label: "`alias numpy as np`"
+    explain: "There's no `alias` keyword in Python. Aliases happen via `as` inside an `import`."
+answerIds:
+  - a
+hint:
+  - level: 1
+    body: "The keyword is `as`, and it goes right after the module name in a regular `import`."
+  - level: 2
+    body: "`import numpy as np` is the convention. You'll see it at the top of nearly every AI-generated data script."

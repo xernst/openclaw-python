@@ -1,0 +1,25 @@
+xp: 4
+estSeconds: 70
+concept: missing-alias
+prompt: |
+  Cursor imported `math` as `m` on line 1 but then forgot the alias on line 3
+  and wrote `math.sqrt(...)` instead. The script crashes with
+  `NameError: name 'math' is not defined`.
+
+  Fix line 3 so the script prints `9.0` using the alias.
+brokenCode: |
+  import math as m
+
+  print(math.sqrt(81))
+bugLines:
+  - 3
+grader:
+  kind: stdout-equality
+  expected: "9.0"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "Line 1 renamed `math` to `m` for this file. The original name `math` no longer exists here."
+  - level: 2
+    body: "Change line 3 to `print(m.sqrt(81))`. Use the alias, not the original module name."
+revealAfter: 4

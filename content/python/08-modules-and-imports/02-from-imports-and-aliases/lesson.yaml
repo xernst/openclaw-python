@@ -1,0 +1,14 @@
+slug: from-imports-and-aliases
+title: "Aliases, multi-imports, and the `np.` you'll see everywhere"
+estMinutes: 7
+prerequisites: []
+order:
+  - 01-aliases.read.md
+  - 02-which-alias.mc.yaml
+  - 03-multi-and-star.read.md
+  - 04-predict-the-alias.predict.yaml
+  - 05-fill-the-alias.fill.yaml
+  - 06-fix-the-alias.fix.yaml
+  - 07-fix-the-name-clash.fix.yaml
+  - 08-write-import.write.yaml
+  - 09-checkpoint.checkpoint.yaml
