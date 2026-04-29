@@ -90,23 +90,23 @@ except Exception as e:
 Inherit from `Exception` (not `BaseException`):
 
 ```python
-class CrowdtestError(Exception):
+class OrderError(Exception):
     """Base for domain-specific errors."""
 
-class ParticipantNotFound(CrowdtestError):
+class ItemNotFound(OrderError):
     pass
 
-def get(pid):
-    if pid not in REG:
-        raise ParticipantNotFound(pid)
+def get(item_id):
+    if item_id not in INVENTORY:
+        raise ItemNotFound(item_id)
 ```
 
 A base class lets callers catch your whole family:
 
 ```python
 try:
-    get("P99")
-except CrowdtestError as e:
+    get("SKU-99")
+except OrderError as e:
     ...
 ```
 
