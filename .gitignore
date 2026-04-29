@@ -83,3 +83,4 @@ sample_data/
 LAUNCH.sh
 LAUNCH_TWEETS.md
 >>>>>>> openclaw/main
+lib/generated/manifest.json

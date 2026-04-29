@@ -137,7 +137,7 @@ This wedge is also what justifies its existence as an OSS / free product. The fo
 
 ### V2 — "Ship to r/learnpython" (target: 8 more weeks)
 - Expand to 16 lessons (add: error handling, file I/O, basic API calls, classes-just-enough, regex-just-enough, working with JSON, debugging strategies, "directing AI" meta-lessons)
-- De-Josh'd content (remove Kevin the dog, Ondine, Yankees, IU references — replace with rotating templated personas or generic examples)
+- De-personalized content (replace specific personal references with rotating templated personas or generic examples)
 - Optional account system (localStorage + magic link only, no passwords)
 - Reddit-ready landing page with clear "who this is for / who this isn't for"
 - Goal: 500 organic signups from one Reddit post
