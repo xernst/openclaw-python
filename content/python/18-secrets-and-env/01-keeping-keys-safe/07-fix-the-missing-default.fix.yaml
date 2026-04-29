@@ -1,0 +1,35 @@
+xp: 4
+estSeconds: 95
+concept: getenv-needs-default-or-guard
+prompt: |
+  Cursor read `MODEL` from the env without a default, so it's `None`
+  when the variable isn't set. The next line tries to call `.startswith`
+  on `None` and crashes with `AttributeError`. Fix line 5 so it falls
+  back to `"claude-sonnet-4-6"` when the env var is missing.
+
+  Expected output:
+  ```
+  ok
+  ```
+brokenCode: |
+  fake_env = {}  # MODEL is intentionally not set
+
+  def getenv(name, default=None):
+      return fake_env.get(name, default)
+
+  model = getenv("MODEL")
+
+  if model.startswith("claude"):
+      print("ok")
+bugLines:
+  - 6
+grader:
+  kind: stdout-equality
+  expected: "ok"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: 'Pass a second argument to `getenv` so it falls back to a sane default instead of returning None.'
+  - level: 2
+    body: 'Change line 6 to `model = getenv("MODEL", "claude-sonnet-4-6")`.'
+revealAfter: 4

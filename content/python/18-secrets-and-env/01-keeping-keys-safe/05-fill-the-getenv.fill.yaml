@@ -1,0 +1,25 @@
+xp: 3
+estSeconds: 65
+concept: os-getenv-function-name
+prompt: |
+  Cursor wrote a config loader. Fill in the `os` function on line 4
+  that reads an environment variable and returns `None` (or a default)
+  if it's missing.
+
+  Function: os.___
+code: |
+  import os
+
+  # safely fetch a value from the environment
+  api_key = os.___("ANTHROPIC_API_KEY")
+  print("set" if api_key else "missing")
+blanks:
+  - id: keyword
+    accept:
+      - getenv
+    caseSensitive: true
+hint:
+  - level: 1
+    body: 'Two options: one raises KeyError on missing, one returns None. We want the safe one.'
+  - level: 2
+    body: '`os.getenv` — the safe getter. `os.environ[...]` is the dict-style access that raises.'

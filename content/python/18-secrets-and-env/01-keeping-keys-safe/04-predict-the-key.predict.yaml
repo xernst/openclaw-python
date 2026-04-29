@@ -1,0 +1,27 @@
+xp: 3
+estSeconds: 75
+concept: getenv-default-fallback
+code: |
+  fake_env = {"MODEL": "claude-sonnet-4-6"}
+
+  def getenv(name, default=None):
+      return fake_env.get(name, default)
+
+  model = getenv("MODEL", "claude-haiku-4-5")
+  log_level = getenv("LOG_LEVEL", "INFO")
+  print(f"model={model}")
+  print(f"log_level={log_level}")
+prompt: |
+  Read the editor. `MODEL` is set in the env. `LOG_LEVEL` is not.
+  What does the script print?
+grader:
+  kind: stdout-equality
+  expected: |
+    model=claude-sonnet-4-6
+    log_level=INFO
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: '`getenv("MODEL", ...)` finds the env value and ignores the default. `getenv("LOG_LEVEL", "INFO")` falls through to the default.'
+  - level: 2
+    body: 'Outputs `model=claude-sonnet-4-6` and `log_level=INFO`.'

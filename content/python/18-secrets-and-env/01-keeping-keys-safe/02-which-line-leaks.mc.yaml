@@ -1,0 +1,27 @@
+xp: 2
+estSeconds: 50
+concept: hardcoded-key-leak
+code: |
+  # show what the diff looks like for two ways to wire up a key.
+  good_line = 'api_key = os.getenv("ANTHROPIC_API_KEY")'
+  bad_line = 'api_key = "sk-ant-actual-key-real-not-fake"'
+
+  print("good:", good_line)
+  print("bad: ", bad_line)
+prompt: |
+  Cursor wrote the following four lines in your project. Which one
+  is the immediate security problem you fix before anything else?
+options:
+  - id: a
+    label: 'api_key = os.getenv("ANTHROPIC_API_KEY")'
+    explain: 'This is the correct pattern — the value comes from the environment, not the source.'
+  - id: b
+    label: 'client = Anthropic(api_key=api_key)'
+    explain: 'This is fine as long as `api_key` came from the environment. The danger is whatever set `api_key`, not this line.'
+  - id: c
+    label: 'api_key = "sk-ant-real-secret-value"'
+  - id: d
+    label: 'if not api_key: raise RuntimeError("missing key")'
+    explain: 'This is good defensive code — it fails loudly when the env var is missing.'
+answerIds:
+  - c

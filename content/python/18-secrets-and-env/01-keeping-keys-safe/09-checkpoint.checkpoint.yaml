@@ -1,0 +1,67 @@
+xp: 8
+estSeconds: 175
+concept: secrets-checkpoint
+prompt: |
+  Final drill. Build a "ready to commit?" guard. Write
+  `audit_files(files)` that takes a list of dicts, each shaped
+  `{"path": "<filename>", "content": "<text>"}`, and returns a list
+  of strings — one warning per problem found. Rules, applied in order:
+
+  - If a file's `path` matches `.env` or starts with `.env.` (but not
+    `.env.example`), append `f"do not commit {path}"` and STOP
+    checking that file (don't run the second rule on env files).
+  - Otherwise, if the file's `content` contains the substring
+    `"sk-ant-"` or `"sk-test-"`, append `f"hardcoded key in {path}"`.
+
+  Files matching neither rule produce no warnings.
+
+  Then the script will exercise four files and print every warning,
+  one per line.
+
+  Expected output:
+  ```
+  do not commit .env
+  hardcoded key in src/bad.py
+  ```
+starter: |
+  files = [
+      {"path": "src/auth.py", "content": "api_key = os.getenv('ANTHROPIC_API_KEY')"},
+      {"path": ".env", "content": "ANTHROPIC_API_KEY=sk-ant-real"},
+      {"path": ".env.example", "content": "ANTHROPIC_API_KEY="},
+      {"path": "src/bad.py", "content": 'api_key = "sk-ant-leaked-key"'},
+  ]
+
+  # define audit_files(files) below
+
+  for warning in audit_files(files):
+      print(warning)
+grader:
+  kind: stdout-equality
+  expected: |
+    do not commit .env
+    hardcoded key in src/bad.py
+  normalize: collapse-trailing-newline
+solution: |
+  files = [
+      {"path": "src/auth.py", "content": "api_key = os.getenv('ANTHROPIC_API_KEY')"},
+      {"path": ".env", "content": "ANTHROPIC_API_KEY=sk-ant-real"},
+      {"path": ".env.example", "content": "ANTHROPIC_API_KEY="},
+      {"path": "src/bad.py", "content": 'api_key = "sk-ant-leaked-key"'},
+  ]
+
+  def audit_files(files):
+      warnings = []
+      for f in files:
+          path = f["path"]
+          content = f["content"]
+          is_env_file = path == ".env" or (path.startswith(".env.") and path != ".env.example")
+          if is_env_file:
+              warnings.append(f"do not commit {path}")
+              continue
+          if "sk-ant-" in content or "sk-test-" in content:
+              warnings.append(f"hardcoded key in {path}")
+      return warnings
+
+  for warning in audit_files(files):
+      print(warning)
+passThreshold: 0.66

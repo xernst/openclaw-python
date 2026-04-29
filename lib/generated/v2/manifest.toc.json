@@ -1,6 +1,6 @@
 {
   "version": "0.1.0",
-  "generatedAt": "2026-04-29T18:32:29.164Z",
+  "generatedAt": "2026-04-29T18:35:36.631Z",
   "chapters": [
     {
       "number": 1,
@@ -151,6 +151,15 @@
       "slug": "git-and-github",
       "title": "Git and GitHub CLI — the AI builder's actual workflow",
       "blurb": "Cursor and Claude Code commit on your behalf. Reading those commits — and undoing the bad ones — is your job. Learn the four-state model, the commands you'll run every day, and what `gh` does that `git` can't.",
+      "lessonCount": 1,
+      "stepCount": 9,
+      "xpTotal": 32
+    },
+    {
+      "number": 18,
+      "slug": "secrets-and-env",
+      "title": "Secrets — .env, API keys, and what not to commit",
+      "blurb": "AI ships keys to GitHub all the time. Learn the .env pattern, why os.getenv is non-negotiable, what to do when a key leaks, and the gitignore lines you need on day one.",
       "lessonCount": 1,
       "stepCount": 9,
       "xpTotal": 32

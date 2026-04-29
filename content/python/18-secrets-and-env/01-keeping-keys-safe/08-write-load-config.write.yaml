@@ -1,0 +1,64 @@
+xp: 5
+estSeconds: 130
+concept: load-config-with-validation
+prompt: |
+  Build a config loader. Write `load_config(env)` that:
+
+  - Reads `ANTHROPIC_API_KEY` from `env`. If missing or empty, raise
+    `RuntimeError("ANTHROPIC_API_KEY missing")`.
+  - Reads `MODEL` with a default of `"claude-sonnet-4-6"`.
+  - Reads `DEBUG` with a default of `"false"`, normalizes it to a real
+    bool by lowercasing and comparing to `"true"`.
+  - Returns a dict with keys `api_key`, `model`, and `debug`.
+
+  Then call it on the provided env and print one line per key.
+
+  Expected output:
+  ```
+  api_key=sk-ant-test
+  model=claude-sonnet-4-6
+  debug=True
+  ```
+starter: |
+  env = {
+      "ANTHROPIC_API_KEY": "sk-ant-test",
+      "DEBUG": "True",
+      # MODEL intentionally not set
+  }
+
+  # define load_config(env) below
+
+  cfg = load_config(env)
+  print(f"api_key={cfg['api_key']}")
+  print(f"model={cfg['model']}")
+  print(f"debug={cfg['debug']}")
+grader:
+  kind: stdout-equality
+  expected: |
+    api_key=sk-ant-test
+    model=claude-sonnet-4-6
+    debug=True
+  normalize: collapse-trailing-newline
+solution: |
+  env = {
+      "ANTHROPIC_API_KEY": "sk-ant-test",
+      "DEBUG": "True",
+  }
+
+  def load_config(env):
+      api_key = env.get("ANTHROPIC_API_KEY")
+      if not api_key:
+          raise RuntimeError("ANTHROPIC_API_KEY missing")
+      model = env.get("MODEL", "claude-sonnet-4-6")
+      debug = env.get("DEBUG", "false").lower() == "true"
+      return {"api_key": api_key, "model": model, "debug": debug}
+
+  cfg = load_config(env)
+  print(f"api_key={cfg['api_key']}")
+  print(f"model={cfg['model']}")
+  print(f"debug={cfg['debug']}")
+hint:
+  - level: 1
+    body: 'Three lookups: required (raise if missing), default + value, default + parse-as-bool.'
+  - level: 2
+    body: '`debug = env.get("DEBUG", "false").lower() == "true"` — that''s the whole bool-parse trick.'

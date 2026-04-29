@@ -1,0 +1,6 @@
+number: 18
+slug: secrets-and-env
+title: "Secrets — .env, API keys, and what not to commit"
+blurb: "AI ships keys to GitHub all the time. Learn the .env pattern, why os.getenv is non-negotiable, what to do when a key leaks, and the gitignore lines you need on day one."
+lessons:
+  - 01-keeping-keys-safe

@@ -1,0 +1,31 @@
+xp: 4
+estSeconds: 90
+concept: replace-hardcoded-key
+prompt: |
+  AI hardcoded an API key into source on line 4. The provided
+  `fake_env` dict already has the key set. Fix line 4 so it reads
+  from `fake_env.get("ANTHROPIC_API_KEY")` instead.
+
+  Expected output:
+  ```
+  key starts with: sk-ant-t
+  ```
+brokenCode: |
+  fake_env = {"ANTHROPIC_API_KEY": "sk-ant-test-not-real"}
+
+  # NEVER do this. read from the environment.
+  api_key = "sk-ant-LITERAL-VALUE-IN-SOURCE"
+
+  print(f"key starts with: {api_key[:8]}")
+bugLines:
+  - 4
+grader:
+  kind: stdout-equality
+  expected: "key starts with: sk-ant-t"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: 'The right side of line 4 should pull from `fake_env`, not be a string literal.'
+  - level: 2
+    body: 'Change line 4 to `api_key = fake_env.get("ANTHROPIC_API_KEY")`. In real code, `os.getenv("ANTHROPIC_API_KEY")`.'
+revealAfter: 4

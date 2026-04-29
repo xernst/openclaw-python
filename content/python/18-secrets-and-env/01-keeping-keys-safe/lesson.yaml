@@ -1,0 +1,14 @@
+slug: keeping-keys-safe
+title: ".env, os.getenv, and the leak recovery you'll do at least once"
+estMinutes: 8
+prerequisites: []
+order:
+  - 01-intro.read.md
+  - 02-which-line-leaks.mc.yaml
+  - 03-loading-env-vars.read.md
+  - 04-predict-the-key.predict.yaml
+  - 05-fill-the-getenv.fill.yaml
+  - 06-fix-the-hardcoded-key.fix.yaml
+  - 07-fix-the-missing-default.fix.yaml
+  - 08-write-load-config.write.yaml
+  - 09-checkpoint.checkpoint.yaml
