@@ -3,6 +3,7 @@
 import { useState, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { ChevronUp, ChevronDown } from "lucide-react";
+import DailyGoalDial from "./DailyGoalDial";
 
 type Props = {
   /**
@@ -55,8 +56,9 @@ export default function LessonShell({
             )}
           >
             {header && (
-              <div className="border-b border-ink-800 bg-ink-900 px-5 py-3">
-                {header}
+              <div className="flex items-start justify-between gap-3 border-b border-ink-800 bg-ink-900 px-5 py-3">
+                <div className="min-w-0 flex-1">{header}</div>
+                <DailyGoalDial compact className="shrink-0 pt-0.5" />
               </div>
             )}
             <div className="flex-1 min-h-0 overflow-auto px-5 py-6">
