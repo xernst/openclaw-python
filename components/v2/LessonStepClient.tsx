@@ -89,15 +89,22 @@ export default function LessonStepClient({
   }
 
   function handleContinue() {
+    if (step.type === "read" && latestAttempt?.correct !== true) {
+      const now = new Date().toISOString();
+      handleAttempt({
+        stepId: step.id,
+        startedAt: now,
+        submittedAt: now,
+        correct: true,
+        hintsUsed: 0,
+        payload: { kind: "read-ack" },
+      });
+    }
     if (!next) {
       router.push("/");
       return;
     }
-    if (next.chapterSlug === chapter.slug && next.lessonSlug === lesson.slug) {
-      router.push(`/learn/v2/${next.chapterSlug}/${next.lessonSlug}/${next.stepIndex}`);
-    } else {
-      router.push(`/learn/v2/${next.chapterSlug}/${next.lessonSlug}/${next.stepIndex}`);
-    }
+    router.push(`/learn/v2/${next.chapterSlug}/${next.lessonSlug}/${next.stepIndex}`);
   }
 
   const totalSteps = lesson.steps.length;
