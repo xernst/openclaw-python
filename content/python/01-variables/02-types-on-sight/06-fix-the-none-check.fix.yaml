@@ -1,0 +1,31 @@
+xp: 4
+estSeconds: 75
+concept: none-vs-falsy
+prompt: |
+  Claude wrote a snippet that should print `score: 0` when the score is
+  zero. Instead it prints `no score yet`. The bug is on line 2 — it's
+  checking the wrong thing. Fix it so a score of `0` is recognized as a
+  real score.
+
+  Expected output:
+  ```
+  score: 0
+  ```
+brokenCode: |
+  score = 0
+  if score:
+      print(f"score: {score}")
+  else:
+      print("no score yet")
+bugLines:
+  - 2
+grader:
+  kind: stdout-equality
+  expected: "score: 0"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "`if score:` is False when `score` is `0`, even though `0` is a real value. You want to check whether `score` is `None`, not whether it's truthy."
+  - level: 2
+    body: "Replace `if score:` with `if score is not None:`. That's the canonical way to check for absence in Python."
+revealAfter: 4

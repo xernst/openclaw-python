@@ -1,0 +1,27 @@
+xp: 4
+estSeconds: 70
+concept: type-coercion-fix
+prompt: |
+  Cursor wrote this snippet to print a label and a count. It crashes
+  with a `TypeError` on line 2. Fix it by casting the right thing so the
+  output is exactly `count: 6`.
+
+  Expected output:
+  ```
+  count: 6
+  ```
+brokenCode: |
+  count = 6
+  print("count: " + count)
+bugLines:
+  - 2
+grader:
+  kind: stdout-equality
+  expected: "count: 6"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "You're concatenating a string and an int. Python won't auto-convert. Cast one side so they match."
+  - level: 2
+    body: "Wrap `count` in `str(...)`: `print(\"count: \" + str(count))`. An f-string would also work — but the question is about casting."
+revealAfter: 4

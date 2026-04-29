@@ -1,0 +1,25 @@
+xp: 8
+estSeconds: 120
+concept: types-recap
+prompt: |
+  Last one. AI handed you a snippet that reads a user id from a config
+  string, doubles it, and prints a message. The config arrives as
+  `"42"` (a string). The starter has the first three lines. Finish line 4
+  so the script prints exactly `next id: 85`.
+
+  Hint: line 4 prints an f-string with `next_id`.
+starter: |
+  raw_id = "42"
+  user_id = int(raw_id)
+  next_id = user_id * 2 + 1
+  # your code on the next line:
+grader:
+  kind: stdout-equality
+  expected: "next id: 85"
+  normalize: collapse-trailing-newline
+solution: |
+  raw_id = "42"
+  user_id = int(raw_id)
+  next_id = user_id * 2 + 1
+  print(f"next id: {next_id}")
+passThreshold: 0.66

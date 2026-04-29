@@ -1,0 +1,15 @@
+slug: types-on-sight
+title: "The four types you'll see daily"
+estMinutes: 8
+prerequisites:
+  - 01-naming-things
+order:
+  - 01-intro.read.md
+  - 02-spot-the-type.mc.yaml
+  - 03-string-plus-int.read.md
+  - 04-predict-the-error.predict.yaml
+  - 05-fill-the-cast.fill.yaml
+  - 06-fix-the-none-check.fix.yaml
+  - 07-fix-the-coercion.fix.yaml
+  - 08-write-the-counter.write.yaml
+  - 09-checkpoint.checkpoint.yaml

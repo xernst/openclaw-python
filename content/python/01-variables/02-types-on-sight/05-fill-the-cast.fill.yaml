@@ -1,0 +1,23 @@
+xp: 3
+estSeconds: 55
+concept: int-cast
+prompt: |
+  AI wrote a snippet that reads a port from an environment variable and
+  adds one. The env var arrives as a string `"8080"`, but the next line
+  needs an integer. Fill in the cast that converts the string to an int.
+
+  Function name: ___
+code: |
+  port_str = "8080"
+  port = ___(port_str) + 1
+  print(port)
+blanks:
+  - id: cast
+    accept:
+      - int
+    caseSensitive: true
+hint:
+  - level: 1
+    body: "Two builtins do the conversion: one for int, one for str. You want the one that turns text into a number."
+  - level: 2
+    body: "It's `int(...)`. The line becomes `int(port_str) + 1`."

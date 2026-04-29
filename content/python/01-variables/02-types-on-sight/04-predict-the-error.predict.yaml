@@ -1,0 +1,19 @@
+xp: 3
+estSeconds: 60
+concept: type-coercion-prediction
+code: |
+  age = "30"
+  print(age * 2)
+prompt: |
+  Read the code on the right. `age` is a string (note the quotes), and
+  the next line multiplies it by `2`. Python does **not** crash here.
+  What does this print?
+grader:
+  kind: stdout-equality
+  expected: "3030"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "`str * int` is legal in Python. It's *string repetition*, not multiplication."
+  - level: 2
+    body: "`\"30\" * 2` repeats the string `\"30\"` twice and joins them: `\"30\" + \"30\"`."

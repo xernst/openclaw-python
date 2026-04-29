@@ -1,0 +1,31 @@
+xp: 2
+estSeconds: 40
+concept: type-identification
+code: |
+  a = "42"
+  b = 42
+  c = True
+  d = None
+  print(type(a), type(b), type(c), type(d))
+prompt: |
+  Cursor wrote four lines. They look similar. Which variable is a **string**
+  (the type Python calls `str`)?
+options:
+  - id: a
+    label: "`a`"
+  - id: b
+    label: "`b`"
+    explain: "No quotes, just digits — that's an `int`."
+  - id: c
+    label: "`c`"
+    explain: "`True` is a `bool`, not a string. Strings need quotes."
+  - id: d
+    label: "`d`"
+    explain: "`None` is the special `NoneType` value, not a string."
+answerIds:
+  - a
+hint:
+  - level: 1
+    body: "Look for the quotes. Strings always have them."
+  - level: 2
+    body: "Run the code if you want — `print(type(a))` will print `<class 'str'>`."

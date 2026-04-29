@@ -1,0 +1,28 @@
+xp: 5
+estSeconds: 100
+concept: cast-and-add
+prompt: |
+  Write three lines.
+  Line 1: assign the string `"15"` to a variable called `raw`.
+  Line 2: assign `int(raw) + 5` to a variable called `total`.
+  Line 3: print `total: {total}` using an f-string.
+
+  Expected output:
+  ```
+  total: 20
+  ```
+starter: |
+  # your code:
+grader:
+  kind: stdout-equality
+  expected: "total: 20"
+  normalize: collapse-trailing-newline
+solution: |
+  raw = "15"
+  total = int(raw) + 5
+  print(f"total: {total}")
+hint:
+  - level: 1
+    body: "Three lines. Don't forget the quotes on line 1 — `raw` is a string."
+  - level: 2
+    body: "`raw = \"15\"`, then `total = int(raw) + 5`, then `print(f\"total: {total}\")`."
