@@ -1,0 +1,24 @@
+xp: 3
+estSeconds: 55
+concept: except-as-syntax
+prompt: |
+  Cursor wrote a `try/except` and wants to log the actual exception object.
+  Fill in the keyword that binds the caught exception to the variable
+  `err` on line 4.
+
+  Keyword: ___
+code: |
+  try:
+      result = int("oops")
+  except ValueError ___ err:
+      print(f"failed: {err}")
+blanks:
+  - id: keyword
+    accept:
+      - as
+    caseSensitive: true
+hint:
+  - level: 1
+    body: "Two letters. The keyword that binds a caught exception to a variable."
+  - level: 2
+    body: "It's `as`. Read line 4 as: catch a `ValueError`, bind the instance to a name called `err`."

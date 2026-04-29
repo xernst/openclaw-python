@@ -1,0 +1,64 @@
+xp: 8
+estSeconds: 140
+concept: catching-specific-errors-checkpoint
+prompt: |
+  Last drill. Cursor wrote `summarize_order` to look up an item's price,
+  multiply it by a quantity it parses from a string, and return a total.
+  Three lines, three failure modes:
+
+  - `prices[item]` raises `KeyError` if the item isn't in the catalog.
+  - `int(qty_text)` raises `ValueError` if the string isn't a number.
+  - everything else (a real bug you didn't anticipate) should crash.
+
+  The starter has a single `except Exception:` that swallows all three.
+  Fix it: catch `KeyError` and `ValueError` together with a tuple, return
+  the string `"invalid"` for either case, and let any other exception fly
+  through.
+
+  Expected output:
+  ```
+  20
+  invalid
+  invalid
+  ```
+starter: |
+  prices = {"apple": 2, "bread": 5}
+
+  def summarize_order(item, qty_text):
+      try:
+          price = prices[item]
+          qty = int(qty_text)
+          return price * qty
+      except Exception:
+          return "invalid"
+
+  print(summarize_order("apple", "10"))
+  print(summarize_order("steak", "10"))
+  print(summarize_order("apple", "ten"))
+grader:
+  kind: stdout-equality
+  expected: |
+    20
+    invalid
+    invalid
+  normalize: collapse-trailing-newline
+solution: |
+  prices = {"apple": 2, "bread": 5}
+
+  def summarize_order(item, qty_text):
+      try:
+          price = prices[item]
+          qty = int(qty_text)
+          return price * qty
+      except (KeyError, ValueError):
+          return "invalid"
+
+  print(summarize_order("apple", "10"))
+  print(summarize_order("steak", "10"))
+  print(summarize_order("apple", "ten"))
+passThreshold: 0.66
+hint:
+  - level: 1
+    body: "Replace `except Exception:` with a tuple of the two specific classes you actually want to handle."
+  - level: 2
+    body: "`except (KeyError, ValueError):` — parentheses required, comma between classes. The body stays `return \"invalid\"`."

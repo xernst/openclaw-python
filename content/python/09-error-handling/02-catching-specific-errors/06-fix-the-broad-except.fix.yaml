@@ -1,0 +1,31 @@
+xp: 4
+estSeconds: 80
+concept: replacing-broad-except
+prompt: |
+  Cursor wrote `except Exception:` around a dict lookup. That blanket
+  catches every error class, including bugs you'd rather see. The function
+  should only swallow the specific failure of "the key isn't there" and
+  return `"unknown"`. Any other exception should fly through.
+
+  Replace `Exception` on line 4 with the specific exception class for a
+  missing dict key. Output stays `unknown`.
+brokenCode: |
+  def get_role(roles, user):
+      try:
+          return roles[user]
+      except Exception:
+          return "unknown"
+
+  print(get_role({"maya": "admin"}, "marcus"))
+bugLines:
+  - 4
+grader:
+  kind: stdout-equality
+  expected: "unknown"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "What does Python raise when a dict doesn't have a key? Use that class instead of the broad `Exception`."
+  - level: 2
+    body: "Change line 4 to `except KeyError:`. The output is still `unknown` because that's the class `roles[user]` raises."
+revealAfter: 4

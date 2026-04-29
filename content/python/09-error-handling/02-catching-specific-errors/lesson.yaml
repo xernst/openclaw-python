@@ -1,0 +1,14 @@
+slug: catching-specific-errors
+title: "Catching the right error — not 'anything that goes wrong'"
+estMinutes: 8
+prerequisites: []
+order:
+  - 01-intro.read.md
+  - 02-which-except-runs.mc.yaml
+  - 03-multiple-excepts.read.md
+  - 04-predict-the-branch.predict.yaml
+  - 05-fill-the-as-variable.fill.yaml
+  - 06-fix-the-broad-except.fix.yaml
+  - 07-fix-the-wrong-class.fix.yaml
+  - 08-write-safe-lookup.write.yaml
+  - 09-checkpoint.checkpoint.yaml

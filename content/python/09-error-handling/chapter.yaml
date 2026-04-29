@@ -4,3 +4,4 @@ title: "Error handling — when AI's code crashes mid-flight"
 blurb: "AI loves a happy path. The moment a file isn't there or an API blinks, the script blows up. `try/except` is how you keep the program alive long enough to log what went wrong."
 lessons:
   - 01-try-except-basics
+  - 02-catching-specific-errors

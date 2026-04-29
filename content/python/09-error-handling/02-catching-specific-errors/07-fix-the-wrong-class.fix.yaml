@@ -1,0 +1,34 @@
+xp: 4
+estSeconds: 85
+concept: ordered-except-clauses
+prompt: |
+  AI wrote two `except` clauses for `parse_age`. The intent: missing key
+  returns `-1`, bad string returns `0`. But the classes got swapped — the
+  body raises `ValueError` for `int("n/a")`, but that branch returns `-1`
+  instead of `0`.
+
+  Fix the two `except` lines so that calling `parse_age({"age": "n/a"})`
+  prints `0` (bad parse → 0).
+brokenCode: |
+  def parse_age(data):
+      try:
+          return int(data["age"])
+      except ValueError:
+          return -1
+      except KeyError:
+          return 0
+
+  print(parse_age({"age": "n/a"}))
+bugLines:
+  - 4
+  - 6
+grader:
+  kind: stdout-equality
+  expected: "0"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "Read each `except` against the line that can raise it. `int(\"n/a\")` raises `ValueError`. A missing key raises `KeyError`. Match each to its right fallback."
+  - level: 2
+    body: "Swap the two classes. `except KeyError: return -1` (missing key), `except ValueError: return 0` (bad parse). Now `parse_age({\"age\": \"n/a\"})` prints `0`."
+revealAfter: 4

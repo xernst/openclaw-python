@@ -1,0 +1,52 @@
+xp: 5
+estSeconds: 110
+concept: write-multi-except-function
+prompt: |
+  Write a function `safe_lookup(data, key)` that:
+
+  - Returns `data[key].upper()` when both the lookup and the `.upper()`
+    work.
+  - Returns the string `"missing"` if the key isn't in the dict.
+  - Returns the string `"not-a-string"` if the value is there but doesn't
+    have an `.upper()` method (for example, an int).
+
+  Then call it three times and print each result:
+
+  ```
+  print(safe_lookup({"name": "alex"}, "name"))
+  print(safe_lookup({"name": "alex"}, "age"))
+  print(safe_lookup({"name": 42}, "name"))
+  ```
+
+  Expected output:
+  ```
+  ALEX
+  missing
+  not-a-string
+  ```
+starter: |
+  # define safe_lookup below, then call it three times
+grader:
+  kind: stdout-equality
+  expected: |
+    ALEX
+    missing
+    not-a-string
+  normalize: collapse-trailing-newline
+solution: |
+  def safe_lookup(data, key):
+      try:
+          return data[key].upper()
+      except KeyError:
+          return "missing"
+      except AttributeError:
+          return "not-a-string"
+
+  print(safe_lookup({"name": "alex"}, "name"))
+  print(safe_lookup({"name": "alex"}, "age"))
+  print(safe_lookup({"name": 42}, "name"))
+hint:
+  - level: 1
+    body: "One `try` body, two `except` clauses. Missing key → `KeyError`. No `.upper` on the value → `AttributeError`."
+  - level: 2
+    body: "`def safe_lookup(data, key):` then `try: return data[key].upper()` then `except KeyError: return \"missing\"` then `except AttributeError: return \"not-a-string\"`. Three `print` calls at the bottom."

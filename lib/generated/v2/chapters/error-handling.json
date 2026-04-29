@@ -252,7 +252,279 @@
         }
       ],
       "xpTotal": 32
+    },
+    {
+      "slug": "catching-specific-errors",
+      "title": "Catching the right error — not 'anything that goes wrong'",
+      "estMinutes": 8,
+      "prerequisites": [],
+      "steps": [
+        {
+          "type": "read",
+          "id": "error-handling/catching-specific-errors/s01-01-intro",
+          "xp": 1,
+          "hint": [],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 100,
+          "concept": "specific-exception-classes",
+          "body": "# Each exception is a different shape of failure\n\nLast lesson you saw a single `except ValueError` catch a single failure.\nReal AI code is messier than that. Cursor will write you a function with\nthree ways to fail in three lines, and each failure raises a *different*\nexception class. If you catch them all with one broad block, you've built\na function that smiles politely while it lies to you.\n\nThe move this lesson teaches: read the body of the `try`, list every\nexception each line could raise, and write a separate `except` for the\nones you actually know how to handle. The rest are bugs — let them crash\nloudly so you can fix them.\n\n## The mental model\n\nEvery Python exception is a Python class. `ValueError` is a class.\n`KeyError` is a class. `FileNotFoundError` is a class. When a line raises,\nPython creates an *instance* of that class and goes hunting for an\n`except` clause that names a matching class. First match wins. No match,\nthe program crashes.\n\nA `try` block can have many `except` clauses stacked underneath:\n\n```python\ntry:\n    risky_thing()\nexcept KeyError:\n    # only runs for KeyError\n    ...\nexcept ValueError:\n    # only runs for ValueError\n    ...\n```\n\nPython checks them top to bottom. As soon as one matches, that block\nruns and the rest are skipped. The order matters when the classes are\nrelated — but for the five everyday exceptions (`KeyError`, `ValueError`,\n`TypeError`, `IndexError`, `FileNotFoundError`), they're all siblings, so\norder is just readability.\n\n## A worked example\n\nThe editor on the right has `get_score`, a function with two distinct\nfailure modes wired to two distinct excepts:\n\n```python\ndef get_score(data, user):\n    try:\n        return int(data[user])\n    except KeyError:\n        return None\n    except ValueError:\n        return 0\n```\n\nThree calls, three paths through the code:\n\n1. `get_score({\"maya\": \"42\"}, \"maya\")` — both lookups succeed.\n   `data[\"maya\"]` returns `\"42\"`, `int(\"42\")` returns `42`. Output: `42`.\n2. `get_score({\"maya\": \"42\"}, \"marcus\")` — `data[\"marcus\"]` raises\n   `KeyError`. The first `except` matches. Output: `None`.\n3. `get_score({\"maya\": \"n/a\"}, \"maya\")` — `data[\"maya\"]` returns\n   `\"n/a\"`, `int(\"n/a\")` raises `ValueError`. Second `except` matches.\n   Output: `0`.\n\nTwo failure modes, two recovery values, zero confusion about which one\nfired. A reader can scan the function and know exactly what each branch\nmeans. That's the point.\n\n## Where AI specifically gets this wrong\n\nThe pattern Cursor reaches for first is `except Exception:` — one block\nthat catches every error class in the language. It looks responsible.\nIt's not. It welds together failure modes that should be handled\ndifferently:\n\n- A missing dict key probably means the user doesn't exist yet → return\n  `None` and move on.\n- A bad string-to-int conversion probably means dirty data → return `0`\n  and log it.\n- A `TypeError` from passing the wrong shape to a helper → that's a\n  *bug in your code*, not a runtime condition. You want it to crash so\n  you notice.\n\n`except Exception:` collapses all three into the same response. Two of\nthem get the wrong fallback, the third gets silently swallowed, and you\nship a function that \"handles errors\" without handling any of them\ncorrectly. Run the editor — three calls, three branches, three\nbehaviors that map to three real situations.",
+          "cta": "Got it",
+          "code": "def get_score(data, user):\n    try:\n        return int(data[user])\n    except KeyError:\n        return None\n    except ValueError:\n        return 0\n\nprint(get_score({\"maya\": \"42\"}, \"maya\"))\nprint(get_score({\"maya\": \"42\"}, \"marcus\"))\nprint(get_score({\"maya\": \"n/a\"}, \"maya\"))\n",
+          "runnable": true
+        },
+        {
+          "type": "mc",
+          "id": "error-handling/catching-specific-errors/s02-02-which-except-runs",
+          "xp": 2,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Python tries each `except` in order, top to bottom. First class match wins.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "`items[10]` raises `IndexError`. The second clause names exactly that class, so it runs and the rest are skipped.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 45,
+          "concept": "matching-except-by-class",
+          "prompt": "Read the code. `items[10]` on a three-element list raises `IndexError`.\nThree `except` clauses are stacked. Which one prints?\n",
+          "options": [
+            {
+              "id": "a",
+              "label": "`key missing`",
+              "explain": "`KeyError` is for dicts, not lists. The class doesn't match `IndexError`."
+            },
+            {
+              "id": "b",
+              "label": "`index out of range`"
+            },
+            {
+              "id": "c",
+              "label": "`something else`",
+              "explain": "`except Exception` would match — but Python checks top to bottom and stops at the first match. `IndexError` matches first."
+            },
+            {
+              "id": "d",
+              "label": "All three print, in order.",
+              "explain": "Only the first matching `except` runs. The others are skipped."
+            }
+          ],
+          "answerIds": [
+            "b"
+          ],
+          "shuffle": false,
+          "code": "items = [\"a\", \"b\", \"c\"]\n\ntry:\n    x = items[10]\n    print(\"got it:\", x)\nexcept KeyError:\n    print(\"key missing\")\nexcept IndexError:\n    print(\"index out of range\")\nexcept Exception:\n    print(\"something else\")\n",
+          "runnable": true
+        },
+        {
+          "type": "read",
+          "id": "error-handling/catching-specific-errors/s03-03-multiple-excepts",
+          "xp": 2,
+          "hint": [],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 110,
+          "concept": "except-as-and-tuple-syntax",
+          "body": "# Two shortcuts you'll see in real AI code\n\nThe \"one except per class\" pattern from the last step is the safe\ndefault, but you'll see two other shapes constantly in code Cursor\nwrites. Both are useful, and both have a specific time to use them.\n\n## The tuple form: catch several classes the same way\n\nWhen two or more exceptions deserve the *same* recovery, you don't have\nto repeat yourself. Group them in a tuple:\n\n```python\ntry:\n    return int(data[key])\nexcept (KeyError, ValueError):\n    return None\n```\n\nThat single block matches if `data[key]` raises `KeyError` *or* if\n`int(...)` raises `ValueError`. The parentheses are required — without\nthem you'd be writing something different and confusing (more on that\nin a later chapter). Read it as: *\"if any one of these classes flies\nout, do this.\"*\n\nWhen to reach for this shape: the recovery is identical, and a reader\nshouldn't need to know which specific exception fired. \"Either way, we\nfall back to `None`.\"\n\n## The `as` form: bind the exception to a variable\n\nWhen you *do* want to know what fired — to log it, to inspect it, to\nre-raise it — bind it to a name with `as`:\n\n```python\nexcept (KeyError, ValueError) as err:\n    print(f\"failed: {type(err).__name__}\")\n```\n\nNow inside the block, `err` is the actual exception instance. You can\nread its attributes (`err.args`, `err.__class__.__name__`), pass it to a\nlogger, or include its message in the response you return. This is the\nform professional Python code uses for anything more interesting than\n\"return a fallback and move on.\"\n\nThe editor on the right combines both shapes:\n\n```python\ndef parse_record(data, key):\n    try:\n        return int(data[key])\n    except (KeyError, ValueError) as err:\n        print(f\"could not parse {key!r}: {type(err).__name__}\")\n        return None\n```\n\nThree calls, three outcomes:\n\n1. `parse_record({\"age\": \"42\"}, \"age\")` — happy path. Returns `42`.\n2. `parse_record({\"age\": \"n/a\"}, \"age\")` — `int(\"n/a\")` raises\n   `ValueError`. The except logs `could not parse 'age': ValueError`\n   and returns `None`.\n3. `parse_record({\"age\": \"42\"}, \"name\")` — `data[\"name\"]` raises\n   `KeyError`. Same except runs, but `type(err).__name__` reflects\n   *which* class actually fired. Logs `could not parse 'name': KeyError`.\n\nSame handler, same fallback, but the log line tells you which failure\nmode you hit. That's the win: one block, one fallback, full visibility.\n\n## Where AI specifically gets this wrong\n\nTwo patterns to flag.\n\n**One: bundling exceptions that need different handling.** Cursor\nsometimes writes `except (KeyError, ValueError, TypeError) as e: pass`\nbecause catching more feels safer. It isn't. `TypeError` usually means\n\"the code itself is wrong\" and should crash. Only group exceptions in a\ntuple when the *recovery* is genuinely the same.\n\n**Two: using `as e` and then ignoring `e`.** If the variable is bound\nand never read, you've added noise. Either log it, return it, or drop\nthe `as` clause entirely. AI ships dead `as e` bindings constantly —\nthey're a smell that the prompt asked for \"good error handling\" without\nsaying what to do with the error.\n\nRun the editor and watch the same `except` block print three different\nclass names depending on which line in the `try` actually failed.",
+          "cta": "Got it",
+          "code": "def parse_record(data, key):\n    try:\n        return int(data[key])\n    except (KeyError, ValueError) as err:\n        print(f\"could not parse {key!r}: {type(err).__name__}\")\n        return None\n\nprint(parse_record({\"age\": \"42\"}, \"age\"))\nprint(parse_record({\"age\": \"n/a\"}, \"age\"))\nprint(parse_record({\"age\": \"42\"}, \"name\"))\n",
+          "runnable": true
+        },
+        {
+          "type": "predict",
+          "id": "error-handling/catching-specific-errors/s04-04-predict-the-branch",
+          "xp": 3,
+          "hint": [
+            {
+              "level": 1,
+              "body": "First call: both lookup and `.upper()` work. Second call: missing key raises `KeyError`. Third call: `42.upper()` raises `AttributeError` because ints don't have `.upper`.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Outputs are `ALEX`, then `missing`, then `not-a-string`. One per line.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 65,
+          "concept": "which-except-fires",
+          "code": "def lookup(d, key):\n    try:\n        return d[key].upper()\n    except KeyError:\n        return \"missing\"\n    except AttributeError:\n        return \"not-a-string\"\n\nprint(lookup({\"name\": \"alex\"}, \"name\"))\nprint(lookup({\"name\": \"alex\"}, \"age\"))\nprint(lookup({\"name\": 42}, \"name\"))\n",
+          "prompt": "Three calls to `lookup`. Each one hits a different branch. What does\nthis print? (Three lines, in order.)\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "ALEX\nmissing\nnot-a-string\n",
+            "normalize": "collapse-trailing-newline"
+          }
+        },
+        {
+          "type": "fill",
+          "id": "error-handling/catching-specific-errors/s05-05-fill-the-as-variable",
+          "xp": 3,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Two letters. The keyword that binds a caught exception to a variable.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "It's `as`. Read line 4 as: catch a `ValueError`, bind the instance to a name called `err`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 55,
+          "concept": "except-as-syntax",
+          "prompt": "Cursor wrote a `try/except` and wants to log the actual exception object.\nFill in the keyword that binds the caught exception to the variable\n`err` on line 4.\n\nKeyword: ___\n",
+          "code": "try:\n    result = int(\"oops\")\nexcept ValueError ___ err:\n    print(f\"failed: {err}\")\n",
+          "blanks": [
+            {
+              "id": "keyword",
+              "accept": [
+                "as"
+              ],
+              "caseSensitive": true,
+              "normalize": "trim"
+            }
+          ]
+        },
+        {
+          "type": "fix",
+          "id": "error-handling/catching-specific-errors/s06-06-fix-the-broad-except",
+          "xp": 4,
+          "hint": [
+            {
+              "level": 1,
+              "body": "What does Python raise when a dict doesn't have a key? Use that class instead of the broad `Exception`.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Change line 4 to `except KeyError:`. The output is still `unknown` because that's the class `roles[user]` raises.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 80,
+          "concept": "replacing-broad-except",
+          "brokenCode": "def get_role(roles, user):\n    try:\n        return roles[user]\n    except Exception:\n        return \"unknown\"\n\nprint(get_role({\"maya\": \"admin\"}, \"marcus\"))\n",
+          "prompt": "Cursor wrote `except Exception:` around a dict lookup. That blanket\ncatches every error class, including bugs you'd rather see. The function\nshould only swallow the specific failure of \"the key isn't there\" and\nreturn `\"unknown\"`. Any other exception should fly through.\n\nReplace `Exception` on line 4 with the specific exception class for a\nmissing dict key. Output stays `unknown`.\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "unknown",
+            "normalize": "collapse-trailing-newline"
+          },
+          "bugLines": [
+            4
+          ],
+          "revealAfter": 4
+        },
+        {
+          "type": "fix",
+          "id": "error-handling/catching-specific-errors/s07-07-fix-the-wrong-class",
+          "xp": 4,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Read each `except` against the line that can raise it. `int(\"n/a\")` raises `ValueError`. A missing key raises `KeyError`. Match each to its right fallback.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Swap the two classes. `except KeyError: return -1` (missing key), `except ValueError: return 0` (bad parse). Now `parse_age({\"age\": \"n/a\"})` prints `0`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 85,
+          "concept": "ordered-except-clauses",
+          "brokenCode": "def parse_age(data):\n    try:\n        return int(data[\"age\"])\n    except ValueError:\n        return -1\n    except KeyError:\n        return 0\n\nprint(parse_age({\"age\": \"n/a\"}))\n",
+          "prompt": "AI wrote two `except` clauses for `parse_age`. The intent: missing key\nreturns `-1`, bad string returns `0`. But the classes got swapped — the\nbody raises `ValueError` for `int(\"n/a\")`, but that branch returns `-1`\ninstead of `0`.\n\nFix the two `except` lines so that calling `parse_age({\"age\": \"n/a\"})`\nprints `0` (bad parse → 0).\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "0",
+            "normalize": "collapse-trailing-newline"
+          },
+          "bugLines": [
+            4,
+            6
+          ],
+          "revealAfter": 4
+        },
+        {
+          "type": "write",
+          "id": "error-handling/catching-specific-errors/s08-08-write-safe-lookup",
+          "xp": 5,
+          "hint": [
+            {
+              "level": 1,
+              "body": "One `try` body, two `except` clauses. Missing key → `KeyError`. No `.upper` on the value → `AttributeError`.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "`def safe_lookup(data, key):` then `try: return data[key].upper()` then `except KeyError: return \"missing\"` then `except AttributeError: return \"not-a-string\"`. Three `print` calls at the bottom.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 110,
+          "concept": "write-multi-except-function",
+          "prompt": "Write a function `safe_lookup(data, key)` that:\n\n- Returns `data[key].upper()` when both the lookup and the `.upper()`\n  work.\n- Returns the string `\"missing\"` if the key isn't in the dict.\n- Returns the string `\"not-a-string\"` if the value is there but doesn't\n  have an `.upper()` method (for example, an int).\n\nThen call it three times and print each result:\n\n```\nprint(safe_lookup({\"name\": \"alex\"}, \"name\"))\nprint(safe_lookup({\"name\": \"alex\"}, \"age\"))\nprint(safe_lookup({\"name\": 42}, \"name\"))\n```\n\nExpected output:\n```\nALEX\nmissing\nnot-a-string\n```\n",
+          "starter": "# define safe_lookup below, then call it three times\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "ALEX\nmissing\nnot-a-string\n",
+            "normalize": "collapse-trailing-newline"
+          },
+          "solution": "def safe_lookup(data, key):\n    try:\n        return data[key].upper()\n    except KeyError:\n        return \"missing\"\n    except AttributeError:\n        return \"not-a-string\"\n\nprint(safe_lookup({\"name\": \"alex\"}, \"name\"))\nprint(safe_lookup({\"name\": \"alex\"}, \"age\"))\nprint(safe_lookup({\"name\": 42}, \"name\"))\n",
+          "hiddenTests": []
+        },
+        {
+          "type": "checkpoint",
+          "id": "error-handling/catching-specific-errors/s09-09-checkpoint",
+          "xp": 8,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Replace `except Exception:` with a tuple of the two specific classes you actually want to handle.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "`except (KeyError, ValueError):` — parentheses required, comma between classes. The body stays `return \"invalid\"`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "check",
+          "estSeconds": 140,
+          "concept": "catching-specific-errors-checkpoint",
+          "prompt": "Last drill. Cursor wrote `summarize_order` to look up an item's price,\nmultiply it by a quantity it parses from a string, and return a total.\nThree lines, three failure modes:\n\n- `prices[item]` raises `KeyError` if the item isn't in the catalog.\n- `int(qty_text)` raises `ValueError` if the string isn't a number.\n- everything else (a real bug you didn't anticipate) should crash.\n\nThe starter has a single `except Exception:` that swallows all three.\nFix it: catch `KeyError` and `ValueError` together with a tuple, return\nthe string `\"invalid\"` for either case, and let any other exception fly\nthrough.\n\nExpected output:\n```\n20\ninvalid\ninvalid\n```\n",
+          "starter": "prices = {\"apple\": 2, \"bread\": 5}\n\ndef summarize_order(item, qty_text):\n    try:\n        price = prices[item]\n        qty = int(qty_text)\n        return price * qty\n    except Exception:\n        return \"invalid\"\n\nprint(summarize_order(\"apple\", \"10\"))\nprint(summarize_order(\"steak\", \"10\"))\nprint(summarize_order(\"apple\", \"ten\"))\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "20\ninvalid\ninvalid\n",
+            "normalize": "collapse-trailing-newline"
+          },
+          "solution": "prices = {\"apple\": 2, \"bread\": 5}\n\ndef summarize_order(item, qty_text):\n    try:\n        price = prices[item]\n        qty = int(qty_text)\n        return price * qty\n    except (KeyError, ValueError):\n        return \"invalid\"\n\nprint(summarize_order(\"apple\", \"10\"))\nprint(summarize_order(\"steak\", \"10\"))\nprint(summarize_order(\"apple\", \"ten\"))\n",
+          "passThreshold": 0.66
+        }
+      ],
+      "xpTotal": 32
     }
   ],
-  "xpTotal": 32
+  "xpTotal": 64
 }

@@ -1,0 +1,30 @@
+xp: 3
+estSeconds: 65
+concept: which-except-fires
+code: |
+  def lookup(d, key):
+      try:
+          return d[key].upper()
+      except KeyError:
+          return "missing"
+      except AttributeError:
+          return "not-a-string"
+
+  print(lookup({"name": "alex"}, "name"))
+  print(lookup({"name": "alex"}, "age"))
+  print(lookup({"name": 42}, "name"))
+prompt: |
+  Three calls to `lookup`. Each one hits a different branch. What does
+  this print? (Three lines, in order.)
+grader:
+  kind: stdout-equality
+  expected: |
+    ALEX
+    missing
+    not-a-string
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "First call: both lookup and `.upper()` work. Second call: missing key raises `KeyError`. Third call: `42.upper()` raises `AttributeError` because ints don't have `.upper`."
+  - level: 2
+    body: "Outputs are `ALEX`, then `missing`, then `not-a-string`. One per line."

@@ -1,0 +1,37 @@
+xp: 2
+estSeconds: 45
+concept: matching-except-by-class
+code: |
+  items = ["a", "b", "c"]
+
+  try:
+      x = items[10]
+      print("got it:", x)
+  except KeyError:
+      print("key missing")
+  except IndexError:
+      print("index out of range")
+  except Exception:
+      print("something else")
+prompt: |
+  Read the code. `items[10]` on a three-element list raises `IndexError`.
+  Three `except` clauses are stacked. Which one prints?
+options:
+  - id: a
+    label: "`key missing`"
+    explain: "`KeyError` is for dicts, not lists. The class doesn't match `IndexError`."
+  - id: b
+    label: "`index out of range`"
+  - id: c
+    label: "`something else`"
+    explain: "`except Exception` would match — but Python checks top to bottom and stops at the first match. `IndexError` matches first."
+  - id: d
+    label: "All three print, in order."
+    explain: "Only the first matching `except` runs. The others are skipped."
+answerIds:
+  - b
+hint:
+  - level: 1
+    body: "Python tries each `except` in order, top to bottom. First class match wins."
+  - level: 2
+    body: "`items[10]` raises `IndexError`. The second clause names exactly that class, so it runs and the rest are skipped."
