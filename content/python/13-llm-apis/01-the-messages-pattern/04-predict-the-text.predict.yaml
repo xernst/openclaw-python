@@ -1,0 +1,28 @@
+xp: 3
+estSeconds: 70
+concept: llm-content-block-extraction
+code: |
+  # what client.messages.create(...) would have returned
+  response = {
+      "id": "msg_42",
+      "role": "assistant",
+      "model": "claude-sonnet-4-6",
+      "content": [
+          {"type": "text", "text": "Refactor complete."}
+      ],
+      "stop_reason": "end_turn",
+  }
+
+  print(response["content"][0]["text"])
+prompt: |
+  Read the editor. The response has the standard Anthropic shape. What
+  does the print line output?
+grader:
+  kind: stdout-equality
+  expected: "Refactor complete."
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: '`response["content"]` is a list. `[0]` grabs the first block. `["text"]` reads the text field on that block.'
+  - level: 2
+    body: 'It prints `Refactor complete.` — that''s `response["content"][0]["text"]`.'

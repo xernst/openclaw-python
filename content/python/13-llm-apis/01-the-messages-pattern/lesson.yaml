@@ -1,0 +1,14 @@
+slug: the-messages-pattern
+title: "Messages, roles, and the response — the call AI ships every time"
+estMinutes: 8
+prerequisites: []
+order:
+  - 01-intro.read.md
+  - 02-which-role-is-yours.mc.yaml
+  - 03-reading-the-response.read.md
+  - 04-predict-the-text.predict.yaml
+  - 05-fill-the-role.fill.yaml
+  - 06-fix-the-message-shape.fix.yaml
+  - 07-fix-the-response-access.fix.yaml
+  - 08-write-ask-claude.write.yaml
+  - 09-checkpoint.checkpoint.yaml

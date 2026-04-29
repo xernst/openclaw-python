@@ -1,0 +1,71 @@
+xp: 8
+estSeconds: 160
+concept: llm-call-checkpoint
+prompt: |
+  Final drill. Build a multi-turn chat helper. Write `chat(history, new_message)`
+  that:
+
+  - Appends a new user turn `{"role": "user", "content": new_message}` to
+    `history`.
+  - Calls `fake_create(history)` to simulate the model.
+  - Appends the assistant reply to `history` as
+    `{"role": "assistant", "content": <reply text>}`.
+  - Returns the updated `history`.
+
+  Then the script will run two turns and print every turn's role and
+  content. Expected output:
+
+  ```
+  user: hi
+  assistant: hello
+  user: who are you?
+  assistant: an assistant.
+  ```
+starter: |
+  def fake_create(messages):
+      last = messages[-1]["content"]
+      replies = {"hi": "hello", "who are you?": "an assistant."}
+      text = replies.get(last, "...")
+      return {
+          "role": "assistant",
+          "content": [{"type": "text", "text": text}],
+      }
+
+  # define chat(history, new_message) below
+
+  history = []
+  history = chat(history, "hi")
+  history = chat(history, "who are you?")
+  for turn in history:
+      print(f"{turn['role']}: {turn['content']}")
+grader:
+  kind: stdout-equality
+  expected: |
+    user: hi
+    assistant: hello
+    user: who are you?
+    assistant: an assistant.
+  normalize: collapse-trailing-newline
+solution: |
+  def fake_create(messages):
+      last = messages[-1]["content"]
+      replies = {"hi": "hello", "who are you?": "an assistant."}
+      text = replies.get(last, "...")
+      return {
+          "role": "assistant",
+          "content": [{"type": "text", "text": text}],
+      }
+
+  def chat(history, new_message):
+      history.append({"role": "user", "content": new_message})
+      response = fake_create(history)
+      reply = response["content"][0]["text"]
+      history.append({"role": "assistant", "content": reply})
+      return history
+
+  history = []
+  history = chat(history, "hi")
+  history = chat(history, "who are you?")
+  for turn in history:
+      print(f"{turn['role']}: {turn['content']}")
+passThreshold: 0.66

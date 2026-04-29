@@ -1,0 +1,31 @@
+xp: 2
+estSeconds: 50
+concept: llm-message-roles
+code: |
+  # the standard transcript shape — a list of role-tagged turns
+  messages = [
+      {"role": "user", "content": "Summarize this PR for me."},
+      {"role": "assistant", "content": "Sure — what does the diff look like?"},
+      {"role": "user", "content": "Three files changed in src/auth/."},
+  ]
+
+  for turn in messages:
+      print(f"{turn['role']}: {turn['content']}")
+prompt: |
+  Cursor just wrote a chatbot. Your app sends a question, the model
+  replies, and your app sends a follow-up. Which `role` does YOUR app
+  use when it sends text to the model?
+options:
+  - id: a
+    label: '"user"'
+  - id: b
+    label: '"assistant"'
+    explain: '`assistant` is reserved for the model''s replies. If you label your own input as `assistant`, the model will think it''s continuing its own previous turn.'
+  - id: c
+    label: '"system"'
+    explain: '`system` (Anthropic uses a separate `system=` parameter) is for the high-level instruction that frames the whole conversation — not your turn-by-turn input.'
+  - id: d
+    label: '"human"'
+    explain: 'Older Claude SDKs used `Human:` / `Assistant:` strings, but the modern messages API uses `"user"` and `"assistant"` only.'
+answerIds:
+  - a

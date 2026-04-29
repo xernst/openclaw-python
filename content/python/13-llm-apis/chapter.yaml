@@ -1,0 +1,6 @@
+number: 13
+slug: llm-apis
+title: "LLM APIs — talking to Claude and OpenAI"
+blurb: "Every AI feature you ship eventually calls a model API. Learn the messages pattern, how to read the response, and the four lines AI writes every single time."
+lessons:
+  - 01-the-messages-pattern

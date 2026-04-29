@@ -1,0 +1,30 @@
+xp: 4
+estSeconds: 80
+concept: llm-messages-must-be-list
+prompt: |
+  Claude wrote this and passed `messages` as a single dict instead of a
+  list of dicts. The real API would 400 this request. Fix line 1 so
+  `messages` is a list containing the one user turn, then the loop
+  prints the content.
+
+  Expected output:
+  ```
+  Hello, model.
+  ```
+brokenCode: |
+  messages = {"role": "user", "content": "Hello, model."}
+
+  for turn in messages:
+      print(turn["content"])
+bugLines:
+  - 1
+grader:
+  kind: stdout-equality
+  expected: "Hello, model."
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: 'The API expects `messages` to be a LIST. Wrap the dict in square brackets.'
+  - level: 2
+    body: 'Change line 1 to `messages = [{"role": "user", "content": "Hello, model."}]`. The loop then iterates that one-item list.'
+revealAfter: 4

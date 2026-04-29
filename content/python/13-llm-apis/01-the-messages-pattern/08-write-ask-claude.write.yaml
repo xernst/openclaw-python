@@ -1,0 +1,60 @@
+xp: 5
+estSeconds: 120
+concept: build-llm-call-stub
+prompt: |
+  Build the stub of a real LLM call. Write a function called `ask` that
+  takes a single string `question`, builds a `messages` list with one
+  user turn, calls the provided `fake_create(messages)` to simulate the
+  API, and returns the text from `response["content"][0]["text"]`.
+
+  Then call `ask("What's 2 + 2?")` and print the result.
+
+  Expected output:
+  ```
+  4
+  ```
+starter: |
+  def fake_create(messages):
+      # stand-in for client.messages.create — looks at the last user turn
+      last = messages[-1]["content"]
+      if "2 + 2" in last:
+          answer = "4"
+      else:
+          answer = "I don't know."
+      return {
+          "id": "msg_x",
+          "role": "assistant",
+          "content": [{"type": "text", "text": answer}],
+          "stop_reason": "end_turn",
+      }
+
+  # define ask(question) here, then print(ask("What's 2 + 2?"))
+grader:
+  kind: stdout-equality
+  expected: "4"
+  normalize: collapse-trailing-newline
+solution: |
+  def fake_create(messages):
+      last = messages[-1]["content"]
+      if "2 + 2" in last:
+          answer = "4"
+      else:
+          answer = "I don't know."
+      return {
+          "id": "msg_x",
+          "role": "assistant",
+          "content": [{"type": "text", "text": answer}],
+          "stop_reason": "end_turn",
+      }
+
+  def ask(question):
+      messages = [{"role": "user", "content": question}]
+      response = fake_create(messages)
+      return response["content"][0]["text"]
+
+  print(ask("What's 2 + 2?"))
+hint:
+  - level: 1
+    body: 'Three steps inside `ask`: build the messages list, call `fake_create(messages)`, return `response["content"][0]["text"]`.'
+  - level: 2
+    body: '`messages = [{"role": "user", "content": question}]` then `return fake_create(messages)["content"][0]["text"]`.'

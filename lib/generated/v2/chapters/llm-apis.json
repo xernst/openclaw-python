@@ -1,0 +1,258 @@
+{
+  "number": 13,
+  "slug": "llm-apis",
+  "title": "LLM APIs — talking to Claude and OpenAI",
+  "blurb": "Every AI feature you ship eventually calls a model API. Learn the messages pattern, how to read the response, and the four lines AI writes every single time.",
+  "lessons": [
+    {
+      "slug": "the-messages-pattern",
+      "title": "Messages, roles, and the response — the call AI ships every time",
+      "estMinutes": 8,
+      "prerequisites": [],
+      "steps": [
+        {
+          "type": "read",
+          "id": "llm-apis/the-messages-pattern/s01-01-intro",
+          "xp": 1,
+          "hint": [],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 75,
+          "concept": "llm-messages-pattern",
+          "body": "# The four lines that talk to a model\n\nWhen Cursor wires up a chatbot, a summarizer, an email drafter — anything\nthat uses an LLM — the call looks roughly the same. Four lines. The same\nfour lines, whether it's Claude or OpenAI:\n\n```python\nimport anthropic\n\nclient = anthropic.Anthropic()\nresponse = client.messages.create(\n    model=\"claude-sonnet-4-6\",\n    max_tokens=1024,\n    messages=[{\"role\": \"user\", \"content\": \"What is the capital of France?\"}],\n)\nprint(response.content[0].text)\n```\n\nThat's it. That's the whole API surface for 90% of what you'll ship this\nyear. The only thing that changes between scripts is what's inside\n`messages` and how you read the response.\n\n> **Browser note:** we can't make real network calls in here, so the\n> editor uses a hardcoded dict that matches the exact shape of what\n> Anthropic returns. The pattern is identical; we just skip the wire.\n\n## The mental model: a list of turns\n\nA `messages` array is a transcript. Each item is one turn in the\nconversation, tagged with a `role`:\n\n- `\"user\"` — what *you* (or your app) sent\n- `\"assistant\"` — what the model said back\n\nTo continue a conversation, you append to the list. To start fresh, you\nsend a new list. The model has no memory between calls — every request\nre-sends the entire transcript. Forgetting this is the single most\ncommon bug AI writes when it builds a chat feature.\n\n## Where AI specifically gets this wrong\n\nThree traps Cursor falls into constantly:\n\n1. **Sending a string instead of a list.** `messages=\"Hello\"` will 400\n   the API. It must be a list of dicts.\n2. **Forgetting `max_tokens`.** Anthropic requires it; OpenAI doesn't.\n   AI ports an OpenAI snippet to Claude and the call rejects.\n3. **Reading `response[\"text\"]` directly.** The response is a structured\n   object — the text lives at `response.content[0].text`. Indexing the\n   wrong field returns a list, not a string, and breaks the next\n   `.lower()` you call on it.\n\nRun the editor. We'll start by reading the text out of a stubbed\nresponse.",
+          "cta": "Got it",
+          "code": "# the shape every LLM call uses. we can't hit the network in the\n# browser, so we'll work with the response a real call WOULD return.\nfake_claude_response = {\n    \"id\": \"msg_01\",\n    \"model\": \"claude-sonnet-4-6\",\n    \"role\": \"assistant\",\n    \"content\": [\n        {\"type\": \"text\", \"text\": \"The capital of France is Paris.\"}\n    ],\n    \"stop_reason\": \"end_turn\",\n}\n\nreply = fake_claude_response[\"content\"][0][\"text\"]\nprint(reply)\n",
+          "runnable": true
+        },
+        {
+          "type": "mc",
+          "id": "llm-apis/the-messages-pattern/s02-02-which-role-is-yours",
+          "xp": 2,
+          "hint": [],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 50,
+          "concept": "llm-message-roles",
+          "prompt": "Cursor just wrote a chatbot. Your app sends a question, the model\nreplies, and your app sends a follow-up. Which `role` does YOUR app\nuse when it sends text to the model?\n",
+          "options": [
+            {
+              "id": "a",
+              "label": "\"user\""
+            },
+            {
+              "id": "b",
+              "label": "\"assistant\"",
+              "explain": "`assistant` is reserved for the model's replies. If you label your own input as `assistant`, the model will think it's continuing its own previous turn."
+            },
+            {
+              "id": "c",
+              "label": "\"system\"",
+              "explain": "`system` (Anthropic uses a separate `system=` parameter) is for the high-level instruction that frames the whole conversation — not your turn-by-turn input."
+            },
+            {
+              "id": "d",
+              "label": "\"human\"",
+              "explain": "Older Claude SDKs used `Human:` / `Assistant:` strings, but the modern messages API uses `\"user\"` and `\"assistant\"` only."
+            }
+          ],
+          "answerIds": [
+            "a"
+          ],
+          "shuffle": false,
+          "code": "# the standard transcript shape — a list of role-tagged turns\nmessages = [\n    {\"role\": \"user\", \"content\": \"Summarize this PR for me.\"},\n    {\"role\": \"assistant\", \"content\": \"Sure — what does the diff look like?\"},\n    {\"role\": \"user\", \"content\": \"Three files changed in src/auth/.\"},\n]\n\nfor turn in messages:\n    print(f\"{turn['role']}: {turn['content']}\")\n",
+          "runnable": true
+        },
+        {
+          "type": "read",
+          "id": "llm-apis/the-messages-pattern/s03-03-reading-the-response",
+          "xp": 2,
+          "hint": [],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 70,
+          "concept": "llm-response-shape",
+          "body": "# The response is a structured object, not a string\n\nThe biggest reason AI breaks on its own first LLM call: it treats the\nresponse like it's just a string. It isn't. It's a structured object\nwith a list of `content` blocks, each tagged by `type`.\n\nWhy a list? Because a single response can contain multiple things —\nplain text, a tool call, an image, a thinking block. Today you'll see\nmostly `text`. Tomorrow, when we get to agents, you'll see `tool_use`\nblocks in the same list.\n\nThe pattern AI ships every time:\n\n- `response.content[0].text` — the actual reply text (Anthropic SDK)\n- `response.choices[0].message.content` — the OpenAI equivalent\n- `response.usage.input_tokens` / `output_tokens` — what you'll bill\n\nBoth SDKs return objects in production. In this lesson we use dicts that\nmatch the same shape, so the indexing is identical: `response[\"content\"]\n[0][\"text\"]` instead of `response.content[0].text`. Same fields, two\nnotations.\n\nThe single most common AI bug here: writing `response[\"text\"]` or\n`response.text` directly. There is no top-level `text` field. The text\nis always nested inside a content block.\n\nRun the editor. Two reads from the same response: the reply, then the\ntoken count.",
+          "cta": "Got it",
+          "code": "# exact shape Anthropic returns. content is a LIST of blocks.\nresponse = {\n    \"id\": \"msg_017abc\",\n    \"model\": \"claude-sonnet-4-6\",\n    \"role\": \"assistant\",\n    \"stop_reason\": \"end_turn\",\n    \"content\": [\n        {\"type\": \"text\", \"text\": \"Paris is the capital of France.\"}\n    ],\n    \"usage\": {\"input_tokens\": 14, \"output_tokens\": 9},\n}\n\n# the text is buried two layers deep — list, then dict\nreply_text = response[\"content\"][0][\"text\"]\nprint(reply_text)\n\n# token usage is how you'll track cost\ncost_inputs = response[\"usage\"][\"input_tokens\"]\nprint(f\"input tokens: {cost_inputs}\")\n",
+          "runnable": true
+        },
+        {
+          "type": "predict",
+          "id": "llm-apis/the-messages-pattern/s04-04-predict-the-text",
+          "xp": 3,
+          "hint": [
+            {
+              "level": 1,
+              "body": "`response[\"content\"]` is a list. `[0]` grabs the first block. `[\"text\"]` reads the text field on that block.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "It prints `Refactor complete.` — that's `response[\"content\"][0][\"text\"]`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 70,
+          "concept": "llm-content-block-extraction",
+          "code": "# what client.messages.create(...) would have returned\nresponse = {\n    \"id\": \"msg_42\",\n    \"role\": \"assistant\",\n    \"model\": \"claude-sonnet-4-6\",\n    \"content\": [\n        {\"type\": \"text\", \"text\": \"Refactor complete.\"}\n    ],\n    \"stop_reason\": \"end_turn\",\n}\n\nprint(response[\"content\"][0][\"text\"])\n",
+          "prompt": "Read the editor. The response has the standard Anthropic shape. What\ndoes the print line output?\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "Refactor complete.",
+            "normalize": "collapse-trailing-newline"
+          }
+        },
+        {
+          "type": "fill",
+          "id": "llm-apis/the-messages-pattern/s05-05-fill-the-role",
+          "xp": 3,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Two roles: one is the model's replies, one is your app's input. Which is which?",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "`\"user\"` is what your app sends. `\"assistant\"` is reserved for the model.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 55,
+          "concept": "llm-message-role-field",
+          "prompt": "Cursor wrote a stub of a chat call but left the role blank on the\nuser's message. Fill in the role string that your app uses when\nsending text to the model.\n\nRole: ___\n",
+          "code": "messages = [\n    {\"role\": \"___\", \"content\": \"What's the weather in Tokyo?\"},\n]\n\n# pretend this got sent to client.messages.create(messages=messages, ...)\nfor turn in messages:\n    print(f\"{turn['role']}: {turn['content']}\")\n",
+          "blanks": [
+            {
+              "id": "keyword",
+              "accept": [
+                "user"
+              ],
+              "caseSensitive": true,
+              "normalize": "trim"
+            }
+          ]
+        },
+        {
+          "type": "fix",
+          "id": "llm-apis/the-messages-pattern/s06-06-fix-the-message-shape",
+          "xp": 4,
+          "hint": [
+            {
+              "level": 1,
+              "body": "The API expects `messages` to be a LIST. Wrap the dict in square brackets.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Change line 1 to `messages = [{\"role\": \"user\", \"content\": \"Hello, model.\"}]`. The loop then iterates that one-item list.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 80,
+          "concept": "llm-messages-must-be-list",
+          "brokenCode": "messages = {\"role\": \"user\", \"content\": \"Hello, model.\"}\n\nfor turn in messages:\n    print(turn[\"content\"])\n",
+          "prompt": "Claude wrote this and passed `messages` as a single dict instead of a\nlist of dicts. The real API would 400 this request. Fix line 1 so\n`messages` is a list containing the one user turn, then the loop\nprints the content.\n\nExpected output:\n```\nHello, model.\n```\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "Hello, model.",
+            "normalize": "collapse-trailing-newline"
+          },
+          "bugLines": [
+            1
+          ],
+          "revealAfter": 4
+        },
+        {
+          "type": "fix",
+          "id": "llm-apis/the-messages-pattern/s07-07-fix-the-response-access",
+          "xp": 4,
+          "hint": [
+            {
+              "level": 1,
+              "body": "There is no top-level `text` key. The text is buried inside `content`, which is a list of blocks.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "Replace `response[\"text\"]` with `response[\"content\"][0][\"text\"]` on line 11.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 90,
+          "concept": "llm-response-text-path",
+          "brokenCode": "response = {\n    \"id\": \"msg_99\",\n    \"role\": \"assistant\",\n    \"model\": \"claude-sonnet-4-6\",\n    \"content\": [\n        {\"type\": \"text\", \"text\": \"All tests pass.\"}\n    ],\n    \"stop_reason\": \"end_turn\",\n}\n\nprint(response[\"text\"])\n",
+          "prompt": "AI assumed the response had a top-level `text` field, but Anthropic\nreturns text nested inside `content[0]`. The script crashes with a\n`KeyError`. Fix line 11 so it prints the reply.\n\nExpected output:\n```\nAll tests pass.\n```\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "All tests pass.",
+            "normalize": "collapse-trailing-newline"
+          },
+          "bugLines": [
+            11
+          ],
+          "revealAfter": 4
+        },
+        {
+          "type": "write",
+          "id": "llm-apis/the-messages-pattern/s08-08-write-ask-claude",
+          "xp": 5,
+          "hint": [
+            {
+              "level": 1,
+              "body": "Three steps inside `ask`: build the messages list, call `fake_create(messages)`, return `response[\"content\"][0][\"text\"]`.",
+              "cost": 0
+            },
+            {
+              "level": 2,
+              "body": "`messages = [{\"role\": \"user\", \"content\": question}]` then `return fake_create(messages)[\"content\"][0][\"text\"]`.",
+              "cost": 0
+            }
+          ],
+          "personalize": false,
+          "phase": "build",
+          "estSeconds": 120,
+          "concept": "build-llm-call-stub",
+          "prompt": "Build the stub of a real LLM call. Write a function called `ask` that\ntakes a single string `question`, builds a `messages` list with one\nuser turn, calls the provided `fake_create(messages)` to simulate the\nAPI, and returns the text from `response[\"content\"][0][\"text\"]`.\n\nThen call `ask(\"What's 2 + 2?\")` and print the result.\n\nExpected output:\n```\n4\n```\n",
+          "starter": "def fake_create(messages):\n    # stand-in for client.messages.create — looks at the last user turn\n    last = messages[-1][\"content\"]\n    if \"2 + 2\" in last:\n        answer = \"4\"\n    else:\n        answer = \"I don't know.\"\n    return {\n        \"id\": \"msg_x\",\n        \"role\": \"assistant\",\n        \"content\": [{\"type\": \"text\", \"text\": answer}],\n        \"stop_reason\": \"end_turn\",\n    }\n\n# define ask(question) here, then print(ask(\"What's 2 + 2?\"))\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "4",
+            "normalize": "collapse-trailing-newline"
+          },
+          "solution": "def fake_create(messages):\n    last = messages[-1][\"content\"]\n    if \"2 + 2\" in last:\n        answer = \"4\"\n    else:\n        answer = \"I don't know.\"\n    return {\n        \"id\": \"msg_x\",\n        \"role\": \"assistant\",\n        \"content\": [{\"type\": \"text\", \"text\": answer}],\n        \"stop_reason\": \"end_turn\",\n    }\n\ndef ask(question):\n    messages = [{\"role\": \"user\", \"content\": question}]\n    response = fake_create(messages)\n    return response[\"content\"][0][\"text\"]\n\nprint(ask(\"What's 2 + 2?\"))\n",
+          "hiddenTests": []
+        },
+        {
+          "type": "checkpoint",
+          "id": "llm-apis/the-messages-pattern/s09-09-checkpoint",
+          "xp": 8,
+          "hint": [],
+          "personalize": false,
+          "phase": "check",
+          "estSeconds": 160,
+          "concept": "llm-call-checkpoint",
+          "prompt": "Final drill. Build a multi-turn chat helper. Write `chat(history, new_message)`\nthat:\n\n- Appends a new user turn `{\"role\": \"user\", \"content\": new_message}` to\n  `history`.\n- Calls `fake_create(history)` to simulate the model.\n- Appends the assistant reply to `history` as\n  `{\"role\": \"assistant\", \"content\": <reply text>}`.\n- Returns the updated `history`.\n\nThen the script will run two turns and print every turn's role and\ncontent. Expected output:\n\n```\nuser: hi\nassistant: hello\nuser: who are you?\nassistant: an assistant.\n```\n",
+          "starter": "def fake_create(messages):\n    last = messages[-1][\"content\"]\n    replies = {\"hi\": \"hello\", \"who are you?\": \"an assistant.\"}\n    text = replies.get(last, \"...\")\n    return {\n        \"role\": \"assistant\",\n        \"content\": [{\"type\": \"text\", \"text\": text}],\n    }\n\n# define chat(history, new_message) below\n\nhistory = []\nhistory = chat(history, \"hi\")\nhistory = chat(history, \"who are you?\")\nfor turn in history:\n    print(f\"{turn['role']}: {turn['content']}\")\n",
+          "grader": {
+            "kind": "stdout-equality",
+            "expected": "user: hi\nassistant: hello\nuser: who are you?\nassistant: an assistant.\n",
+            "normalize": "collapse-trailing-newline"
+          },
+          "solution": "def fake_create(messages):\n    last = messages[-1][\"content\"]\n    replies = {\"hi\": \"hello\", \"who are you?\": \"an assistant.\"}\n    text = replies.get(last, \"...\")\n    return {\n        \"role\": \"assistant\",\n        \"content\": [{\"type\": \"text\", \"text\": text}],\n    }\n\ndef chat(history, new_message):\n    history.append({\"role\": \"user\", \"content\": new_message})\n    response = fake_create(history)\n    reply = response[\"content\"][0][\"text\"]\n    history.append({\"role\": \"assistant\", \"content\": reply})\n    return history\n\nhistory = []\nhistory = chat(history, \"hi\")\nhistory = chat(history, \"who are you?\")\nfor turn in history:\n    print(f\"{turn['role']}: {turn['content']}\")\n",
+          "passThreshold": 0.66
+        }
+      ],
+      "xpTotal": 32
+    }
+  ],
+  "xpTotal": 32
+}

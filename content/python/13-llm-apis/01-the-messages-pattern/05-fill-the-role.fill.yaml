@@ -1,0 +1,27 @@
+xp: 3
+estSeconds: 55
+concept: llm-message-role-field
+prompt: |
+  Cursor wrote a stub of a chat call but left the role blank on the
+  user's message. Fill in the role string that your app uses when
+  sending text to the model.
+
+  Role: ___
+code: |
+  messages = [
+      {"role": "___", "content": "What's the weather in Tokyo?"},
+  ]
+
+  # pretend this got sent to client.messages.create(messages=messages, ...)
+  for turn in messages:
+      print(f"{turn['role']}: {turn['content']}")
+blanks:
+  - id: keyword
+    accept:
+      - user
+    caseSensitive: true
+hint:
+  - level: 1
+    body: 'Two roles: one is the model''s replies, one is your app''s input. Which is which?'
+  - level: 2
+    body: '`"user"` is what your app sends. `"assistant"` is reserved for the model.'
