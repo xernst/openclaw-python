@@ -1,0 +1,36 @@
+xp: 4
+estSeconds: 80
+concept: elif-order-bug
+prompt: |
+  Claude generated a grade-letter chain. The output for `score = 95` is `B`
+  instead of `A`. The broader condition `>= 80` is being checked before the
+  narrower `>= 90`, so a 95 always falls into the B bucket.
+
+  Reorder the branches so a `95` prints `A`, and the chain still works for
+  other scores.
+brokenCode: |
+  score = 95
+
+  if score >= 80:
+      grade = "B"
+  elif score >= 90:
+      grade = "A"
+  elif score >= 70:
+      grade = "C"
+  else:
+      grade = "F"
+
+  print(grade)
+bugLines:
+  - 3
+  - 5
+grader:
+  kind: stdout-equality
+  expected: "A"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "The first true branch wins. The `A` check has to come *before* the `B` check, or 95 falls into B."
+  - level: 2
+    body: "Swap lines 3-4 with lines 5-6. Order should be: `>= 90` for `A`, then `>= 80` for `B`, then `>= 70` for `C`, then `else F`."
+revealAfter: 4

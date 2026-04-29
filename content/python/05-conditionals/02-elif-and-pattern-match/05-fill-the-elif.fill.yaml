@@ -1,0 +1,26 @@
+xp: 3
+estSeconds: 55
+concept: elif-keyword
+prompt: |
+  Cursor wrote a three-branch chain. The middle keyword is missing — it's the
+  one that means "otherwise, check this." Fill it in.
+  ```python
+  weather = "rain"
+
+  if weather == "sun":
+      print("shades")
+  ___ weather == "rain":
+      print("umbrella")
+  else:
+      print("just go")
+  ```
+blanks:
+  - id: keyword
+    accept:
+      - elif
+    caseSensitive: true
+hint:
+  - level: 1
+    body: "It's not `if`, it's not `else`. It's the contraction of *else if*."
+  - level: 2
+    body: "It's `elif`. One word, no space. `else if` (two words) is JavaScript or C."

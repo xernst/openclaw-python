@@ -1,0 +1,49 @@
+xp: 8
+estSeconds: 130
+concept: elif-recap
+prompt: |
+  Last one. Cursor wrote a function that classifies an HTTP status code into
+  a category — `"ok"`, `"redirect"`, `"client error"`, `"server error"`, or
+  `"weird"`. The `elif` chain is mostly there but the function never returns
+  anything (only the `pass` placeholder is at the bottom).
+
+  Replace the body so the function uses a chain that returns the right
+  category for each range:
+
+  - `200..299` → `"ok"`
+  - `300..399` → `"redirect"`
+  - `400..499` → `"client error"`
+  - `500..599` → `"server error"`
+  - anything else → `"weird"`
+
+  The script calls `classify(404)` and should print `client error`.
+starter: |
+  def classify(code):
+      # your if/elif/elif/elif/else chain below:
+      pass
+
+  print(classify(404))
+grader:
+  kind: stdout-equality
+  expected: "client error"
+  normalize: collapse-trailing-newline
+solution: |
+  def classify(code):
+      if 200 <= code < 300:
+          return "ok"
+      elif 300 <= code < 400:
+          return "redirect"
+      elif 400 <= code < 500:
+          return "client error"
+      elif 500 <= code < 600:
+          return "server error"
+      else:
+          return "weird"
+
+  print(classify(404))
+passThreshold: 0.66
+hint:
+  - level: 1
+    body: "Five branches. Each one returns a string. `200 <= code < 300` is the Python way to say *between 200 and 299*."
+  - level: 2
+    body: "`if 200 <= code < 300: return \"ok\"`, then `elif 300 <= code < 400: return \"redirect\"`, etc. The last branch is `else: return \"weird\"`."

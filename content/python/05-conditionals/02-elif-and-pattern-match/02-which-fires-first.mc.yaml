@@ -1,0 +1,36 @@
+xp: 2
+estSeconds: 45
+concept: elif-order-matters
+code: |
+  score = 95
+
+  if score >= 60:
+      print("pass")
+  elif score >= 90:
+      print("excellent")
+  elif score >= 75:
+      print("good")
+  else:
+      print("fail")
+prompt: |
+  Cursor wrote this and the output is `pass` — but the user wanted `excellent`
+  for a 95. Why does `pass` fire instead?
+options:
+  - id: a
+    label: "Python evaluates `elif` branches in reverse, so the last one wins"
+    explain: "Python reads top to bottom, not bottom to top."
+  - id: b
+    label: "`elif` only works if the previous condition was true"
+    explain: "Reversed. `elif` only runs if the previous conditions were *false*."
+  - id: c
+    label: "The first true condition wins, and `score >= 60` is true first"
+  - id: d
+    label: "`>=` doesn't work with integers"
+    explain: "It works fine. The bug is conceptual — branch order, not types."
+answerIds:
+  - c
+hint:
+  - level: 1
+    body: "Python checks the branches in order and stops at the first true one."
+  - level: 2
+    body: "`score >= 60` is true for `95`, so the first branch wins. The narrower `>= 90` check never runs. To fix it, put narrower conditions *first*."

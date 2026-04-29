@@ -1,0 +1,41 @@
+xp: 5
+estSeconds: 100
+concept: write-elif-chain
+prompt: |
+  Write an `if/elif/else` chain that takes the variable `temp = 72` and
+  prints exactly one of these labels:
+
+  - `"hot"` if `temp >= 85`
+  - `"warm"` if `temp >= 70`
+  - `"cool"` if `temp >= 55`
+  - `"cold"` otherwise
+
+  For `temp = 72`, the expected output is:
+  ```
+  warm
+  ```
+starter: |
+  temp = 72
+
+  # if/elif/elif/else below:
+
+grader:
+  kind: stdout-equality
+  expected: "warm"
+  normalize: collapse-trailing-newline
+solution: |
+  temp = 72
+
+  if temp >= 85:
+      print("hot")
+  elif temp >= 70:
+      print("warm")
+  elif temp >= 55:
+      print("cool")
+  else:
+      print("cold")
+hint:
+  - level: 1
+    body: "Narrowest band first. `>= 85` is hot, `>= 70` is warm, `>= 55` is cool, anything else is cold."
+  - level: 2
+    body: "Four branches. `if temp >= 85: print(\"hot\")`, `elif temp >= 70: print(\"warm\")`, `elif temp >= 55: print(\"cool\")`, `else: print(\"cold\")`."

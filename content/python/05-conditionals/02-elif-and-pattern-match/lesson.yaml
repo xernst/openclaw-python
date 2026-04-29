@@ -1,0 +1,14 @@
+slug: elif-and-pattern-match
+title: "elif chains and the match statement Cursor reaches for"
+estMinutes: 7
+prerequisites: []
+order:
+  - 01-intro.read.md
+  - 02-which-fires-first.mc.yaml
+  - 03-match-statement.read.md
+  - 04-predict-the-elif.predict.yaml
+  - 05-fill-the-elif.fill.yaml
+  - 06-fix-the-elif-order.fix.yaml
+  - 07-fix-the-match.fix.yaml
+  - 08-write-grade.write.yaml
+  - 09-checkpoint.checkpoint.yaml

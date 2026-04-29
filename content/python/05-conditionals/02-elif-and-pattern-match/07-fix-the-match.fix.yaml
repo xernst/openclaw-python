@@ -1,0 +1,34 @@
+xp: 4
+estSeconds: 75
+concept: match-default-case
+prompt: |
+  Cursor wrote a `match` statement that handles three commands but forgot the
+  catch-all. When `command = "shutdown"` (which isn't in any case), the
+  variable `result` never gets set, and line 11 crashes with a `NameError`.
+
+  Add a `case _:` block at the end so unmatched commands produce
+  `result = "unknown"`. The script should print `unknown`.
+brokenCode: |
+  command = "shutdown"
+
+  match command:
+      case "start":
+          result = "starting"
+      case "stop":
+          result = "stopping"
+      case "restart":
+          result = "restarting"
+
+  print(result)
+bugLines:
+  - 9
+grader:
+  kind: stdout-equality
+  expected: "unknown"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "Every `match` block needs a fallback for values that don't match any of the named cases. The fallback uses an underscore."
+  - level: 2
+    body: "Add `case _:` followed by an indented `result = \"unknown\"` line, before the `print`."
+revealAfter: 4

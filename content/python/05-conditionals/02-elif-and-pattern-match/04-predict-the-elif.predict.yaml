@@ -1,0 +1,27 @@
+xp: 3
+estSeconds: 60
+concept: elif-evaluation
+code: |
+  age = 17
+
+  if age < 13:
+      label = "child"
+  elif age < 18:
+      label = "teen"
+  elif age < 65:
+      label = "adult"
+  else:
+      label = "senior"
+
+  print(label)
+prompt: |
+  Walk through the chain top to bottom. Which branch fires for `age = 17`?
+grader:
+  kind: stdout-equality
+  expected: "teen"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "Check each branch in order. `17 < 13` is false. `17 < 18` is..."
+  - level: 2
+    body: "`17 < 18` is true, so `label = \"teen\"` fires and the rest is skipped."

@@ -4,3 +4,4 @@ title: "Conditionals — where AI silently bugs"
 blurb: "`if` looks simple. The traps inside it — empty values, `==` vs `is`, the difference between `0` and `None` — are where AI quietly ships wrong code."
 lessons:
   - 01-truthiness-bugs
+  - 02-elif-and-pattern-match
