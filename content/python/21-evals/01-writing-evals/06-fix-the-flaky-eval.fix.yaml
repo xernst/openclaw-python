@@ -1,0 +1,31 @@
+xp: 4
+estSeconds: 90
+concept: case-insensitive-eval
+prompt: |
+  Claude wrote a yes/no classifier eval. The `actual` answer is `"YES"`
+  but the eval expects `"yes"` and fails. The fix is to make the
+  comparison case-insensitive. Change line 4 so the script prints
+  `pass`.
+
+  Expected output:
+  ```
+  pass
+  ```
+brokenCode: |
+  expected = "yes"
+  actual = "YES"
+
+  ok = actual == expected
+  print("pass" if ok else "fail")
+bugLines:
+  - 4
+grader:
+  kind: stdout-equality
+  expected: "pass"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "AI output capitalization is unreliable. Lowercase both sides before comparing."
+  - level: 2
+    body: "Change line 4 to `ok = actual.lower() == expected.lower()`."
+revealAfter: 4

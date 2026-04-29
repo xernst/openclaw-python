@@ -1,0 +1,34 @@
+xp: 2
+estSeconds: 50
+concept: assertion-styles
+code: |
+  actual = "The capital of France is Paris."
+
+  # three candidate evals, each checking a different way.
+  e1 = actual == "Paris"
+  e2 = "Paris" in actual
+  e3 = actual.startswith("Paris")
+
+  print(e1, e2, e3)
+prompt: |
+  Cursor wrote three evals against the same string output. Two are
+  False, one is True. Which assertion *passes*?
+options:
+  - id: a
+    label: "`e1` — exact equality with `\"Paris\"`"
+    explain: "False — `actual` is the full sentence, not just the word `Paris`."
+  - id: b
+    label: "`e2` — `\"Paris\" in actual`"
+  - id: c
+    label: "`e3` — `actual.startswith(\"Paris\")`"
+    explain: "False — the sentence starts with `The`, not `Paris`."
+  - id: d
+    label: "None of them pass."
+    explain: "One of them passes. Look at the substring check."
+answerIds:
+  - b
+hint:
+  - level: 1
+    body: "`actual` is a full sentence. Which check is True for any sentence that contains the word `Paris`?"
+  - level: 2
+    body: "`\"Paris\" in actual` is the substring check — it passes whenever the answer is somewhere in the output. That's the most robust pattern for free-form AI output."

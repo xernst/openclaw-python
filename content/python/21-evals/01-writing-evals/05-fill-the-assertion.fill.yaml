@@ -1,0 +1,29 @@
+xp: 3
+estSeconds: 60
+concept: assert-keyword
+prompt: |
+  Cursor wrote a pytest-style eval, but the assertion line is missing
+  the keyword that turns a comparison into a passing or failing test.
+  Fill in the keyword.
+
+  Keyword: ___
+code: |
+  def fake_extract(text):
+      return "sam@example.com"
+
+  def test_extract_email():
+      actual = fake_extract("ping me at sam@example.com")
+      ___ actual == "sam@example.com"
+
+  test_extract_email()
+  print("ok")
+blanks:
+  - id: keyword
+    accept:
+      - assert
+    caseSensitive: true
+hint:
+  - level: 1
+    body: "It's the Python keyword that raises `AssertionError` when the expression is False."
+  - level: 2
+    body: "It's `assert`. The line becomes `assert actual == \"sam@example.com\"`."

@@ -1,0 +1,76 @@
+xp: 8
+estSeconds: 130
+concept: regression-eval
+prompt: |
+  Last one. The starter has a `regression_cases` list and a stub
+  classifier that has a known bug — it returns `"no"` for the input
+  `"cancel my account"`, which should be `"yes"`. Add the missing case
+  to `regression_cases` so it would catch this exact bug. Run the suite
+  and confirm the output is `2/3` (two pass, one — the new regression
+  case — fails).
+
+  Add one entry: input `"cancel my account"`, expected `"yes"`, name
+  `"account_cancel"`.
+
+  Expected output:
+  ```
+  2/3
+  ```
+starter: |
+  def classify(text):
+      # buggy: misses "account" cancel intent
+      if "order" in text.lower() and "cancel" in text.lower():
+          return "yes"
+      return "no"
+
+  regression_cases = [
+      {"name": "explicit_cancel",
+       "input": "please cancel my order",
+       "expected": "yes"},
+      {"name": "no_intent",
+       "input": "what's the status of my order",
+       "expected": "no"},
+      # add the regression case here
+  ]
+
+  def run_suite(cases):
+      passed = 0
+      for c in cases:
+          if classify(c["input"]).lower() == c["expected"].lower():
+              passed += 1
+      return passed, len(cases)
+
+  p, t = run_suite(regression_cases)
+  print(f"{p}/{t}")
+grader:
+  kind: stdout-equality
+  expected: "2/3"
+  normalize: collapse-trailing-newline
+solution: |
+  def classify(text):
+      if "order" in text.lower() and "cancel" in text.lower():
+          return "yes"
+      return "no"
+
+  regression_cases = [
+      {"name": "explicit_cancel",
+       "input": "please cancel my order",
+       "expected": "yes"},
+      {"name": "no_intent",
+       "input": "what's the status of my order",
+       "expected": "no"},
+      {"name": "account_cancel",
+       "input": "cancel my account",
+       "expected": "yes"},
+  ]
+
+  def run_suite(cases):
+      passed = 0
+      for c in cases:
+          if classify(c["input"]).lower() == c["expected"].lower():
+              passed += 1
+      return passed, len(cases)
+
+  p, t = run_suite(regression_cases)
+  print(f"{p}/{t}")
+passThreshold: 0.66

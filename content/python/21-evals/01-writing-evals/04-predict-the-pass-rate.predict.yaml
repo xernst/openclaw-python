@@ -1,0 +1,29 @@
+xp: 3
+estSeconds: 70
+concept: pass-rate-counting
+code: |
+  cases = [
+      {"actual": "Paris",                "expected": "Paris"},
+      {"actual": "The capital is Paris.","expected": "Paris"},
+      {"actual": "Lyon",                 "expected": "Paris"},
+      {"actual": "PARIS",                "expected": "Paris"},
+  ]
+
+  passed = 0
+  for c in cases:
+      if c["expected"].lower() in c["actual"].lower():
+          passed += 1
+
+  print(f"{passed}/{len(cases)}")
+prompt: |
+  Read the eval loop on the right. It uses the case-insensitive
+  *contains* check. How many of the four cases pass?
+grader:
+  kind: stdout-equality
+  expected: "3/4"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "Lowercase both sides, then check substring. Cases 1, 2, and 4 all contain `paris` after lowercasing. Case 3 has `lyon`."
+  - level: 2
+    body: "Three pass, one fails. Output is `3/4`."

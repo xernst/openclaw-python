@@ -1,0 +1,6 @@
+number: 21
+slug: evals
+title: "Eval-driven AI development"
+blurb: "If you can't test it, you can't ship it. Learn the simple-but-strict eval patterns that separate AI features that work from ones that just feel like they do."
+lessons:
+  - 01-writing-evals

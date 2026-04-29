@@ -1,0 +1,153 @@
+---
+xp: 1
+estSeconds: 130
+concept: eval-patterns
+code: |
+  # four eval patterns, in order from strict to loose.
+  import json
+
+  # pattern 1: exact match
+  def eval_exact(actual, expected):
+      return actual == expected
+
+  # pattern 2: substring
+  def eval_contains(actual, expected_substring):
+      return expected_substring.lower() in actual.lower()
+
+  # pattern 3: shape check on JSON
+  def eval_shape(actual_str, required_keys):
+      try:
+          data = json.loads(actual_str)
+      except json.JSONDecodeError:
+          return False
+      return all(k in data for k in required_keys)
+
+  # pattern 4: regex (still rule-based, just more flexible)
+  import re
+  def eval_regex(actual, pattern):
+      return re.search(pattern, actual) is not None
+
+  print(eval_exact("yes", "yes"))
+  print(eval_contains("The answer is 42.", "42"))
+  print(eval_shape('{"name":"maya","score":7}', ["name", "score"]))
+  print(eval_regex("order 1234", r"order \d+"))
+runnable: true
+---
+
+# Pick the right assertion for the job
+
+Run the editor on the right. Four eval functions, four patterns, four
+True outputs. Each one is the right tool for a different shape of AI
+output. Knowing which to reach for is half the eval skill.
+
+## Pattern 1: exact match
+
+```py
+assert actual == expected
+```
+
+Use when the output is a single, well-defined value. Examples:
+
+- Extracting a known field — *"what's the user's email?"*
+- Classifying into a fixed set — *"is this email spam? yes/no"*
+- Numeric answers — *"how many items are in stock?"*
+
+The trap: don't use exact match on free-form prose. The first time the
+model says "Yes." instead of "yes" you'll get a false failure and stop
+trusting the suite.
+
+## Pattern 2: contains (substring check)
+
+```py
+assert expected.lower() in actual.lower()
+```
+
+Use when the answer is the right *content* but the surrounding prose
+is the model's choice. Examples:
+
+- *"explain why the order failed."* — Pass if the explanation contains
+  `"out of stock"`.
+- *"does the user want to cancel?"* — Pass if the response contains
+  `"yes"` or `"cancel"`.
+- *"summarize the meeting."* — Pass if the summary contains all three
+  required topics.
+
+Always lowercase both sides (or use case-insensitive comparison
+otherwise). AI is inconsistent about capitalization and you don't want
+your suite to flake on that.
+
+## Pattern 3: JSON shape check
+
+```py
+def eval_shape(actual_str, required_keys):
+    data = json.loads(actual_str)
+    return all(k in data for k in required_keys)
+```
+
+Use when the output is supposed to be *structured* — JSON, key-value
+pairs, a parsed schema. You care that the right *fields* exist, not
+the exact values.
+
+The killer move here: *parse first.* If the JSON doesn't parse, the
+eval already failed. That alone catches the most common AI structured
+output bug — the model wraps the JSON in code fences (`` ```json ... ```
+``) and breaks every downstream consumer.
+
+For real production use, swap the manual key check for `pydantic`
+validation. The principle is the same: you're checking *shape*, not
+*content*.
+
+## Pattern 4: regex
+
+```py
+assert re.search(r"order \d+", actual) is not None
+```
+
+A middle ground when "contains" is too loose and "exact" is too
+strict. Use for outputs with a known *pattern* but variable content:
+
+- Order IDs (`r"\b\d{6}\b"`).
+- Email addresses (`r"[\w.+-]+@[\w-]+\.[\w.-]+"`).
+- Currency (`r"\$\d+\.\d{2}"`).
+
+Don't reach for regex first. Most AI evals don't need it. But when you
+do, it's the difference between a brittle eval and a robust one.
+
+## When to use LLM-as-judge
+
+You'll see this pattern: ask another model to judge whether the first
+model's output is good. It works for things rules can't capture
+("does this customer email sound polite?") but it has three problems:
+
+- **Slow.** Doubles the latency of your eval suite.
+- **Expensive.** Doubles the cost.
+- **Can lie.** A judge can be confidently wrong, and you have no
+  ground truth to catch it.
+
+Use it sparingly, only after the rule-based patterns have run out of
+runway. And when you do, write the judge's prompt as carefully as you
+write any other.
+
+## When to run evals
+
+The discipline is more important than the test count.
+
+- **Every prompt change.** If you're tweaking the system prompt, run
+  the suite before and after. The diff in pass rate IS the result of
+  your change.
+- **Every model upgrade.** Switching from `claude-haiku-4-5` to
+  `claude-sonnet-4-6`? Run the suite. You will be surprised at least
+  half the time.
+- **Pre-deploy.** CI runs the suite. If it falls below the pass-rate
+  threshold, the deploy blocks.
+- **After every prod incident.** Add a new case for the exact bad
+  input that caused the bug. That's a *regression eval.* It catches
+  yesterday's bug forever.
+
+## Where AI specifically gets eval suites wrong
+
+Cursor will write you eval cases that *all pass* on the first run.
+That's a bad smell — it usually means the cases were generated by the
+same model whose output they're checking. A useful eval suite has
+some cases the model fails on. Those are the ones that actually drive
+improvement.

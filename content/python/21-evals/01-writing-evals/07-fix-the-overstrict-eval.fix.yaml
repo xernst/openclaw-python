@@ -1,0 +1,31 @@
+xp: 4
+estSeconds: 95
+concept: substring-eval
+prompt: |
+  Cursor wrote an eval that checks whether the model mentioned `Paris`
+  somewhere in its answer. It used exact equality, which fails because
+  the model returned a full sentence. Switch the check to a *contains*
+  comparison so it passes.
+
+  Expected output:
+  ```
+  pass
+  ```
+brokenCode: |
+  expected = "Paris"
+  actual = "The capital of France is Paris."
+
+  ok = actual == expected
+  print("pass" if ok else "fail")
+bugLines:
+  - 4
+grader:
+  kind: stdout-equality
+  expected: "pass"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "Exact equality is too strict for prose. Use `in` for a substring check."
+  - level: 2
+    body: "Change line 4 to `ok = expected in actual`. That checks whether `Paris` appears anywhere in the sentence."
+revealAfter: 4

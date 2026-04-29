@@ -1,0 +1,75 @@
+xp: 5
+estSeconds: 140
+concept: build-eval-suite
+prompt: |
+  Build a small eval runner. The starter has a list of cases (each with
+  `name`, `input`, and `expected`) and a stub `classify(text)` that
+  returns `"yes"` or `"no"` based on whether the text contains
+  `"cancel"`. Write a function `run_suite(cases)` that:
+
+  - Calls `classify(case["input"])` for each case.
+  - Compares the lowercased actual to the lowercased expected.
+  - Returns a tuple `(passed, total)`.
+
+  Then call `run_suite(cases)` and print the result as
+  `passed/total`.
+
+  Expected output:
+  ```
+  3/3
+  ```
+starter: |
+  cases = [
+      {"name": "explicit_cancel",
+       "input": "please cancel my order",
+       "expected": "yes"},
+      {"name": "no_intent",
+       "input": "what's the status of my order",
+       "expected": "no"},
+      {"name": "shouty_cancel",
+       "input": "CANCEL THIS NOW",
+       "expected": "yes"},
+  ]
+
+  def classify(text):
+      return "yes" if "cancel" in text.lower() else "no"
+
+  # define run_suite(cases) below
+
+  passed, total = run_suite(cases)
+  print(f"{passed}/{total}")
+grader:
+  kind: stdout-equality
+  expected: "3/3"
+  normalize: collapse-trailing-newline
+solution: |
+  cases = [
+      {"name": "explicit_cancel",
+       "input": "please cancel my order",
+       "expected": "yes"},
+      {"name": "no_intent",
+       "input": "what's the status of my order",
+       "expected": "no"},
+      {"name": "shouty_cancel",
+       "input": "CANCEL THIS NOW",
+       "expected": "yes"},
+  ]
+
+  def classify(text):
+      return "yes" if "cancel" in text.lower() else "no"
+
+  def run_suite(cases):
+      passed = 0
+      for c in cases:
+          actual = classify(c["input"])
+          if actual.lower() == c["expected"].lower():
+              passed += 1
+      return passed, len(cases)
+
+  passed, total = run_suite(cases)
+  print(f"{passed}/{total}")
+hint:
+  - level: 1
+    body: "Loop over cases, call `classify` on each `input`, compare to `expected` (case-insensitive), count passes."
+  - level: 2
+    body: "Initialize `passed = 0`. In the loop, increment when `actual.lower() == c[\"expected\"].lower()`. Return `(passed, len(cases))`."
