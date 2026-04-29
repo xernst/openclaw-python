@@ -1,0 +1,30 @@
+xp: 8
+estSeconds: 120
+concept: print-and-fstring-recap
+prompt: |
+  Last one. AI wrote a small status report that needs one final line.
+  The starter has the variables and the first two prints. Finish line 5
+  so the script prints exactly `progress: 75%`.
+
+  Hint: line 5 should be a `print` with an f-string that uses
+  `done` and `total`. The percent sign is a literal character.
+starter: |
+  done = 30
+  total = 40
+  print(f"done: {done}")
+  print(f"total: {total}")
+  # your code on the next line:
+grader:
+  kind: stdout-equality
+  expected: |
+    done: 30
+    total: 40
+    progress: 75%
+  normalize: collapse-trailing-newline
+solution: |
+  done = 30
+  total = 40
+  print(f"done: {done}")
+  print(f"total: {total}")
+  print(f"progress: {done * 100 // total}%")
+passThreshold: 0.66

@@ -1,0 +1,18 @@
+xp: 3
+estSeconds: 65
+concept: f-string-expression
+code: |
+  count = 4
+  print(f"items: {count * 2 + 1}")
+prompt: |
+  Read the code on the right. The f-string contains an *expression*, not
+  just a variable. What does it print?
+grader:
+  kind: stdout-equality
+  expected: "items: 9"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "Anything inside the curly braces is evaluated as Python before being inserted."
+  - level: 2
+    body: "`count * 2 + 1` with `count = 4` is `4 * 2 + 1` = `9`. The output is `items: 9`."

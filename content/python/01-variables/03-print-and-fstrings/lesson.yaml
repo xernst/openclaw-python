@@ -1,0 +1,16 @@
+slug: print-and-fstrings
+title: "print, repr, and the f-string"
+estMinutes: 8
+prerequisites:
+  - 01-naming-things
+  - 02-types-on-sight
+order:
+  - 01-intro.read.md
+  - 02-which-output.mc.yaml
+  - 03-fstring-anatomy.read.md
+  - 04-predict-the-print.predict.yaml
+  - 05-fill-the-format.fill.yaml
+  - 06-fix-the-quotes.fix.yaml
+  - 07-fix-the-brace.fix.yaml
+  - 08-write-the-receipt.write.yaml
+  - 09-checkpoint.checkpoint.yaml

@@ -1,0 +1,27 @@
+xp: 4
+estSeconds: 70
+concept: f-string-brace-syntax
+prompt: |
+  Claude generated this snippet and it crashes with a `SyntaxError`.
+  The variable name is right, but one of the braces is wrong. Fix the
+  f-string so it prints exactly `score: 42`.
+
+  Expected output:
+  ```
+  score: 42
+  ```
+brokenCode: |
+  score = 42
+  print(f"score: {score")
+bugLines:
+  - 2
+grader:
+  kind: stdout-equality
+  expected: "score: 42"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "Every opening curly brace needs a closing one. Count them."
+  - level: 2
+    body: "The closing `}` is missing after `score`. The line should read `print(f\"score: {score}\")`."
+revealAfter: 4

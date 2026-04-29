@@ -1,0 +1,27 @@
+xp: 4
+estSeconds: 70
+concept: f-string-prefix-bug
+prompt: |
+  Cursor wrote this and the output isn't right — it's printing the
+  literal curly braces instead of substituting the variable. Fix it so
+  the output is exactly `hello, alex`.
+
+  Expected output:
+  ```
+  hello, alex
+  ```
+brokenCode: |
+  user = "alex"
+  print("hello, {user}")
+bugLines:
+  - 2
+grader:
+  kind: stdout-equality
+  expected: "hello, alex"
+  normalize: collapse-trailing-newline
+hint:
+  - level: 1
+    body: "Curly braces only do substitution when the string is an f-string. What's missing at the start of the string?"
+  - level: 2
+    body: "Add an `f` before the opening quote: `print(f\"hello, {user}\")`."
+revealAfter: 4

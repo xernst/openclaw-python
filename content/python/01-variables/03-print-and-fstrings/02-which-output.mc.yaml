@@ -1,0 +1,45 @@
+xp: 2
+estSeconds: 40
+concept: print-vs-repr-output
+code: |
+  value = "7"
+  print(value)
+  print(repr(value))
+prompt: |
+  Cursor wrote three lines. The first `print` shows the value, the second shows
+  its `repr`. What gets printed in total, in order?
+options:
+  - id: a
+    label: |
+      ```
+      7
+      7
+      ```
+    explain: "Close — but `repr` of a string adds quotes around it."
+  - id: b
+    label: |
+      ```
+      7
+      '7'
+      ```
+  - id: c
+    label: |
+      ```
+      '7'
+      '7'
+      ```
+    explain: "The first line uses plain `print`, which shows no quotes."
+  - id: d
+    label: |
+      ```
+      "7"
+      "7"
+      ```
+    explain: "Python's `repr` uses single quotes by default, not double."
+answerIds:
+  - b
+hint:
+  - level: 1
+    body: "`print` strips the quotes; `repr` shows them. The value here is the string `\"7\"`, not the int `7`."
+  - level: 2
+    body: "Line 2: `print` prints the bare characters `7`. Line 3: `print(repr(...))` prints `'7'` with single quotes around it."

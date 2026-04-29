@@ -5,3 +5,4 @@ blurb: "When AI writes Python, the first thing it does is name things. Learn to 
 lessons:
   - 01-naming-things
   - 02-types-on-sight
+  - 03-print-and-fstrings

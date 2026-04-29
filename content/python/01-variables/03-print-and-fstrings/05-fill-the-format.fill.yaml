@@ -1,0 +1,22 @@
+xp: 3
+estSeconds: 55
+concept: f-string-format-spec
+prompt: |
+  AI wrote a snippet that prints a win rate, but the number has too many
+  decimals. Fill in the format spec inside the braces so the output is
+  rounded to two decimal places.
+
+  Format spec (the part after the colon): ___
+code: |
+  ratio = 0.8333333
+  print(f"win rate: {ratio:___}")
+blanks:
+  - id: spec
+    accept:
+      - ".2f"
+    caseSensitive: true
+hint:
+  - level: 1
+    body: "The format spec for a fixed-point float looks like `.Nf` where N is the number of decimals."
+  - level: 2
+    body: "Use `.2f` — that's `dot, two, f`. The full brace becomes `{ratio:.2f}` and prints `0.83`."

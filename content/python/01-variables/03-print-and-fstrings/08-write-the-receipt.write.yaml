@@ -1,0 +1,29 @@
+xp: 5
+estSeconds: 100
+concept: write-fstring-with-math
+prompt: |
+  Write three lines.
+  Line 1: assign `12` to a variable called `qty`.
+  Line 2: assign `3.5` to a variable called `price`.
+  Line 3: print `total: $42.00` using an f-string. The total comes from
+  `qty * price`, formatted to two decimal places.
+
+  Expected output:
+  ```
+  total: $42.00
+  ```
+starter: |
+  # your code:
+grader:
+  kind: stdout-equality
+  expected: "total: $42.00"
+  normalize: collapse-trailing-newline
+solution: |
+  qty = 12
+  price = 3.5
+  print(f"total: ${qty * price:.2f}")
+hint:
+  - level: 1
+    body: "The dollar sign is part of the literal string, then the brace contains an expression with a format spec."
+  - level: 2
+    body: "`print(f\"total: ${qty * price:.2f}\")`. The `$` is plain text; `{qty * price:.2f}` does the math and rounds."
