@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import LessonShell from "./LessonShell";
@@ -9,6 +8,7 @@ import PersistentIDE, {
   type PersistentIDEHandle,
 } from "./PersistentIDE";
 import StepRouter from "./StepRouter";
+import V2ChapterNav, { type ChapterNavTree } from "./ChapterNav";
 import type { Chapter, Lesson, Step, StepAttempt, UserProfile } from "@/lib/content/schema";
 import {
   loadProgressV2,
@@ -20,6 +20,7 @@ import {
 import { cn } from "@/lib/utils";
 
 type Props = {
+  tree: ChapterNavTree;
   chapter: Chapter;
   lesson: Lesson;
   step: Step;
@@ -39,6 +40,7 @@ const FRESH_PROFILE: UserProfile = {
 };
 
 export default function LessonStepClient({
+  tree,
   chapter,
   lesson,
   step,
@@ -96,9 +98,10 @@ export default function LessonStepClient({
   return (
     <LessonShell
       sidebar={
-        <SidebarStub
-          chapter={chapter}
-          lesson={lesson}
+        <V2ChapterNav
+          tree={tree}
+          activeChapter={chapter.slug}
+          activeLesson={lesson.slug}
           activeStepIndex={stepIndex}
         />
       }
@@ -160,51 +163,6 @@ function ProgressBar({ value }: { value: number }) {
         style={{ width: `${Math.min(100, Math.max(0, value * 100))}%` }}
       />
     </div>
-  );
-}
-
-function SidebarStub({
-  chapter,
-  lesson,
-  activeStepIndex,
-}: {
-  chapter: Chapter;
-  lesson: Lesson;
-  activeStepIndex: number;
-}) {
-  return (
-    <nav className="flex h-full flex-col gap-3 px-4 py-5 text-sm">
-      <Link href="/" className="text-xs text-ink-400 hover:text-ink-200">
-        ← Pyloft
-      </Link>
-      <div>
-        <div className="text-[10px] uppercase tracking-wide text-ink-500">
-          Chapter {chapter.number}
-        </div>
-        <div className="font-display text-base text-ink-100">{chapter.title}</div>
-      </div>
-      <div className="text-xs text-ink-400">{lesson.title}</div>
-      <ol className="mt-2 flex flex-col gap-1">
-        {lesson.steps.map((s, idx) => (
-          <li key={s.id}>
-            <Link
-              href={`/learn/v2/${chapter.slug}/${lesson.slug}/${idx}`}
-              className={cn(
-                "block rounded px-2 py-1.5 text-xs transition",
-                idx === activeStepIndex
-                  ? "bg-ink-800 text-ember-400"
-                  : "text-ink-400 hover:text-ink-100",
-              )}
-            >
-              <span className="mr-2 font-mono text-ink-500">
-                {String(idx + 1).padStart(2, "0")}
-              </span>
-              <span className="capitalize">{s.type}</span>
-            </Link>
-          </li>
-        ))}
-      </ol>
-    </nav>
   );
 }
 

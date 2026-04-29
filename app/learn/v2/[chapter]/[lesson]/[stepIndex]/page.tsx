@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import {
   getNextV2Step,
   getV2Step,
+  getV2Toc,
   listAllV2StepRoutes,
 } from "@/lib/content-v2";
 import LessonStepClient from "@/components/v2/LessonStepClient";
@@ -26,6 +27,7 @@ export default async function V2StepPage({
 
   return (
     <LessonStepClient
+      tree={{ toc: getV2Toc(), detail: found.chapter }}
       chapter={found.chapter}
       lesson={found.lesson}
       step={found.step}
