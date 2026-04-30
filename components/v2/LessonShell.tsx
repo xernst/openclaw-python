@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { ChevronUp, ChevronDown } from "lucide-react";
 import DailyGoalDial from "./DailyGoalDial";
@@ -39,7 +39,16 @@ export default function LessonShell({
   header,
   footer,
 }: Props) {
+  // Default the mobile drawer to "show prompt" so first-time visitors see
+  // lesson content instead of an empty editor. We can only inspect window
+  // size client-side, so the SSR render falls back to the IDE pane (matches
+  // the desktop two-column view) and we flip after mount on small screens.
   const [drawerOpen, setDrawerOpen] = useState(true);
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.innerWidth < 1024) {
+      setDrawerOpen(false);
+    }
+  }, []);
 
   return (
     <div className="flex h-[100dvh] min-h-0 flex-col bg-ink-950 text-ink-100">
@@ -47,10 +56,10 @@ export default function LessonShell({
         <aside className="hidden w-60 shrink-0 border-r border-ink-800 bg-ink-900 lg:flex lg:flex-col">
           {sidebar}
         </aside>
-        <main className="flex min-h-0 flex-1 lg:grid lg:grid-cols-[minmax(0,480px)_minmax(0,1fr)]">
+        <main className="flex min-h-0 w-full flex-1 lg:grid lg:grid-cols-[minmax(0,480px)_minmax(0,1fr)]">
           <section
             className={cn(
-              "flex min-h-0 min-w-0 flex-col border-r border-ink-800",
+              "min-h-0 min-w-0 flex-1 flex-col border-r border-ink-800",
               "lg:max-w-[520px]",
               drawerOpen ? "hidden lg:flex" : "flex",
             )}
@@ -61,18 +70,18 @@ export default function LessonShell({
                 <DailyGoalDial compact className="shrink-0 pt-0.5" />
               </div>
             )}
-            <div className="flex-1 min-h-0 overflow-auto px-5 py-6">
+            <div className="flex-1 min-h-0 overflow-auto px-4 py-5 sm:px-5 sm:py-6">
               {prompt}
             </div>
             {footer && (
-              <div className="border-t border-ink-800 bg-ink-900 px-5 py-3">
+              <div className="border-t border-ink-800 bg-ink-900 px-4 py-3 sm:px-5">
                 {footer}
               </div>
             )}
           </section>
           <section
             className={cn(
-              "flex min-h-0 min-w-0 flex-col",
+              "min-h-0 min-w-0 flex-1 flex-col",
               drawerOpen ? "flex" : "hidden lg:flex",
             )}
           >
