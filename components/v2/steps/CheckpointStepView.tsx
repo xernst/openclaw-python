@@ -9,6 +9,7 @@ import { interpolate, type CheckpointStep } from "@/lib/content/schema";
 import type { StepViewProps } from "../StepRouter";
 import { cn } from "@/lib/utils";
 import { gradeRunResult } from "./_grader";
+import HintReveal from "./_HintReveal";
 
 export default function CheckpointStepView({
   step,
@@ -19,12 +20,14 @@ export default function CheckpointStepView({
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState<null | { passed: boolean; reason?: string }>(null);
   const [solutionRevealed, setSolutionRevealed] = useState(false);
+  const [hintsUsed, setHintsUsed] = useState(0);
   const startedAtRef = useRef(new Date().toISOString());
 
   useEffect(() => {
     setSubmitting(false);
     setSubmitted(null);
     setSolutionRevealed(false);
+    setHintsUsed(0);
     startedAtRef.current = new Date().toISOString();
   }, [step.id]);
 
@@ -46,7 +49,7 @@ export default function CheckpointStepView({
       startedAt: startedAtRef.current,
       submittedAt: new Date().toISOString(),
       correct: grade.passed,
-      hintsUsed: solutionRevealed ? 1 : 0,
+      hintsUsed: solutionRevealed ? Math.max(hintsUsed, 99) : hintsUsed,
       payload: { kind: "checkpoint", code: ide.getActiveCode() },
     });
   }
@@ -117,6 +120,13 @@ export default function CheckpointStepView({
         <pre className="overflow-auto rounded-md border border-ink-800 bg-ink-950 p-3 font-mono text-xs text-ember-300">
           {step.solution}
         </pre>
+      )}
+      {!submitted?.passed && (
+        <HintReveal
+          hints={step.hint}
+          resetKey={step.id}
+          onReveal={(level) => setHintsUsed((c) => Math.max(c, level))}
+        />
       )}
     </div>
   );

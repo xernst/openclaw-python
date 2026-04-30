@@ -10,6 +10,7 @@ import {
 } from "@/lib/content/schema";
 import type { StepViewProps } from "../StepRouter";
 import { cn } from "@/lib/utils";
+import HintReveal from "./_HintReveal";
 
 export default function MultipleChoiceStepView({
   step,
@@ -18,6 +19,7 @@ export default function MultipleChoiceStepView({
 }: StepViewProps<MultipleChoiceStep>) {
   const [selected, setSelected] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
+  const [hintsUsed, setHintsUsed] = useState(0);
   const startedAtRef = useRef(new Date().toISOString());
 
   // Reset internal state when the step changes — keeps the view honest
@@ -25,6 +27,7 @@ export default function MultipleChoiceStepView({
   useEffect(() => {
     setSelected(null);
     setSubmitted(false);
+    setHintsUsed(0);
     startedAtRef.current = new Date().toISOString();
   }, [step.id]);
 
@@ -42,7 +45,7 @@ export default function MultipleChoiceStepView({
       startedAt: startedAtRef.current,
       submittedAt: new Date().toISOString(),
       correct,
-      hintsUsed: 0,
+      hintsUsed,
       payload: { kind: "mc", selectedId: selected },
     });
   }
@@ -143,6 +146,13 @@ export default function MultipleChoiceStepView({
           </span>
         )}
       </div>
+      {!submitted && (
+        <HintReveal
+          hints={step.hint}
+          resetKey={step.id}
+          onReveal={(level) => setHintsUsed((c) => Math.max(c, level))}
+        />
+      )}
     </div>
   );
 }
