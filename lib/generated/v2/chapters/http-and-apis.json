@@ -3,6 +3,7 @@
   "slug": "http-and-apis",
   "title": "HTTP and APIs — making the call",
   "blurb": "Every AI script eventually calls an API. Learn the shape of `httpx.get`, what a status code means, and how to pull a value out of the JSON that comes back.",
+  "overview": "",
   "lessons": [
     {
       "slug": "the-shape-of-a-call",

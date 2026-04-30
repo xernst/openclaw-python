@@ -12,6 +12,7 @@ export default async function Home() {
     toc.chapters.map(async (entry) => {
       const detail = await getV2Chapter(entry.slug);
       const firstLessonSlug = detail?.lessons[0]?.slug ?? null;
+      const hasOverview = !!detail?.overview && detail.overview.trim().length > 0;
       return {
         slug: entry.slug,
         title: entry.title,
@@ -20,6 +21,7 @@ export default async function Home() {
         lessonCount: entry.lessonCount,
         stepCount: entry.stepCount,
         firstLessonSlug,
+        hasOverview,
       };
     }),
   );
@@ -110,8 +112,13 @@ export default async function Home() {
         </div>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {v2Chapters.map((c) => {
+            // Link to the chapter overview if the chapter has a body to show;
+            // otherwise jump straight to lesson 1 (legacy fallback for
+            // chapters authored before overview.md existed).
             const href = c.firstLessonSlug
-              ? `/learn/v2/${c.slug}/${c.firstLessonSlug}/0`
+              ? c.hasOverview
+                ? `/learn/v2/${c.slug}`
+                : `/learn/v2/${c.slug}/${c.firstLessonSlug}/0`
               : null;
             const titleClean = c.title.replace(/\s*—.*$/, "");
             const cardBody = (

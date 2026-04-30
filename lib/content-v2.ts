@@ -157,3 +157,9 @@ export async function listAllV2LessonRoutes(): Promise<
   }
   return routes;
 }
+
+export async function listAllV2ChapterRoutes(): Promise<
+  Array<{ chapter: string }>
+> {
+  return toc.chapters.map((c) => ({ chapter: c.slug }));
+}

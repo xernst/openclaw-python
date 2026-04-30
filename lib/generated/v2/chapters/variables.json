@@ -3,6 +3,7 @@
   "slug": "variables",
   "title": "Variables — what AI reaches for first",
   "blurb": "When AI writes Python, the first thing it does is name things. Learn to read those names on sight, and to write a few yourself.",
+  "overview": "",
   "lessons": [
     {
       "slug": "naming-things",

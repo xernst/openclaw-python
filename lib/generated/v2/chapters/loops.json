@@ -3,6 +3,7 @@
   "slug": "loops",
   "title": "Loops — predict the output",
   "blurb": "AI writes a loop every time you say *for each*. Half the time it's wrong by one. Read it before you trust it.",
+  "overview": "",
   "lessons": [
     {
       "slug": "predict-the-output",

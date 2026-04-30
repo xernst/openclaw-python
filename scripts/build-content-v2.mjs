@@ -313,11 +313,19 @@ async function loadChapter(chapterFolder) {
 
   const xpTotal = lessons.reduce((acc, l) => acc + l.xpTotal, 0);
 
+  // Optional long-form chapter overview rendered on /learn/v2/[chapter].
+  // Absent file = empty overview, route falls back to the lesson list.
+  const overviewPath = join(chapterDir, "overview.md");
+  const overview = existsSync(overviewPath)
+    ? await readFile(overviewPath, "utf8")
+    : "";
+
   return {
     number: chapterMeta.number,
     slug: chapterMeta.slug,
     title: chapterMeta.title,
     blurb: chapterMeta.blurb,
+    overview,
     lessons,
     xpTotal,
   };

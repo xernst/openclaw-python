@@ -3,6 +3,7 @@
   "slug": "lists-and-dicts",
   "title": "Lists and dicts — the bones of every API",
   "blurb": "Every JSON response you've ever copied out of ChatGPT or a REST API is some mix of two things: lists and dicts. Read them on sight.",
+  "overview": "",
   "lessons": [
     {
       "slug": "the-bones-of-apis",

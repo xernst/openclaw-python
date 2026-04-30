@@ -268,6 +268,14 @@ export const Chapter = z.object({
   slug: z.string(),
   title: z.string(),
   blurb: z.string().default(""),
+  /**
+   * Long-form chapter narrative shown on `/learn/v2/[chapter]` — the
+   * "what you'll learn, why it matters, where it fits" framing the
+   * V1 chapter README used to provide. Optional; if absent the route
+   * renders just the lesson list. Authored as `overview.md` in the
+   * chapter folder; build script lifts the body into this field.
+   */
+  overview: z.string().default(""),
   lessons: z.array(Lesson).min(1),
   xpTotal: z.number().int().nonnegative(),
 });
