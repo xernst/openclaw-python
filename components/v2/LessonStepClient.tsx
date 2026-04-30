@@ -18,6 +18,7 @@ import {
   markLessonComplete,
   getStepProgress,
 } from "@/lib/storage";
+import { awardPass } from "@/lib/streaks";
 import { cn } from "@/lib/utils";
 
 type Props = {
@@ -89,8 +90,16 @@ export default function LessonStepClient({
   );
 
   function handleAttempt(attempt: StepAttempt) {
+    // Award XP / advance streak on the FIRST passing attempt for a step only —
+    // re-passes (e.g. user comes back, hits Submit again) shouldn't double-count.
+    const alreadyPassed = getStepProgress(step.id)?.attempts?.some(
+      (a) => a.correct,
+    );
     setLatestAttempt(attempt);
     setStepAttempt(step.id, attempt, { concept: step.concept });
+    if (attempt.correct && !alreadyPassed) {
+      awardPass();
+    }
     if (attempt.correct && next === null) {
       markLessonComplete(chapter.slug, lesson.slug);
     }
