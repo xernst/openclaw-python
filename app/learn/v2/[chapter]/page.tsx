@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -15,6 +16,39 @@ import V2ChapterNav, {
 
 export async function generateStaticParams() {
   return listAllV2ChapterRoutes();
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ chapter: string }>;
+}): Promise<Metadata> {
+  const { chapter: chapterSlug } = await params;
+  const chapter = await getV2Chapter(chapterSlug);
+  if (!chapter) return {};
+
+  const title = `${chapter.title} · Pyloft`;
+  const description = chapter.blurb;
+  const url = `/learn/v2/${chapter.slug}`;
+
+  return {
+    title,
+    description,
+    alternates: { canonical: url },
+    openGraph: {
+      type: "article",
+      title,
+      description,
+      url,
+      siteName: "Pyloft",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      creator: "@TFisPython",
+    },
+  };
 }
 
 export default async function V2ChapterOverviewPage({
