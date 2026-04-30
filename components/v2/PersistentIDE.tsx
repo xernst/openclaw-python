@@ -81,8 +81,8 @@ type Props = {
 };
 
 const STATUS_COPY: Record<"idle" | "loading" | "ready", string> = {
-  idle: "warming up",
-  loading: "loading Python (one-time, ~5s)",
+  idle: "Booting Python…",
+  loading: "Booting Python (one-time, ~5s)…",
   ready: "press Run or use ⌘↵",
 };
 
@@ -271,7 +271,15 @@ const PersistentIDE = forwardRef<PersistentIDEHandle, Props>(function Persistent
         )}
       </div>
       <div className="flex items-center justify-between gap-3 border-t border-ink-800 bg-ink-900 px-3 py-2">
-        <div className="text-xs text-ink-500">
+        <div
+          className={cn(
+            "inline-flex items-center gap-1.5 text-xs",
+            ready ? "text-ink-500" : "text-ember-300",
+          )}
+        >
+          {!ready && (
+            <Loader2 size={11} className="animate-spin motion-reduce:animate-none" />
+          )}
           {ready ? STATUS_COPY.ready : STATUS_COPY[status]}
         </div>
         <div className="flex items-center gap-2">
@@ -279,8 +287,12 @@ const PersistentIDE = forwardRef<PersistentIDEHandle, Props>(function Persistent
             <button
               type="button"
               onClick={() => void handleRun()}
-              disabled={!ready || running}
-              aria-busy={running}
+              // The worker awaits ensurePyodide() internally, so a click during
+              // load queues — the user sees "Running…" instead of a disabled
+              // button that looks broken on first impression. We only block
+              // re-clicks while a run is already in flight.
+              disabled={running}
+              aria-busy={running || !ready}
               aria-keyshortcuts="Meta+Enter Control+Enter"
               className={cn(
                 "inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition motion-reduce:transition-none",
@@ -288,7 +300,7 @@ const PersistentIDE = forwardRef<PersistentIDEHandle, Props>(function Persistent
                 "disabled:cursor-not-allowed disabled:opacity-40",
               )}
             >
-              {running ? (
+              {running || !ready ? (
                 <Loader2 size={14} className="animate-spin motion-reduce:animate-none" />
               ) : (
                 <Play size={14} />
