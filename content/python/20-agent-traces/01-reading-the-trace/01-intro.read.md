@@ -9,11 +9,11 @@ code: |
       "messages": [
           {"role": "user", "content": "list my open PRs"},
           {"role": "assistant", "content": [
-              {"type": "tool_use", "id": "tu_01", "name": "list_prs",
+              {"type": "tool_use", "id": "toolu_01", "name": "list_prs",
                "input": {"state": "open"}},
           ]},
           {"role": "user", "content": [
-              {"type": "tool_result", "tool_use_id": "tu_01",
+              {"type": "tool_result", "tool_use_id": "toolu_01",
                "content": "[]"},
           ]},
           {"role": "assistant", "content": [

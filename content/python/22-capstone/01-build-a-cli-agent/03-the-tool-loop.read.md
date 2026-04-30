@@ -11,7 +11,7 @@ code: |
           return {
               "stop_reason": "tool_use",
               "content": [{
-                  "type": "tool_use", "id": "tu_1",
+                  "type": "tool_use", "id": "toolu_1",
                   "name": "read_file",
                   "input": {"path": "todo.txt"},
               }],
@@ -96,9 +96,13 @@ Three of the four stop reasons from chapter 20 matter here:
 - `max_tokens` → log it, exit, alert. *Don't* keep looping; the output
   is truncated.
 
-Anything else (`pause_turn`, `refusal`, `error`) is a programming
-choice. Pragmatic default: log and exit. Production agents recover
-selectively.
+Anything else — `pause_turn` (server-side tool loop hit its cap),
+`refusal` (model declined), `model_context_window_exceeded` (response
+ran out of context before max_tokens) — is a programming choice.
+Pragmatic default: log and exit. Production agents recover selectively.
+
+(HTTP errors and exceptions are a different layer entirely — those
+don't have a `stop_reason` because the request never produced one.)
 
 ## The max-turns guard
 

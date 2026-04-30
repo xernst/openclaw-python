@@ -32,7 +32,7 @@ starter: |
   good_responses = iter([
       {
           "stop_reason": "tool_use",
-          "content": [{"type": "tool_use", "id": "t1", "name": "area", "input": {"w": 5, "h": 10}}],
+          "content": [{"type": "tool_use", "id": "toolu_1", "name": "area", "input": {"w": 5, "h": 10}}],
       },
       {
           "stop_reason": "end_turn",
@@ -43,15 +43,15 @@ starter: |
   loop_responses = iter([
       {
           "stop_reason": "tool_use",
-          "content": [{"type": "tool_use", "id": "t1", "name": "noop", "input": {}}],
+          "content": [{"type": "tool_use", "id": "toolu_1", "name": "noop", "input": {}}],
       },
       {
           "stop_reason": "tool_use",
-          "content": [{"type": "tool_use", "id": "t2", "name": "noop", "input": {}}],
+          "content": [{"type": "tool_use", "id": "toolu_2", "name": "noop", "input": {}}],
       },
       {
           "stop_reason": "tool_use",
-          "content": [{"type": "tool_use", "id": "t3", "name": "noop", "input": {}}],
+          "content": [{"type": "tool_use", "id": "toolu_3", "name": "noop", "input": {}}],
       },
   ])
 
@@ -84,7 +84,7 @@ solution: |
   good_responses = iter([
       {
           "stop_reason": "tool_use",
-          "content": [{"type": "tool_use", "id": "t1", "name": "area", "input": {"w": 5, "h": 10}}],
+          "content": [{"type": "tool_use", "id": "toolu_1", "name": "area", "input": {"w": 5, "h": 10}}],
       },
       {
           "stop_reason": "end_turn",
@@ -95,15 +95,15 @@ solution: |
   loop_responses = iter([
       {
           "stop_reason": "tool_use",
-          "content": [{"type": "tool_use", "id": "t1", "name": "noop", "input": {}}],
+          "content": [{"type": "tool_use", "id": "toolu_1", "name": "noop", "input": {}}],
       },
       {
           "stop_reason": "tool_use",
-          "content": [{"type": "tool_use", "id": "t2", "name": "noop", "input": {}}],
+          "content": [{"type": "tool_use", "id": "toolu_2", "name": "noop", "input": {}}],
       },
       {
           "stop_reason": "tool_use",
-          "content": [{"type": "tool_use", "id": "t3", "name": "noop", "input": {}}],
+          "content": [{"type": "tool_use", "id": "toolu_3", "name": "noop", "input": {}}],
       },
   ])
 

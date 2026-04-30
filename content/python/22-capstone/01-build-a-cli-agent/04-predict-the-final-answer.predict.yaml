@@ -7,7 +7,7 @@ code: |
           return {
               "stop_reason": "tool_use",
               "content": [{
-                  "type": "tool_use", "id": "tu_1",
+                  "type": "tool_use", "id": "toolu_1",
                   "name": "get_weather",
                   "input": {"city": "boston"},
               }],

@@ -38,8 +38,11 @@ code: |
 
 # The two methods you actually use: `tools/list` and `tools/call`
 
-The MCP protocol has more verbs than these, but in 95% of real agent
-work, only two matter:
+The MCP protocol has more verbs than these — `initialize` (the
+handshake), `resources/list` and `resources/read` (for the resources
+primitive), `prompts/list` and `prompts/get` (for the prompts
+primitive), and notifications for things like progress and log
+events. In 95% of real agent work, only two matter:
 
 ### `tools/list`
 
@@ -88,3 +91,11 @@ agent loop to start over.
 
 Run the editor. We render a fake `tools/call` response — the same shape
 a real one would have.
+
+> **Wire-format note:** real JSON-RPC responses also include a
+> `"jsonrpc": "2.0"` field and an `"id"` matching the request, and they
+> wrap the `content` / `isError` payload inside a top-level `"result"`
+> key. We've stripped those here so the shape that *matters for your
+> code* (the result body) reads cleanly. When you parse a real MCP
+> response, reach for `response["result"]["content"]`, not just
+> `response["content"]`.

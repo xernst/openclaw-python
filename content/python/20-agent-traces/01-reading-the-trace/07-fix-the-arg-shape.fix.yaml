@@ -14,7 +14,7 @@ prompt: |
 brokenCode: |
   tool_use = {
       "type": "tool_use",
-      "id": "tu_02",
+      "id": "toolu_02",
       "name": "read_file",
       "input": {"filepath": "app/main.py"},
   }

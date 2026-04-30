@@ -54,12 +54,20 @@ silent failure** — the partial output looks plausible but is not what
 the model would have produced if it had room. When you see this, raise
 `max_tokens` or shorten the prompt and rerun.
 
-### `pause_turn` / `refusal` / `error`
+### `pause_turn` / `refusal` / `model_context_window_exceeded`
 
-Less common, but worth recognizing. `pause_turn` means the model paused
-on a long task and expects to be asked to continue. `refusal` means it
-declined to answer (safety, policy, etc.). `error` means an upstream
-problem — network, rate limit, malformed request.
+Less common, but worth recognizing. `pause_turn` means the server-side
+sampling loop hit its iteration cap while running built-in tools (web
+search, code execution, web fetch) — resend the response back as input
+to continue. `refusal` means the model declined to answer (safety,
+policy, etc.). `model_context_window_exceeded` means the response would
+have run past the model's context window before hitting `max_tokens` —
+partial output is valid, you just can't extend further.
+
+> **Note:** these are `stop_reason` values that come back inside a
+> successful response. If the request itself failed — network down,
+> rate limit, malformed JSON — you get an HTTP error and a Python
+> exception, **not** a `stop_reason`. Different layer, different debug.
 
 ## What this means in practice
 

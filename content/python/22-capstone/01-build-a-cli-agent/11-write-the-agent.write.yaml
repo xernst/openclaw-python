@@ -29,7 +29,7 @@ starter: |
           return {
               "stop_reason": "tool_use",
               "content": [{
-                  "type": "tool_use", "id": "tu_1",
+                  "type": "tool_use", "id": "toolu_1",
                   "name": "read_file",
                   "input": {"path": "todo.txt"},
               }],
@@ -59,7 +59,7 @@ solution: |
           return {
               "stop_reason": "tool_use",
               "content": [{
-                  "type": "tool_use", "id": "tu_1",
+                  "type": "tool_use", "id": "toolu_1",
                   "name": "read_file",
                   "input": {"path": "todo.txt"},
               }],

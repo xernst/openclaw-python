@@ -74,9 +74,14 @@ validation and you'll find out about the model's hallucinated field at
 - **Trusting the model on first try.** Models lie. They drop required
   fields, return strings where you wanted ints, and invent enum values
   you never defined. Validate every response.
-- **Forgetting `response_format` / tool use.** On OpenAI you set
-  `response_format={"type": "json_object"}`. On Anthropic you typically
-  use a tool definition. Without one, the model wraps its JSON in prose.
+- **Forgetting `response_format` / tool use.** On OpenAI, the modern
+  canonical way is **Structured Outputs**:
+  `response_format={"type": "json_schema", "json_schema": {...}}` —
+  the API guarantees the response conforms to your schema. The older
+  `{"type": "json_object"}` mode only guarantees valid JSON, not your
+  shape. On Anthropic you typically use a tool definition (or the newer
+  `output_format` parameter). Without one, the model wraps its JSON in
+  prose.
 - **Catching `ValidationError` too broadly.** When Pydantic rejects a
   response, you usually want to retry with the error message back to
   the model — not silently fall through.
