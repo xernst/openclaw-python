@@ -1,8 +1,8 @@
-# openclaw-python
+# Pyloft
 
 > Codecademy teaches Python like it's 1995. Boot.dev gamifies the same curriculum. Both assume you want to be a software engineer.
 >
-> openclaw-python is the school for people who use Cursor every day and need to know what it got wrong.
+> Pyloft is the school for people who use Cursor every day and need to know what it got wrong.
 
 **Status**: building in public. Follow [@joshernst](https://twitter.com/joshernst) for daily progress.
 
@@ -176,59 +176,3 @@ MIT. Do whatever you want with it. If you customize and share, tag me — I'd lo
 
 Built by [Josh Ernst](https://github.com/xernst). If this saved you time, a ⭐ means a lot.
 More on AI, Python, and vibe-coding in 2026 on Twitter: [@joshernst](https://twitter.com/joshernst).
-26's package manager |
-| 21 | Standard Library Tour | `datetime`, `json`, `collections`, `itertools`, `random` |
-| 22 | HTTP & APIs | `httpx`, REST, status codes, sessions, retries |
-| 23 | Async Python | `async`/`await`, `asyncio.gather`, when it's worth it |
-| 24 | Testing with `pytest` | `assert`, fixtures, `parametrize`, `tmp_path` |
-| 25 | CSV, JSON, Pandas | Real datasets, cleaning, grouping, pivot tables |
-| 26 | AI & LLM Integration | Anthropic/OpenAI APIs, structured output, multi-turn |
-| 27 | Building a CLI Tool | `argparse`, `rich`, subcommands, exit codes |
-| 28 | Capstone | One working tool that uses every chapter's ideas |
-
-## Philosophy: "vibe coding" doesn't mean skip the fundamentals
-
-You're going to use AI to help you code. Great. But the AI will confidently hand you wrong code, especially about:
-
-- Off-by-one errors in slicing
-- Mutable default arguments (`def f(x=[])`)
-- Missing `await` in async code
-- Using stale APIs (`os.path` instead of `pathlib`, `urllib` instead of `httpx`, `%` instead of f-strings)
-- Silently swallowing exceptions (`except: pass`)
-- Forgetting type hints or returning the wrong type
-
-This course makes you the person who catches those. The goal isn't memorizing syntax — it's developing the **judgment** to read, evaluate, and edit what the AI gives back.
-
-## Prior art
-
-In conversation with a few courses I genuinely love:
-
-- **The Python Tutorial** (python.org/docs) — the official source.
-- **Codecademy's Learn Python 3** — the rhythm of short lesson + many small exercises.
-- **trekhleb/learn-python** — depth in one repo.
-- **Asabeneh/30-Days-Of-Python** — structured progression.
-- **Real Python's free tutorials** — some of the best Python writing on the internet.
-
-This course borrows the *structure* of good prior art and fills a gap: a Codecademy-style rhythm built around modern tooling (`uv`, `httpx`, `pathlib`, `@dataclass`, `asyncio`, LLM APIs) with vibe-coding commentary on every chapter.
-
-## Contributing
-
-Found a typo, unclear explanation, or dead link? Open an issue or send a PR. If you want to add a whole chapter or propose a structural change, open an issue first.
-
-This course is opinionated. The core invariants I'm protecting:
-
-- 28 chapters, no more.
-- Each chapter: narrative lesson → lesson file → 5 exercises → 5 solutions → checkpoint.
-- Modern Python (3.12+), type hints everywhere, `pathlib` over `os.path`, `httpx` over `requests`, f-strings over `.format()`.
-- Vibe-Coding Corner in every chapter.
-
-## License
-
-MIT. Do whatever you want with it. If you customize and share, tag me — I'd love to see where it goes.
-
-## Author
-
-Built by [Josh Ernst](https://github.com/xernst). If this saved you time, a ⭐ means a lot.
-
-More on AI, Python, and vibe-coding in 2026 on Twitter: [@joshernst](https://twitter.com/joshernst).
->>>>>>> openclaw/main
