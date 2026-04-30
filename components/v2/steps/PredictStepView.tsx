@@ -9,6 +9,7 @@ import { interpolate, type PredictStep } from "@/lib/content/schema";
 import type { StepViewProps } from "../StepRouter";
 import { cn } from "@/lib/utils";
 import { gradeRunResult } from "./_grader";
+import HintReveal from "./_HintReveal";
 
 export default function PredictStepView({
   step,
@@ -18,11 +19,13 @@ export default function PredictStepView({
 }: StepViewProps<PredictStep>) {
   const [prediction, setPrediction] = useState("");
   const [submitted, setSubmitted] = useState<null | { passed: boolean; reason?: string }>(null);
+  const [hintsUsed, setHintsUsed] = useState(0);
   const startedAtRef = useRef(new Date().toISOString());
 
   useEffect(() => {
     setPrediction("");
     setSubmitted(null);
+    setHintsUsed(0);
     startedAtRef.current = new Date().toISOString();
   }, [step.id]);
 
@@ -41,7 +44,7 @@ export default function PredictStepView({
       startedAt: startedAtRef.current,
       submittedAt: new Date().toISOString(),
       correct: grade.passed,
-      hintsUsed: 0,
+      hintsUsed,
       payload: { kind: "predict", prediction },
     });
   }
@@ -110,6 +113,13 @@ export default function PredictStepView({
           {submitted.passed ? <CheckCircle2 size={16} className="mt-0.5" /> : <XCircle size={16} className="mt-0.5" />}
           <span>{submitted.passed ? "That's the output." : submitted.reason}</span>
         </div>
+      )}
+      {!submitted?.passed && (
+        <HintReveal
+          hints={step.hint}
+          resetKey={step.id}
+          onReveal={(level) => setHintsUsed((c) => Math.max(c, level))}
+        />
       )}
     </div>
   );

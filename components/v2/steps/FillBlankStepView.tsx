@@ -11,6 +11,7 @@ import {
 } from "@/lib/content/schema";
 import type { StepViewProps } from "../StepRouter";
 import { cn } from "@/lib/utils";
+import HintReveal from "./_HintReveal";
 
 const BLANK_TOKEN = "___";
 
@@ -60,11 +61,13 @@ export default function FillBlankStepView({
   );
   const [submitted, setSubmitted] = useState(false);
   const [allCorrect, setAllCorrect] = useState(false);
+  const [hintsUsed, setHintsUsed] = useState(0);
 
   useEffect(() => {
     setValues(Object.fromEntries(step.blanks.map((b) => [b.id, ""])));
     setSubmitted(false);
     setAllCorrect(false);
+    setHintsUsed(0);
     startedAtRef.current = new Date().toISOString();
   }, [step.id, step.blanks]);
 
@@ -80,7 +83,7 @@ export default function FillBlankStepView({
       startedAt: startedAtRef.current,
       submittedAt: new Date().toISOString(),
       correct,
-      hintsUsed: 0,
+      hintsUsed,
       payload: { kind: "fill", values },
     });
   }
@@ -169,6 +172,13 @@ export default function FillBlankStepView({
           </span>
         )}
       </div>
+      {!allCorrect && (
+        <HintReveal
+          hints={step.hint}
+          resetKey={step.id}
+          onReveal={(level) => setHintsUsed((c) => Math.max(c, level))}
+        />
+      )}
     </div>
   );
 }

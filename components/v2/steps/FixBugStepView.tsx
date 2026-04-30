@@ -9,6 +9,7 @@ import { interpolate, type FixBugStep } from "@/lib/content/schema";
 import type { StepViewProps } from "../StepRouter";
 import { cn } from "@/lib/utils";
 import { gradeRunResult } from "./_grader";
+import HintReveal from "./_HintReveal";
 
 export default function FixBugStepView({
   step,
@@ -20,6 +21,7 @@ export default function FixBugStepView({
   const [submitted, setSubmitted] = useState<null | { passed: boolean; reason?: string }>(null);
   const [failedCount, setFailedCount] = useState(0);
   const [solutionRevealed, setSolutionRevealed] = useState(false);
+  const [hintsUsed, setHintsUsed] = useState(0);
   const startedAtRef = useRef(new Date().toISOString());
 
   useEffect(() => {
@@ -27,6 +29,7 @@ export default function FixBugStepView({
     setSubmitted(null);
     setFailedCount(0);
     setSolutionRevealed(false);
+    setHintsUsed(0);
     startedAtRef.current = new Date().toISOString();
   }, [step.id]);
 
@@ -52,7 +55,7 @@ export default function FixBugStepView({
       startedAt: startedAtRef.current,
       submittedAt: new Date().toISOString(),
       correct: grade.passed,
-      hintsUsed: solutionRevealed ? 1 : 0,
+      hintsUsed: solutionRevealed ? Math.max(hintsUsed, 99) : hintsUsed,
       payload: { kind: "fix", code: ide.getActiveCode() },
     });
   }
@@ -122,6 +125,13 @@ export default function FixBugStepView({
             : `lines ${step.bugLines.join(", ")}`}
           . Compare the variable names and punctuation to the expected output.
         </div>
+      )}
+      {!submitted?.passed && (
+        <HintReveal
+          hints={step.hint}
+          resetKey={step.id}
+          onReveal={(level) => setHintsUsed((c) => Math.max(c, level))}
+        />
       )}
     </div>
   );
