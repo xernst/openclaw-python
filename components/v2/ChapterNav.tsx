@@ -64,6 +64,7 @@ export default function V2ChapterNav({
           const isActive = entry.slug === activeChapter;
           const isOpen = openChapter === entry.slug;
           const detail = isActive ? tree.detail : null;
+          const chapterDone = progress?.completedChapters?.includes(entry.slug);
           return (
             <div key={entry.slug} className="mb-1">
               <button
@@ -73,7 +74,9 @@ export default function V2ChapterNav({
                   "flex w-full items-center justify-between rounded px-2 py-1.5 text-left text-xs transition",
                   isActive
                     ? "bg-ink-800 text-ink-100"
-                    : "text-ink-400 hover:bg-ink-800/50 hover:text-ink-200",
+                    : chapterDone
+                      ? "text-signal hover:bg-ink-800/50"
+                      : "text-ink-400 hover:bg-ink-800/50 hover:text-ink-200",
                 )}
               >
                 <span className="flex min-w-0 items-center gap-1.5">
@@ -87,6 +90,7 @@ export default function V2ChapterNav({
                   </span>
                   <span className="truncate">{shortChapterTitle(entry.title)}</span>
                 </span>
+                {chapterDone && <Check size={11} className="shrink-0 text-signal" />}
               </button>
               {isOpen && detail && (
                 <ChapterDetail
@@ -129,18 +133,23 @@ function ChapterDetail({
     <div className="ml-5 mt-1 border-l border-ink-800 pl-3">
       {chapter.lessons.map((lesson) => {
         const isActiveLesson = lesson.slug === activeLesson;
+        const lessonKey = `${chapter.slug}/${lesson.slug}`;
+        const lessonDone = !!progress?.lessons[lessonKey]?.completedAt;
         return (
           <div key={lesson.slug} className="my-2">
             <Link
               href={`/learn/v2/${chapter.slug}/${lesson.slug}`}
               className={cn(
-                "block rounded px-1.5 py-1 text-[11px] uppercase tracking-wide transition",
+                "flex items-center gap-1.5 rounded px-1.5 py-1 text-[11px] uppercase tracking-wide transition",
                 isActiveLesson
                   ? "text-ember-400"
-                  : "text-ink-500 hover:text-ink-200",
+                  : lessonDone
+                    ? "text-signal hover:text-signal/80"
+                    : "text-ink-500 hover:text-ink-200",
               )}
             >
-              {lesson.title}
+              {lessonDone && <Check size={10} className="shrink-0" />}
+              <span className="truncate">{lesson.title}</span>
             </Link>
             {isActiveLesson && (
               <ol className="mt-1 flex flex-col gap-0.5">
