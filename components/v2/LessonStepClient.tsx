@@ -16,9 +16,10 @@ import {
   setLastVisitedV2,
   markLessonStarted,
   markLessonComplete,
+  markChapterCompleteIfNew,
   getStepProgress,
 } from "@/lib/storage";
-import { awardPass } from "@/lib/streaks";
+import { awardPass, grantFrozenFlame } from "@/lib/streaks";
 import { cn } from "@/lib/utils";
 
 type Props = {
@@ -102,6 +103,15 @@ export default function LessonStepClient({
     }
     if (attempt.correct && next === null) {
       markLessonComplete(chapter.slug, lesson.slug);
+      // Chapter completion: if every lesson in this chapter now has a
+      // completedAt, credit the chapter and grant a frozen flame (idempotent).
+      const fresh = loadProgressV2();
+      const allDone = chapter.lessons.every(
+        (l) => fresh.lessons[`${chapter.slug}/${l.slug}`]?.completedAt,
+      );
+      if (allDone && markChapterCompleteIfNew(chapter.slug)) {
+        grantFrozenFlame();
+      }
     }
   }
 

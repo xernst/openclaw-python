@@ -139,6 +139,11 @@ export type ProgressV2 = {
   streak: StreakState; // shared semantics with v1
   lastVisitedV2?: LastVisitedV2;
   conceptsTouched: string[]; // unique step.concept values
+  /**
+   * Chapter slugs we've already credited (frozen flame granted). Used to keep
+   * chapter-completion side effects idempotent across reloads.
+   */
+  completedChapters?: string[];
   createdAt: string;
 };
 
@@ -158,6 +163,7 @@ function freshV2(): ProgressV2 {
     lessons: {},
     streak: { ...FRESH_STREAK },
     conceptsTouched: [],
+    completedChapters: [],
     createdAt: new Date().toISOString(),
   };
 }
@@ -187,6 +193,7 @@ export function loadProgressV2(): ProgressV2 {
       lessons: { ...(parsed.lessons ?? {}) },
       streak: { ...FRESH_STREAK, ...(parsed.streak ?? {}) },
       conceptsTouched: parsed.conceptsTouched ?? [],
+      completedChapters: parsed.completedChapters ?? [],
       userId: parsed.userId ?? seed.userId,
       createdAt: parsed.createdAt ?? seed.createdAt,
     };
@@ -307,6 +314,22 @@ export function markLessonComplete(
       },
     };
   });
+}
+
+/**
+ * Returns true iff this is the first time the chapter is being credited
+ * (i.e. caller should grant a frozen flame, fire chapter-completion analytics,
+ * etc.). Idempotent: subsequent calls with the same slug return false.
+ */
+export function markChapterCompleteIfNew(chapterSlug: string): boolean {
+  let granted = false;
+  updateProgressV2((p) => {
+    const list = p.completedChapters ?? [];
+    if (list.includes(chapterSlug)) return p;
+    granted = true;
+    return { ...p, completedChapters: [...list, chapterSlug] };
+  });
+  return granted;
 }
 
 export function markLessonStarted(
