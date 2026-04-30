@@ -24,9 +24,20 @@ const OUT_DIR = join(REPO, "lib", "generated");
 const OUT_FILE = join(OUT_DIR, "manifest.json");
 
 if (!existsSync(CONTENT)) {
-  console.error(`Course content not found at ${CONTENT}`);
-  console.error(`Set COURSE_PATH env var to override (e.g. COURSE_PATH=~/python-course-2026)`);
-  process.exit(1);
+  // Cloud builds (Vercel, etc.) won't have the v1 course tree at
+  // ~/python-course-2026 — that's the local-only authoring workspace.
+  // v1 is the legacy 28-chapter foldout on the home page; v2 is the
+  // canonical experience. If the source isn't available, write a stub
+  // manifest so `lib/content.ts`'s static import resolves and
+  // `getChapters()` returns []. Home page just renders an empty legacy
+  // section instead of breaking the build.
+  await mkdir(OUT_DIR, { recursive: true });
+  await writeFile(OUT_FILE, JSON.stringify({ chapters: [] }, null, 2));
+  console.warn(
+    `Course content not found at ${CONTENT} — wrote empty manifest. ` +
+      `Set COURSE_PATH if you want the legacy v1 course to render.`,
+  );
+  process.exit(0);
 }
 
 const PY = process.env.PYTHON_BIN || "python3";
