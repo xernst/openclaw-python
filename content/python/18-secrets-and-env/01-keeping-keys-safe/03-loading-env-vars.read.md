@@ -55,9 +55,11 @@ has a place — and AI almost always picks wrong.
   log_level = os.getenv("LOG_LEVEL", "INFO")
   ```
 
-- **Almost never** use `os.environ["..."]` directly. The default
-  KeyError message is unhelpful and the line of source code that
-  needs the value is almost never the right place to bail.
+- **Almost never** use `os.environ["..."]` directly. The KeyError it
+  raises tells you the missing key name, but it doesn't tell the user
+  *what to do about it* — and the line of source code that needs the
+  value is almost never the right place to bail. Catch missing keys at
+  startup with a clear error message instead.
 
 ## Booleans, ints, and the parsing tax
 

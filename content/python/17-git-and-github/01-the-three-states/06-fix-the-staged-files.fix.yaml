@@ -4,7 +4,7 @@ concept: gitignore-secrets-leak
 prompt: |
   AI ran `git add .` and ended up staging `.env` along with the real
   source changes. The script below filters the staged list, but the
-  filter on line 5 keeps `.env` instead of removing it. Fix line 5 so
+  filter on line 4 keeps `.env` instead of removing it. Fix line 4 so
   only files that DON'T start with `.env` are kept.
 
   Expected output:
@@ -18,7 +18,7 @@ brokenCode: |
   safe = [f for f in staged_files if f.startswith(".env")]
   print(safe)
 bugLines:
-  - 5
+  - 4
 grader:
   kind: stdout-equality
   expected: "['src/auth.py', 'tests/test_auth.py']"
@@ -27,5 +27,5 @@ hint:
   - level: 1
     body: 'The filter is inverted. We want to KEEP files that do NOT start with `.env`.'
   - level: 2
-    body: 'Change `f.startswith(".env")` to `not f.startswith(".env")` on line 5.'
+    body: 'Change `f.startswith(".env")` to `not f.startswith(".env")` on line 4.'
 revealAfter: 4

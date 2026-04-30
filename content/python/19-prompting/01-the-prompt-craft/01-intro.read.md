@@ -28,9 +28,11 @@ Now watch what happens when you ask the same question with four
 sentences of structure. Cursor lands a diff in one shot. You read it,
 maybe tweak two lines, and ship.
 
-The difference is not the model. The difference is the prompt. And the
-prompt has *exactly four parts*. Run the editor on the right and read
-them out loud.
+The difference is not the model. The difference is the prompt. The
+scaffold I lean on has four parts — context, goal, constraints, format.
+It's not a canonical framework from Anthropic or Cursor; it's the
+shape that, in practice, fixes the most one-shot prompts. Run the
+editor on the right and read it out loud.
 
 ## Part 1: context
 
@@ -45,8 +47,10 @@ work. Without it, the model is guessing what kind of project you're in,
 and a guess takes ten generated tokens to wrong-foot you for the rest
 of the session.
 
-In Cursor, the file you have open IS context — the editor sends it
-automatically. In Claude Code, what's in the conversation IS context.
+In Cursor, Agent mode pulls workspace and open-file context
+automatically (other modes are mode-dependent — `@`-reference
+explicitly when in doubt). In Claude Code, what's in the conversation
+IS context.
 Either way, **make the relevant file or pattern visible before you ask
 the question.** Paste a snippet, open the file, or add it with `@`.
 

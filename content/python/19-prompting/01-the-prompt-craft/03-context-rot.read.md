@@ -90,12 +90,19 @@ Three signals you should kill the session and open a new one:
    wrong working theory baked in. Anything you say now fights that
    theory. Start over.
 
-## What about Claude Code's `/clear`?
+## What about Claude Code's `/clear` and `/compact`?
 
-Same idea, lower friction. `/clear` keeps your tool permissions and
-context settings but drops the conversation buffer. Use it freely.
-You're not losing progress — the *files* are the progress. The chat is
-a means.
+Same idea, lower friction. `/clear` starts a fresh conversation with
+empty context — your `CLAUDE.md`, skills, and `settings.json` persist
+because they live on disk, not in the chat. Use it freely.
+
+For mid-task context relief without losing the thread, reach for
+`/compact` instead — it summarizes the conversation so far and keeps
+going. `/compact` is the more idiomatic move when you're not done but
+the buffer is heavy. `/clear` is for "I'm starting something new."
+
+You're not losing progress either way — the *files* are the progress.
+The chat is a means.
 
 ## How AI specifically gets this wrong
 
