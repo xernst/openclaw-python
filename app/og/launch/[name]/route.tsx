@@ -7,15 +7,16 @@ export const dynamic = "force-static";
 const W = 1600;
 const H = 900;
 
-const ink950 = "#0a0a0c";
-const ink900 = "#13131a";
-const ink800 = "#26262e";
-const ink700 = "#3a3a44";
-const ink400 = "#9b9baa";
-const ink300 = "#b8b8c4";
-const ink100 = "#e8e8ee";
-const ember = "#f59e0b";
-const emberDim = "#b8770a";
+// Sourced from app/globals.css to match the live site palette exactly.
+const ink950 = "#0E0F12";
+const ink900 = "#18181b";
+const ink800 = "#27272a";
+const ink700 = "#3f3f46";
+const ink400 = "#a1a1aa";
+const ink300 = "#d4d4d8";
+const ink100 = "#f4f4f5";
+const ember = "#F2683C";
+const emberDim = "#e34c1c";
 const red = "#ef4444";
 const green = "#86efac";
 

@@ -5,11 +5,12 @@ export const alt = "Pyloft chapter";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
-const ink950 = "#0a0a0c";
-const ink800 = "#26262e";
-const ink400 = "#9b9baa";
-const ink100 = "#e8e8ee";
-const ember = "#f59e0b";
+// Sourced from app/globals.css to match the live site palette exactly.
+const ink950 = "#0E0F12";
+const ink800 = "#27272a";
+const ink400 = "#a1a1aa";
+const ink100 = "#f4f4f5";
+const ember = "#F2683C";
 
 export default async function ChapterOgImage({
   params,
