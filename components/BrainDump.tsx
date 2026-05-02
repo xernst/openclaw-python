@@ -55,16 +55,31 @@ export default function BrainDump() {
         Park a thought
       </button>
       {open && (
-        <div className="fixed bottom-16 right-4 z-30 w-80 rounded-lg border border-ink-800 bg-ink-950 shadow-xl">
+        <div
+          role="dialog"
+          aria-labelledby="braindump-title"
+          className="fixed bottom-16 right-4 z-30 w-80 rounded-lg border border-ink-800 bg-ink-950 shadow-xl"
+        >
           <div className="flex items-center justify-between border-b border-ink-800 px-3 py-2">
-            <div className="flex items-center gap-1.5 text-xs font-medium text-ink-300">
-              <Brain size={12} /> Brain dump
+            <div
+              id="braindump-title"
+              className="flex items-center gap-1.5 text-xs font-medium text-ink-300"
+            >
+              <Brain size={12} aria-hidden="true" /> Brain dump
             </div>
-            <button onClick={() => setOpen(false)} className="text-ink-500 hover:text-ink-300">
-              <X size={14} />
+            <button
+              onClick={() => setOpen(false)}
+              aria-label="Close brain dump"
+              className="text-ink-400 hover:text-ink-200"
+            >
+              <X size={14} aria-hidden="true" />
             </button>
           </div>
+          <label htmlFor="braindump-textarea" className="sr-only">
+            Park a thought
+          </label>
           <textarea
+            id="braindump-textarea"
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
             onKeyDown={(e) => {
@@ -74,7 +89,7 @@ export default function BrainDump() {
               }
             }}
             placeholder="Park a thought, then get back to the lesson. ⌘↵ to save."
-            className="w-full resize-none bg-transparent px-3 py-2 text-sm text-ink-100 placeholder:text-ink-600 outline-none"
+            className="w-full resize-none bg-transparent px-3 py-2 text-sm text-ink-100 placeholder:text-ink-500 outline-none"
             rows={3}
           />
           <div className="border-t border-ink-800 px-3 py-2 flex gap-2">

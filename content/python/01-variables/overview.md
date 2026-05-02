@@ -1,4 +1,4 @@
-## Names are 80% of what reading code is
+## Names are most of what reading code is
 
 When you read AI-generated Python — and you will, all day long — most of what you're reading is a constellation of named values being passed around. Variables. The model invents a name, sticks a value on it, refers to it three lines later, passes it to a function, gets a different value back, names that one too. The whole script is a tree of names with values stuck on them.
 

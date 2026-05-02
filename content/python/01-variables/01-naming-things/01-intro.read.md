@@ -3,8 +3,11 @@ xp: 1
 estSeconds: 60
 concept: variable-introduction
 code: |
-  score = 7
-  print(score)
+  # Cursor wrote this. Hit Run. We'll figure out what it's doing.
+  user = {"name": "Alex", "plan": "free", "tickets_used": 7}
+  limit = 10
+  remaining = limit - user["tickets_used"]
+  print(f"{user['name']} has {remaining} tickets left on the {user['plan']} plan.")
 runnable: true
 ---
 

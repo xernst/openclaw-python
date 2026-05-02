@@ -8,8 +8,12 @@ const fraunces = Fraunces({ subsets: ["latin"], variable: "--font-fraunces", axe
 const jetbrains = JetBrains_Mono({ subsets: ["latin"], variable: "--font-jetbrains" });
 
 export const metadata: Metadata = {
-  title: "Pyloft",
-  description: "Josh's vibe-coded Python course — boot.dev mechanics with the streaks turned down.",
+  title: {
+    default: "Pyloft — free interactive Python course",
+    template: "%s",
+  },
+  description:
+    "Free, open-source Python course for people who already use AI to write code. Runs in your browser, no signup.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

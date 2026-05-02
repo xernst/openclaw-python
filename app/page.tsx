@@ -1,9 +1,32 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { getChapters } from "@/lib/content";
 import { getV2Toc, getV2Chapter } from "@/lib/content-v2";
 import HomeClient from "@/components/v2/HomeClient";
 import StreakWidget from "@/components/StreakWidget";
 import PyodidePreloader from "@/components/PyodidePreloader";
+
+export const metadata: Metadata = {
+  title: "Pyloft — free interactive Python course for AI builders",
+  description:
+    "Free, open-source Python course for PMs, marketers, and ops folks who use Cursor and Claude Code daily. 22 chapters, 624 interactive steps, runs in your browser. No signup, no paywall.",
+  alternates: { canonical: "https://pyloft.io/" },
+  openGraph: {
+    type: "website",
+    title: "Pyloft — free interactive Python course for AI builders",
+    description:
+      "Read what AI wrote. Catch what it got wrong. Direct it deliberately. 22 chapters, 624 interactive steps, free forever.",
+    url: "https://pyloft.io/",
+    siteName: "Pyloft",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Pyloft — free interactive Python for AI builders",
+    description:
+      "The Python you need to direct AI agents, read what they wrote, and catch what they got wrong.",
+    creator: "@TFisPython",
+  },
+};
 
 export default async function Home() {
   const toc = getV2Toc();
@@ -35,7 +58,7 @@ export default async function Home() {
   const legacyChapters = getChapters();
 
   return (
-    <div className="mx-auto max-w-6xl px-6 py-10 sm:py-16">
+    <main className="mx-auto max-w-6xl px-6 py-10 sm:py-16">
       <PyodidePreloader />
       <header className="mb-12 flex items-end justify-between">
         <div>
@@ -49,11 +72,11 @@ export default async function Home() {
             The Python you need to direct AI agents, read what they wrote, and
             catch what they got wrong.
           </p>
-          <p className="mt-2 max-w-2xl text-sm text-ink-500">
+          <p className="mt-2 max-w-2xl text-sm text-ink-400">
             Built for the marketing managers, PMs, and ops folks who use Cursor
             daily and have hit the ceiling of what they can do without code
-            literacy. Free. Open-source. No certificate, no leaderboards, no
-            paywall in the first five chapters.
+            literacy. Free forever, open source. No certificate, no
+            leaderboards, no paywall.
           </p>
         </div>
         <StreakWidget />
@@ -100,8 +123,8 @@ export default async function Home() {
 
       <section className="mt-16">
         <div className="mb-4 flex items-baseline justify-between">
-          <h2 className="text-xs uppercase tracking-widest text-ink-500">
-            Eight chapters · sixteen lessons · 134 steps
+          <h2 className="text-xs uppercase tracking-widest text-ink-400">
+            22 chapters · 624 interactive steps · free forever
           </h2>
           <Link
             href="/onboarding"
@@ -195,6 +218,6 @@ export default async function Home() {
           from anywhere to park a thought without losing your place.
         </p>
       </footer>
-    </div>
+    </main>
   );
 }
