@@ -124,7 +124,7 @@ export default async function Home() {
       <section className="mt-16">
         <div className="mb-4 flex items-baseline justify-between">
           <h2 className="text-xs uppercase tracking-widest text-ink-400">
-            22 chapters · 624 interactive steps · free forever
+            25 chapters · production-AI track included · free forever
           </h2>
           <Link
             href="/onboarding"
