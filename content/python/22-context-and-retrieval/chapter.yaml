@@ -1,0 +1,6 @@
+number: 22
+slug: context-and-retrieval
+title: "Context and retrieval — feeding the model real data"
+blurb: "RAG without the overengineering. Chunking, embeddings, vector search, and the small set of patterns that make a model answer from your data instead of its training set."
+lessons:
+  - 01-orientation

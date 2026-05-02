@@ -1,0 +1,6 @@
+slug: orientation
+title: "Read the bill, do the math"
+estMinutes: 2
+prerequisites: []
+order:
+  - 01-intro.read.md

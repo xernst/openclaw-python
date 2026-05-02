@@ -1,0 +1,6 @@
+number: 23
+slug: production-tradeoffs
+title: "Production tradeoffs — cost, latency, quality"
+blurb: "The three numbers every shipped LLM feature lives or dies by. Token math, caching, streaming, batching, and the small set of decisions that move the product more than a model swap ever will."
+lessons:
+  - 01-orientation

@@ -1,0 +1,44 @@
+## The chapter that turns a chatbot into a useful one
+
+There's a moment that happens to every PM, ops lead, and indie hacker who ships their first LLM feature. The model works on toy questions. Then a real user asks it about your product, your customer history, your internal docs, and the model says something fluent, confident, and completely wrong. It made it up.
+
+The fix is not "a better model." The fix is feeding the model the right context before you ask the question. That craft has a name: retrieval-augmented generation, RAG, the most-talked-about and most-poorly-implemented pattern in production AI today.
+
+Most RAG tutorials show you a 30-line script with FAISS and call it done. That script is not what's running in any company that has revenue. The companies that get RAG right have spent months on the boring parts the tutorials skip: how you chunk a document, what you do when chunks have headers and code blocks mixed, how you handle the user asking about three different things in one question, what you do when the top result is wrong but only by a paragraph, how you keep the embedding cost from eating your margin.
+
+This chapter is the production-grade version. By the end you'll have shipped a small RAG pipeline that actually answers from your data, you'll know which patterns scale and which collapse, and you'll be able to read other people's RAG code and spot the demo-ware from the production code in about 30 seconds.
+
+## What you'll actually do here
+
+Chunk a real document into retrievable pieces. Embed the chunks with a real embedding model. Store the vectors somewhere queryable. Take a user question, embed it, find the closest chunks, stuff those chunks into a prompt, and ask the model. Then break it. On purpose. Then fix it.
+
+The lessons cover the four moves that separate working RAG from broken RAG:
+
+1. Chunking that respects structure. A markdown file is not a stream of tokens. Headers, code blocks, and lists are signal. Bad chunkers shred them. Good chunkers honor them.
+2. Embedding that fits the budget. The model you use to embed determines cost and quality. The smart move is rarely the biggest model.
+3. Retrieval that finds the right thing. Cosine similarity finds the closest vector. The closest vector is not always the right answer. You'll learn to read the distance numbers and judge whether the retrieval was lucky or correct.
+4. Prompting that uses the context you fetched. Stuffing chunks into a prompt is not enough. The model still has to be told what to do with them.
+
+## What AI gets wrong about RAG when it writes the code for you
+
+Cursor will write you a working-looking RAG script in about 90 seconds. Most of the time it ships these specific mistakes you'll learn to spot:
+
+- Chunking by character count, splitting mid-sentence and mid-code-block
+- Embedding the user question with one model and the documents with another, so the vectors don't compare cleanly
+- Returning the top result regardless of how distant it is, which means a totally unrelated chunk gets fed to the model
+- Stuffing every chunk it retrieves, blowing the context window and the bill
+- No deduplication, so when the same paragraph appears in two documents it dominates retrieval
+
+Each of these has a screenshot in the lessons. You see the bug, you predict what the model will do, you fix it. Same pattern as the rest of Pyloft.
+
+## The thing the tutorials never tell you
+
+Production RAG is mostly evaluation, not retrieval. The teams that ship working RAG do not optimize chunk size. They build a small set of test questions where they know the right answer is in chunk 47 of document 12, and they measure what percent of the time their pipeline actually retrieves chunk 47. Below 80 percent? The chunking is wrong. The embedding is wrong. The retrieval ranking is wrong. Something is wrong, and you find it by measuring, not by tweaking.
+
+This chapter pairs with chapter 21, where you wrote evals for model output. Here you write evals for retrieval. Same discipline, different surface. The combination is what makes the difference between "we have a chatbot" and "the chatbot is shipping."
+
+## Where this fits in your week
+
+If you're shipping any LLM feature where the user asks about your stuff (your products, your docs, your customer history, your tickets, your handbook), this is the chapter that gates whether the feature works at scale. Without retrieval, the model only knows what it was trained on. With retrieval done well, it knows what your company knows.
+
+By step 9 you'll have a working RAG pipeline you can adapt to any small corpus, plus the eval pattern to keep it honest as you grow it.

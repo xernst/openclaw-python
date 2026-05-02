@@ -1,0 +1,32 @@
+{
+  "number": 23,
+  "slug": "production-tradeoffs",
+  "title": "Production tradeoffs — cost, latency, quality",
+  "blurb": "The three numbers every shipped LLM feature lives or dies by. Token math, caching, streaming, batching, and the small set of decisions that move the product more than a model swap ever will.",
+  "overview": "## The three numbers every shipped LLM feature lives or dies by\n\nCost. Latency. Quality. Pick two on a good day. The teams that ship LLM features at scale are not the teams with the smartest prompt engineers. They are the teams that learned to read these three numbers, decide which one matters most for the feature in front of them, and trade the other two without flinching.\n\nThis is the chapter most courses skip because it isn't sexy. There are no agents in this chapter. No new SDKs. No \"build your own ChatGPT in 50 lines.\" Just the numbers and the levers and the patterns that compound into a feature your finance team and your users both tolerate.\n\nBy the end you'll be able to look at any AI-powered feature you or someone on your team is building and answer four questions in under a minute: what does it cost per call, what does it cost per active user per month, where is the latency budget being spent, and which of those numbers is the one that will bite first.\n\n## What you'll actually do here\n\nRead your bill. Most engineers shipping LLM features have no mental model for what their company is paying. The first lesson is reading a real OpenAI or Anthropic invoice line by line and understanding what each row means.\n\nDo the token math. A hundred-token prompt with a thousand-token answer is not the same shape as a thousand-token prompt with a hundred-token answer. The first is fifty times cheaper. The second is the one that ships when nobody's paying attention. You'll learn the four-line Python you need to estimate cost before you click deploy.\n\nCache the right thing. Prompt caching is the single biggest cost-cutter in 2026, and almost nobody is using it correctly. The lessons walk through which parts of your prompt cache and which parts don't, why your cache hit rate is probably under 30 percent right now, and what changes when you reorder the prompt.\n\nStream when you can. Streaming the model's output back to the user changes perceived latency by 5 to 10x. The same total time feels different if the first token shows up in 200ms instead of 4 seconds. The pattern is three lines of Python and changes everything about your feature's UX.\n\nBatch when streaming is the wrong tool. Streaming is for the user-facing chat. Batch is for the overnight job that summarizes 10,000 tickets, where nobody is waiting and you'd like the cost cut by 50 percent. You'll learn the cutoff: when streaming wins, when batching wins, when neither matters.\n\n## What AI gets wrong about tradeoffs when it writes the code for you\n\nCursor and Claude Code default to \"make it work.\" They do not default to \"make it work cheaply\" or \"make it work at p99 latency under 2 seconds.\" That's your job. You'll learn to spot the patterns AI ships that look fine in dev and bleed money in production:\n\n- Calling the biggest model for every request, including the ones that don't need it\n- Putting the user's variable input at the start of the prompt instead of the end, breaking prompt caching\n- No timeout on the SDK call, so a slow model response stalls the whole user session\n- Making the call once per item in a loop instead of batching\n- Streaming when the response is going to a queue (wasted complexity) or batching when the response is going to a user waiting for it (wrong shape)\n\nEach is a one-line fix. None get caught by tests. All cost or break the feature in production.\n\n## The principle the chapter pivots on\n\nLatency, cost, and quality are coupled. Reduce latency by switching to a smaller model and you usually trade quality. Reduce cost by caching and you usually trade flexibility. Improve quality by adding more context and you trade both latency and cost. There is no free lever. The question is never \"how do I make this perfect\" but \"which axis is the one this feature lives or dies on, and what's the cheapest way to be acceptable on the other two.\"\n\nThis is the chapter where you stop thinking about the model and start thinking about the system. Ship beats experiment, and shipping is mostly the boring optimizations that compound.\n\n## Where this fits in your week\n\nIf you have any LLM-powered thing in production right now, run through the lessons here against your real bill and your real latency numbers. The first sweep will probably surface a 30 to 60 percent cost reduction or a 2x latency improvement, no model swap required. After that the chapter becomes a checklist you run before shipping anything new.\n",
+  "lessons": [
+    {
+      "slug": "orientation",
+      "title": "Read the bill, do the math",
+      "estMinutes": 2,
+      "prerequisites": [],
+      "steps": [
+        {
+          "type": "read",
+          "id": "production-tradeoffs/orientation/s01-01-intro",
+          "xp": 1,
+          "hint": [],
+          "personalize": false,
+          "phase": "warmup",
+          "estSeconds": 90,
+          "concept": "tradeoffs-orientation",
+          "body": "# Read the bill, do the math\n\nThe lessons in this chapter are coming. The orientation step you're reading is the placeholder while the interactive content is authored.\n\nWhen the chapter ships you'll work through:\n\n1. A real model invoice line by line. Per-token pricing, cached vs uncached, input vs output.\n2. The four-line cost estimator you run before any deploy.\n3. Prompt cache hit rate, why yours is probably under 30 percent, and the prompt reorder that fixes it.\n4. Streaming vs batching, with the cutoff that tells you which one wins for the feature in front of you.\n\nFor now, read the chapter overview above and come back when the lesson plan goes live.",
+          "cta": "Got it",
+          "runnable": false
+        }
+      ],
+      "xpTotal": 1
+    }
+  ],
+  "xpTotal": 1
+}

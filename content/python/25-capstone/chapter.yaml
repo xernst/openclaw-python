@@ -1,0 +1,6 @@
+number: 25
+slug: capstone
+title: "Capstone — ship the system"
+blurb: "Wire it all together. Context, retrieval, the prompt, the call, the trace, the eval, the cost. Less a tutorial demo, more the smallest end-to-end LLM feature you could ship to a real user."
+lessons:
+  - 01-build-a-cli-agent

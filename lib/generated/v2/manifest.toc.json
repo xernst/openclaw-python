@@ -1,6 +1,6 @@
 {
   "version": "0.1.0",
-  "generatedAt": "2026-05-02T17:47:34.408Z",
+  "generatedAt": "2026-05-02T18:14:32.480Z",
   "chapters": [
     {
       "number": 1,
@@ -193,9 +193,36 @@
     },
     {
       "number": 22,
+      "slug": "context-and-retrieval",
+      "title": "Context and retrieval — feeding the model real data",
+      "blurb": "RAG without the overengineering. Chunking, embeddings, vector search, and the small set of patterns that make a model answer from your data instead of its training set.",
+      "lessonCount": 1,
+      "stepCount": 1,
+      "xpTotal": 1
+    },
+    {
+      "number": 23,
+      "slug": "production-tradeoffs",
+      "title": "Production tradeoffs — cost, latency, quality",
+      "blurb": "The three numbers every shipped LLM feature lives or dies by. Token math, caching, streaming, batching, and the small set of decisions that move the product more than a model swap ever will.",
+      "lessonCount": 1,
+      "stepCount": 1,
+      "xpTotal": 1
+    },
+    {
+      "number": 24,
+      "slug": "debugging-output",
+      "title": "Debugging broken AI output",
+      "blurb": "When the model lies to your customer. The methodology for narrowing down what went wrong, the four most-common breakage classes, and the discipline that separates 'we shipped a fix' from 'we blamed the model and shrugged'.",
+      "lessonCount": 1,
+      "stepCount": 1,
+      "xpTotal": 1
+    },
+    {
+      "number": 25,
       "slug": "capstone",
-      "title": "Capstone — a small CLI agent",
-      "blurb": "Wire it all together. Read a prompt, call an LLM, run tools, loop until done, log every turn. The agent is small; the patterns scale to whatever you build next.",
+      "title": "Capstone — ship the system",
+      "blurb": "Wire it all together. Context, retrieval, the prompt, the call, the trace, the eval, the cost. Less a tutorial demo, more the smallest end-to-end LLM feature you could ship to a real user.",
       "lessonCount": 1,
       "stepCount": 12,
       "xpTotal": 45

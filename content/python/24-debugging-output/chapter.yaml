@@ -1,0 +1,6 @@
+number: 24
+slug: debugging-output
+title: "Debugging broken AI output"
+blurb: "When the model lies to your customer. The methodology for narrowing down what went wrong, the four most-common breakage classes, and the discipline that separates 'we shipped a fix' from 'we blamed the model and shrugged'."
+lessons:
+  - 01-orientation
